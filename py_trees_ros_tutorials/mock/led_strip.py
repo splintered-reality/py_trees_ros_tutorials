@@ -127,7 +127,7 @@ class LEDStrip(object):
             text = self.generate_led_text(msg.data)
             # don't bother publishing if nothing changed.
             if self.last_text != text:
-                print("{}".format(text))
+                self.node.get_logger().info("{}".format(text))
                 self.last_text = text
                 self.last_uuid = uuid.uuid4()
                 self.display_publisher.publish(std_msgs.String(data=msg.data))
