@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>py_trees_ros</name>
-  <version>0.5.14</version>
+  <name>py_trees_ros_tutorials</name>
+  <version>0.1.0</version>
   <description>
     ROS2 extensions and behaviours for py_trees.
   </description>
@@ -12,12 +12,10 @@
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/py_trees</url>
-  <url type="repository">https://github.com/stonier/py_trees_ros</url>
-  <url type="bugtracker">https://github.com/stonier/py_trees_ros/issues</url>
+  <url type="repository">https://github.com/splintered-treality/py_trees_ros</url>
+  <url type="bugtracker">https://github.com/splintered-treality/py_trees_ros/issues</url>
 
   <author>Daniel Stonier</author>
-  <author>Michal Staniaszek</author>
-  <author>Naveed Usmani</author>
 
   <build_depend>python3-setuptools</build_depend>
 
@@ -55,11 +53,16 @@
 
   <!-- core dependencies -->
   <exec_depend>py_trees</exec_depend>
-  <exec_depend>py_trees_msgs</exec_depend>
+  <exec_depend>py_trees_ros</exec_depend>
+  <exec_depend>python3-pyqt5</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
+  <exec_depend>ros2run</exec_depend>
+  <exec_depend>ros2service</exec_depend>
+  <exec_depend>ros2topic</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>uuid_msgs</exec_depend>
-  <exec_depend>unique_id</exec_depend>
   <!--
   <exec_depend>actionlib</exec_depend>
   <exec_depend>actionlib_msgs</exec_depend>
@@ -73,14 +76,6 @@
   <test_depend>rostest</test_depend>
   <test_depend>rosunit</test_depend>
   -->
-  <!-- For the tutorials actually, not the tests -->
-  <!-- TODO: move the tutorials out to another package -->
-  <test_depend>python3-pyqt5</test_depend>
-  <test_depend>launch_ros</test_depend>
-  <test_depend>ros2launch</test_depend>
-  <test_depend>ros2run</test_depend>
-  <test_depend>ros2service</test_depend>
-  <test_depend>ros2topic</test_depend>
 
   <export>
     <build_type>ament_python</build_type>
