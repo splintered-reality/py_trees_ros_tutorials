@@ -18,6 +18,8 @@
   <author>Daniel Stonier</author>
 
   <build_depend>python3-setuptools</build_depend>
+  <build_depend>pyqt5-dev-tools</build_depend>
+  <build_depend>qttools5-dev-tools</build_depend>
 
   <!-- ach, autodoc is a beast, it shouldn't need these (there is a PR going in upstream for autodoc) -->
   <!--

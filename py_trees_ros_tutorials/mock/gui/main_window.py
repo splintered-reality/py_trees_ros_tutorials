@@ -28,7 +28,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.reconfigure_group_box)
         MainWindow.setCentralWidget(self.central_layout)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 551, 29))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 551, 35))
         self.menubar.setDefaultUp(False)
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
@@ -44,6 +44,6 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "Robot Mock"))
         self.reconfigure_group_box.setTitle(_translate("MainWindow", "Dynamic Reconfigure"))
 
-from py_trees_ros.mock.gui.dashboard_group_box import DashboardGroupBox
-from py_trees_ros.mock.gui.reconfigure_group_box import ReconfigureGroupBox
+from py_trees_ros_tutorials.mock.gui.dashboard_group_box import DashboardGroupBox
+from py_trees_ros_tutorials.mock.gui.reconfigure_group_box import ReconfigureGroupBox
 from . import main_window_rc

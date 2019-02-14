@@ -64,9 +64,9 @@ setup(
     entry_points={
          'console_scripts': [
              # These are redirected to lib/<package_name> by setup.cfg
-             'mock-battery = py_trees_ros.mock.battery:main',
-             'mock-dashboard = py_trees_ros.mock.dashboard:main',
-             'mock-led-strip = py_trees_ros.mock.led_strip:main',
+             'mock-battery = py_trees_ros_tutorials.mock.battery:main',
+             'mock-dashboard = py_trees_ros_tutorials.mock.dashboard:main',
+             'mock-led-strip = py_trees_ros_tutorials.mock.led_strip:main',
          ],
      },
 )

@@ -41,7 +41,7 @@
      <x>0</x>
      <y>0</y>
      <width>551</width>
-     <height>29</height>
+     <height>35</height>
     </rect>
    </property>
    <property name="defaultUp">
@@ -54,13 +54,13 @@
   <customwidget>
    <class>DashboardGroupBox</class>
    <extends>QGroupBox</extends>
-   <header location="global">py_trees_ros.mock.gui.dashboard_group_box</header>
+   <header location="global">py_trees_ros_tutorials.mock.gui.dashboard_group_box</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>ReconfigureGroupBox</class>
    <extends>QGroupBox</extends>
-   <header location="global">py_trees_ros.mock.gui.reconfigure_group_box</header>
+   <header location="global">py_trees_ros_tutorials.mock.gui.reconfigure_group_box</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
