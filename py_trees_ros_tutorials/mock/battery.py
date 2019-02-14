@@ -57,11 +57,19 @@ class Battery:
     def __init__(self):
         # ros communications
         self.node = rclpy.create_node("battery")
+
         self.battery_publisher = self.node.create_publisher(
             msg_type=sensor_msgs.BatteryState,
             topic="~/state",
             qos_profile=py_trees_ros.utilities.qos_profile_latched_topic()
         )
+
+        # parameters
+        self.node.set_parameters([
+            rclpy.parameter.Parameter('charging_percentage', rclpy.parameter.Parameter.Type.DOUBLE, 100.0),
+            rclpy.parameter.Parameter('charging_increment', rclpy.parameter.Parameter.Type.DOUBLE, 0.01),
+            rclpy.parameter.Parameter('charging', rclpy.parameter.Parameter.Type.BOOL, False),
+        ])
 
         # initialisations
         self.battery = sensor_msgs.BatteryState()
