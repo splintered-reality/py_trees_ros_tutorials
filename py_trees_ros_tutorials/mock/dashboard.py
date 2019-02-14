@@ -20,6 +20,7 @@ import os
 import py_trees_ros
 import rclpy
 import signal
+import sensor_msgs.msg as sensor_msgs
 import std_msgs.msg as std_msgs
 import sys
 import threading
@@ -97,12 +98,13 @@ class Backend(qt_core.QObject):
         )
 
         latched = True
-        # unlatched = False
+        unlatched = False
         self.subscribers = py_trees_ros.utilities.Subscribers(
             self.node,
             [
                 ("report", "/tree/report", std_msgs.String, latched, self.reality_report_callback),
-                ("led_strip", "/led_strip/display", std_msgs.String, latched, self.led_strip_display_callback)
+                ("led_strip", "/led_strip/display", std_msgs.String, latched, self.led_strip_display_callback),
+                ("battery_state", "/battery/state", sensor_msgs.BatteryState, unlatched, self.batter_state_callback)
             ]
         )
 
@@ -136,7 +138,6 @@ class Backend(qt_core.QObject):
             self.ui.ui.cancel_push_button.setEnabled(False)
 
     def led_strip_display_callback(self, msg):
-        print("Got callback")
         colour = "grey"
         if not msg.data:
             self.node.get_logger().info("no colour specified, setting '{}'".format(colour))
@@ -145,6 +146,9 @@ class Backend(qt_core.QObject):
         else:
             colour = msg.data
         self.led_colour_changed.emit(colour)
+
+    def battery_state_callback(self, msg):
+        print("Got callback")
 
 
 ##############################################################################
