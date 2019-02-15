@@ -35,5 +35,4 @@ class ConfigurationGroupBox(qt_widgets.QGroupBox):
         self.ui.setupUi(self)
 
     def set_battery_percentage(self, percentage):
-        print("Battery Percentage -> Ui {}".format(percentage))
         self.ui.battery_percentage_slider.setValue(int(percentage))
