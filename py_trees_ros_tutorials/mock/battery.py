@@ -125,11 +125,11 @@ class Battery:
 
         # update state
         if charging:
-            self.node.get_logger().info("Charging...")
             charging_percentage = min(100, charging_percentage + charging_increment)
+            self.node.get_logger().info("Charging...{:.1f}%%".format(charging_percentage))
         else:
-            self.node.get_logger().info("Discharging...")
             charging_percentage = max(0, charging_percentage - charging_increment)
+            self.node.get_logger().info("Discharging...{:.1f}%%".format(charging_percentage))
 
         # update parameters (TODO: need a guard?)
         self.node.set_parameters([
