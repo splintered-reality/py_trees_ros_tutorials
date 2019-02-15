@@ -21,6 +21,7 @@ import argparse
 # import dynamic_reconfigure.server
 import py_trees_ros
 import rclpy
+import rclpy.parameter
 import sensor_msgs.msg as sensor_msgs
 import sys
 
@@ -55,21 +56,24 @@ class Battery:
     On startup it is in a DISCHARGING state. Use ``rqt_reconfigure`` to change the battery state.
     """
     def __init__(self):
-        # ros communications
-        self.node = rclpy.create_node("battery")
-
-        self.battery_publisher = self.node.create_publisher(
-            msg_type=sensor_msgs.BatteryState,
-            topic="~/state",
-            qos_profile=py_trees_ros.utilities.qos_profile_latched_topic()
+        # node
+        self.node = rclpy.create_node(
+            "battery",
+            initial_parameters=[
+                rclpy.parameter.Parameter('charging_percentage', rclpy.parameter.Parameter.Type.DOUBLE, 100.0),
+                rclpy.parameter.Parameter('charging_increment', rclpy.parameter.Parameter.Type.DOUBLE, 0.1),
+                rclpy.parameter.Parameter('charging', rclpy.parameter.Parameter.Type.BOOL, False),
+            ]
         )
 
-        # parameters
-        self.node.set_parameters([
-            rclpy.parameter.Parameter('charging_percentage', rclpy.parameter.Parameter.Type.DOUBLE, 100.0),
-            rclpy.parameter.Parameter('charging_increment', rclpy.parameter.Parameter.Type.DOUBLE, 0.01),
-            rclpy.parameter.Parameter('charging', rclpy.parameter.Parameter.Type.BOOL, False),
-        ])
+        # publishers
+        not_latched = False  # latched = True
+        self.publishers = py_trees_ros.utilities.Publishers(
+            self.node,
+            [
+                ('state', "~/state", sensor_msgs.BatteryState, not_latched),
+            ]
+        )
 
         # initialisations
         self.battery = sensor_msgs.BatteryState()
@@ -87,38 +91,13 @@ class Battery:
         self.battery.location = ""
         self.battery.serial_number = ""
 
-        # immediately reconfigured by dynamic_reconfigure
-        self.charging_increment = 0.01
-
-        # dynamic_reconfigure
-#         self.parameters = None
-#         self.dynamic_reconfigure_server = dynamic_reconfigure.server.Server(
-#             BatteryConfig,
-#             self.dynamic_reconfigure_callback
-#         )
-
-    def dynamic_reconfigure_callback(self, config, level):
+    def update_parameters(self, parameters):
         """
-        Don't use the incoming config except as a read only
-        tool. If we write variables, make sure to use
-        the server's update_configuration, which will trigger
-        this callback here.
-
         Args:
-            config (:obj:`dynamic_reconfigure.encoding.Config`): incoming configuration
+            parameters ([:class:`rclpy.parameters.Parameter`]): incoming configuration
             level (:obj:`int`):
         """
-        self.parameters = config
-        self.battery.percentage = self.parameters.charging_percentage
-        self.charging_increment = self.parameters.charging_increment
-        if self.battery.percentage >= 100:
-            self.battery.percentage = 100
-            self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_FULL
-        elif self.parameters.charging:
-            self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_CHARGING
-        else:
-            self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
-        return config
+        self.node.set_parameters(parameters)
 
     def spin(self):
         """
@@ -127,7 +106,7 @@ class Battery:
         # TODO: with rate and spin_once, once rate is implemented in rclpy
         unused_timer = self.node.create_timer(
             timer_period_sec=0.2,
-            callback=self.publish
+            callback=self.update_and_publish
         )
         try:
             rclpy.spin(self.node)
@@ -135,16 +114,43 @@ class Battery:
             pass
         self.node.destroy_node()
 
-    def publish(self):
+    def update_and_publish(self):
         """
         Update and publish.
         """
-#        if self.parameters.charging:
-#            self.dynamic_reconfigure_server.update_configuration({"charging_percentage": min(100, self.battery.percentage + self.charging_increment)})
-#        else:
-#            self.dynamic_reconfigure_server.update_configuration({"charging_percentage": max(0, self.battery.percentage - self.charging_increment)})
+        # parameters
+        charging = self.node.get_parameter("charging").value
+        charging_increment = self.node.get_parameter("charging_increment").value
+        charging_percentage = self.node.get_parameter("charging_percentage").value
+
+        # update state
+        if charging:
+            self.node.get_logger().info("Charging...")
+            charging_percentage = min(100, charging_percentage + charging_increment)
+        else:
+            self.node.get_logger().info("Discharging...")
+            charging_percentage = max(0, charging_percentage - charging_increment)
+
+        # update parameters (TODO: need a guard?)
+        self.node.set_parameters([
+            rclpy.parameter.Parameter(
+                'charging_percentage',
+                rclpy.parameter.Parameter.Type.DOUBLE,
+                charging_percentage
+            )
+        ])
+
+        # publish
         self.battery.header.stamp = rclpy.clock.Clock().now().to_msg()
-        self.battery_publisher.publish(msg=self.battery)
+        self.battery.percentage = charging_percentage
+        if self.battery.percentage >= 100:
+            self.battery.percentage = 100
+            self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_FULL
+        elif charging:
+            self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_CHARGING
+        else:
+            self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
+        self.publishers.state.publish(msg=self.battery)
 
 
 def main():

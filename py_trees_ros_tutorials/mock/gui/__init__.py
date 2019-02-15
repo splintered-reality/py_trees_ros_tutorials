@@ -14,3 +14,5 @@ Generated gui modules for the mock robot.
 ##############################################################################
 
 from . import main_window
+from . import configuration_group_box
+from . import dashboard_group_box

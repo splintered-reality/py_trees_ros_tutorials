@@ -35,18 +35,14 @@ def generate_launch_description():
             package='py_trees_ros_tutorials', node_executable='mock-dashboard', output='screen',
             node_name='dashboard')
     )
-    launch_description.add_action(
-        launch_ros.actions.Node(
-            package='py_trees_ros_tutorials', node_executable='mock-led-strip',  output='screen',  # screen is awkward, it's after the fact
-            node_name='led_strip')
-    )
-    print("Dude")
+    for node_name in ['led_strip', 'battery']:
+        node_executable = "mock-{}".format(node_name.replace('_', '-'))
+        launch_description.add_action(
+            launch_ros.actions.Node(
+                package='py_trees_ros_tutorials',
+                node_name=node_name,
+                node_executable=node_executable,
+                output='screen'  # screen is awkward, it's after the fact
+            )
+        )
     return launch_description
-#     return launch.LaunchDescription([
-#         launch_ros.actions.Node(
-#             package='py_trees_ros_tutorials', node_executable='mock-dashboard', output='screen',
-#             node_name='dashboard'),
-#         launch_ros.actions.Node(
-#             package='py_trees_ros_tutorials', node_executable='mock-led-strip',  output='screen',  # screen is awkward, it's after the fact
-#             node_name='led_strip'),
-#     ])

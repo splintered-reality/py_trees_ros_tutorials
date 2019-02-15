@@ -15,28 +15,25 @@ Launch a qt dashboard for the tutorials.
 # Imports
 ##############################################################################
 
-import os
 import PyQt5.QtWidgets as qt_widgets
-import PyQt5.uic as qt_ui
+
+from . import configuration_group_box_ui
 
 ##############################################################################
 # Helpers
 ##############################################################################
 
 
-def resources_directory():
-    return os.path.dirname(__file__)
-
-
-class ReconfigureGroupBox(qt_widgets.QGroupBox):
+class ConfigurationGroupBox(qt_widgets.QGroupBox):
     """
     Convenience class that Designer can use to promote
     elements for layouts in applications.
     """
     def __init__(self, parent):
         super().__init__(parent)
-        (Ui_ReconfigureGroupBox, _) = qt_ui.loadUiType(
-            os.path.join(resources_directory(), 'reconfigure_group_box.ui')
-        )
-        self.ui = Ui_ReconfigureGroupBox()
+        self.ui = configuration_group_box_ui.Ui_ConfigurationGroupBox()
         self.ui.setupUi(self)
+
+    def set_battery_percentage(self, percentage):
+        print("Battery Percentage -> Ui {}".format(percentage))
+        self.ui.battery_percentage_slider.setValue(int(percentage))

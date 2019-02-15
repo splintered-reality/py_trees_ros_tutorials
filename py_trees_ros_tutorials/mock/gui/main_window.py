@@ -1,49 +1,38 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'main_window.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# License: BSD
+#   https://raw.githubusercontent.com/stonier/py_trees/devel/LICENSE
 #
-# WARNING! All changes made in this file will be lost!
+##############################################################################
+# Documentation
+##############################################################################
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+"""
+Launch a qt dashboard for the tutorials.
+"""
+##############################################################################
+# Imports
+##############################################################################
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(551, 356)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/tuxrobot.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        MainWindow.setWindowIcon(icon)
-        self.central_layout = QtWidgets.QWidget(MainWindow)
-        self.central_layout.setObjectName("central_layout")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.central_layout)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.dashboard_group_box = DashboardGroupBox(self.central_layout)
-        self.dashboard_group_box.setTitle("Dashboard")
-        self.dashboard_group_box.setObjectName("dashboard_group_box")
-        self.horizontalLayout.addWidget(self.dashboard_group_box)
-        self.reconfigure_group_box = ReconfigureGroupBox(self.central_layout)
-        self.reconfigure_group_box.setObjectName("reconfigure_group_box")
-        self.horizontalLayout.addWidget(self.reconfigure_group_box)
-        MainWindow.setCentralWidget(self.central_layout)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 551, 35))
-        self.menubar.setDefaultUp(False)
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+import PyQt5.QtCore as qt_core
+import PyQt5.QtWidgets as qt_widgets
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+from . import main_window_ui
 
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Robot Mock"))
-        self.reconfigure_group_box.setTitle(_translate("MainWindow", "Dynamic Reconfigure"))
+##############################################################################
+# Helpers
+##############################################################################
 
-from py_trees_ros_tutorials.mock.gui.dashboard_group_box import DashboardGroupBox
-from py_trees_ros_tutorials.mock.gui.reconfigure_group_box import ReconfigureGroupBox
-from . import main_window_rc
+
+class MainWindow(qt_widgets.QMainWindow):
+
+    request_shutdown = qt_core.pyqtSignal(name="requestShutdown")
+
+    def __init__(self):
+        super().__init__()
+        self.ui = main_window_ui.Ui_MainWindow()
+        self.ui.setupUi(self)
+
+    def closeEvent(self, unused_event):
+        self.request_shutdown.emit()

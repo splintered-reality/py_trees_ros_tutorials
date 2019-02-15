@@ -15,19 +15,15 @@ Launch a qt dashboard for the tutorials.
 # Imports
 ##############################################################################
 
-import os
 import PyQt5.QtCore as qt_core
 import PyQt5.QtWidgets as qt_widgets
-import PyQt5.uic as qt_ui
 import threading
+
+from . import dashboard_group_box_ui
 
 ##############################################################################
 # Helpers
 ##############################################################################
-
-
-def resources_directory():
-    return os.path.dirname(__file__)
 
 
 class DashboardGroupBox(qt_widgets.QGroupBox):
@@ -37,10 +33,7 @@ class DashboardGroupBox(qt_widgets.QGroupBox):
     """
     def __init__(self, parent):
         super(DashboardGroupBox, self).__init__(parent)
-        (Ui_DashboardGroupBox, _) = qt_ui.loadUiType(
-            os.path.join(resources_directory(), 'dashboard_group_box.ui')
-        )
-        self.ui = Ui_DashboardGroupBox()
+        self.ui = dashboard_group_box_ui.Ui_DashboardGroupBox()
         self.ui.setupUi(self)
         self.stylesheets = {
             "scan_push_button": self.ui.scan_push_button.styleSheet(),

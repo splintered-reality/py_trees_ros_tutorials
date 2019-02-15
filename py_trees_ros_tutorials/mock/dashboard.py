@@ -16,7 +16,6 @@ Launch a qt dashboard for the tutorials.
 ##############################################################################
 
 import functools
-import os
 import py_trees_ros
 import rclpy
 import signal
@@ -25,9 +24,8 @@ import std_msgs.msg as std_msgs
 import sys
 import threading
 
-import PyQt5.QtWidgets as qt_widgets
 import PyQt5.QtCore as qt_core
-# import PyQt5.uic as qt_ui
+import PyQt5.QtWidgets as qt_widgets
 
 # To use generated files instead of loading ui's directly
 from . import gui
@@ -37,36 +35,10 @@ from . import gui
 ##############################################################################
 
 
-def resources_directory():
-    return os.path.join(os.path.dirname(__file__), 'gui')
-
-
-class MainWindow(qt_widgets.QMainWindow):
-
-    request_shutdown = qt_core.pyqtSignal(name="requestShutdown")
-
-    def __init__(self):
-        super().__init__()
-
-        # Use generated files - bugfree when using promotions & resources
-        self.ui = gui.main_window.Ui_MainWindow()
-
-        # Use ui files directly - pyqt5 has bugs for promotions & resources
-#         (Ui_MainWindow, _) = qt_ui.loadUiType(
-#             os.path.join(resources_directory(), 'main_window.ui'),
-#             from_imports=True  # make sure to use from . import <my_resource_file>
-#         )
-#         self.ui = Ui_MainWindow()
-
-        self.ui.setupUi(self)
-
-    def closeEvent(self, unused_event):
-        self.request_shutdown.emit()
-
-
 class Backend(qt_core.QObject):
 
     led_colour_changed = qt_core.pyqtSignal(str, name="ledColourChanged")
+    battery_percentage_changed = qt_core.pyqtSignal(float, name="batteryPercentageChanged")
 
     def __init__(self, dashboard_group_box):
         super().__init__()
@@ -104,7 +76,7 @@ class Backend(qt_core.QObject):
             [
                 ("report", "/tree/report", std_msgs.String, latched, self.reality_report_callback),
                 ("led_strip", "/led_strip/display", std_msgs.String, latched, self.led_strip_display_callback),
-                ("battery_state", "/battery/state", sensor_msgs.BatteryState, unlatched, self.batter_state_callback)
+                ("battery_state", "/battery/state", sensor_msgs.BatteryState, unlatched, self.battery_state_callback)
             ]
         )
 
@@ -148,7 +120,12 @@ class Backend(qt_core.QObject):
         self.led_colour_changed.emit(colour)
 
     def battery_state_callback(self, msg):
+        """
+        Args:
+            msg (:class:`sensor_msgs.msg.BatteryState`): battery state
+        """
         print("Got callback")
+        self.battery_percentage_changed.emit(msg.percentage)
 
 
 ##############################################################################
@@ -164,12 +141,15 @@ def main():
 
     # the players
     app = qt_widgets.QApplication(sys.argv)
-    main_window = MainWindow()
+    main_window = gui.main_window.MainWindow()
     backend = Backend(main_window.ui.dashboard_group_box)
 
     # sigslots
     backend.led_colour_changed.connect(
         main_window.ui.dashboard_group_box.set_led_strip_colour
+    )
+    backend.battery_percentage_changed.connect(
+        main_window.ui.configuration_group_box.set_battery_percentage
     )
     main_window.request_shutdown.connect(
         backend.shutdown_requested_callback
