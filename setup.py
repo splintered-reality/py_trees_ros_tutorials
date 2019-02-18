@@ -1,15 +1,29 @@
 #!/usr/bin/env python
 
-import os
-
 from setuptools import find_packages, setup
 
 package_name = 'py_trees_ros_tutorials'
 
-install_requires = [] if os.environ.get('AMENT_PREFIX_PATH') else [
+install_requires = [
     # build
     'setuptools',
     # runtime
+    #  - can only add pure python package dependencies here
+    #  - runtime scripts will fail if not found
+    #      (so some utility exists to duplicate package.xml <exec_depend> here)
+    #  - doesn't cover ros2 python packages installed by ament_cmake
+    #    - though presumably this could be fixed
+    'launch',
+    'launch_ros',
+    'py_trees',
+    # 'py_trees_msgs',
+    # 'rclpy',
+    'ros2launch',
+    'ros2param',
+    'ros2run',
+    'ros2service',
+    'ros2topic',
+    # 'std_msgs'
 ]
 
 setup(
@@ -19,11 +33,11 @@ setup(
     data_files=[
         ('share/' + package_name, ['package.xml']),
         # launchers
-        ('share/' + package_name + '/launch',
-         [
-             'launch/mock_robot.launch.py',
-         ]
-         ),
+        # ('share/' + package_name + '/launch',
+        #  [
+        #      'launch/mock_robot.launch.py',
+        #  ]
+        #  ),
         # global scripts
         #   note: package specific scripts use the entry_points
         #   configured by setup.cfg
@@ -67,6 +81,8 @@ setup(
              'mock-battery = py_trees_ros_tutorials.mock.battery:main',
              'mock-dashboard = py_trees_ros_tutorials.mock.dashboard:main',
              'mock-led-strip = py_trees_ros_tutorials.mock.led_strip:main',
+             # Standalone launcher scripts
+             'launch-mock-robot = py_trees_ros_tutorials.mock.launch:main',
          ],
      },
 )

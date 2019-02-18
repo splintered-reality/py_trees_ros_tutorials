@@ -1,9 +1,9 @@
 eclipse.preferences.version=1
-encoding//launch/mock_robot.launch.py=utf-8
 encoding//py_trees_ros_tutorials/mock/battery.py=utf-8
 encoding//py_trees_ros_tutorials/mock/dashboard.py=utf-8
 encoding//py_trees_ros_tutorials/mock/gui/configuration_group_box.py=utf-8
 encoding//py_trees_ros_tutorials/mock/gui/configuration_group_box_ui.py=utf-8
 encoding//py_trees_ros_tutorials/mock/gui/dashboard_group_box.py=utf-8
 encoding//py_trees_ros_tutorials/mock/gui/main_window.py=utf-8
+encoding//py_trees_ros_tutorials/mock/launch.py=utf-8
 encoding//py_trees_ros_tutorials/mock/led_strip.py=utf-8
