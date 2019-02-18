@@ -7,7 +7,6 @@
 ##############################################################################
 # Documentation
 ##############################################################################
-
 """
 Launch a qt dashboard for the tutorials.
 """
@@ -39,6 +38,7 @@ class Backend(qt_core.QObject):
 
     led_colour_changed = qt_core.pyqtSignal(str, name="ledColourChanged")
     battery_percentage_changed = qt_core.pyqtSignal(float, name="batteryPercentageChanged")
+    battery_charging_status_changed = qt_core.pyqtSignal(float, name="batteryChargingStatusChanged")
 
     def __init__(self, dashboard_group_box):
         super().__init__()
@@ -47,6 +47,7 @@ class Backend(qt_core.QObject):
         self.node = rclpy.create_node("dashboard")
 
         self.shutdown_requested = False
+        self.last_battery_charging_status = None
 
         not_latched = False  # latched = True
         self.publishers = py_trees_ros.utilities.Publishers(
@@ -124,8 +125,22 @@ class Backend(qt_core.QObject):
         Args:
             msg (:class:`sensor_msgs.msg.BatteryState`): battery state
         """
-        print("Got callback")
         self.battery_percentage_changed.emit(msg.percentage)
+        if msg.power_supply_status == sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_DISCHARGING:
+            charging = False
+        else:
+            charging = True
+        if charging != self.last_battery_charging_status:
+            self.battery_charging_status_changed.emit(charging)
+        self.last_battery_charging_status = charging
+
+    def update_battery_percentage(self, percentage):
+        # TODO: set the parameter
+        self.node.get_logger().info("received update_battery_percentage signal")
+
+    def update_battery_charging_status(self, charging):
+        # TODO: set the parameter
+        self.node.get_logger().info("received update_battery_charging_status signal")
 
 
 ##############################################################################
@@ -150,6 +165,15 @@ def main():
     )
     backend.battery_percentage_changed.connect(
         main_window.ui.configuration_group_box.set_battery_percentage
+    )
+    backend.battery_charging_status_changed.connect(
+        main_window.ui.configuration_group_box.set_charging_status
+    )
+    main_window.ui.configuration_group_box.change_battery_percentage.connect(
+        backend.update_battery_percentage
+    )
+    main_window.ui.configuration_group_box.change_battery_charging_status.connect(
+        backend.update_battery_charging_status
     )
     main_window.request_shutdown.connect(
         backend.shutdown_requested_callback
