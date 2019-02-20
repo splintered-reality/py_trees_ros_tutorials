@@ -16,6 +16,8 @@ Launch a qt dashboard for the tutorials.
 
 import functools
 import py_trees_ros
+import rcl_interfaces.msg as rcl_msgs
+import rcl_interfaces.srv as rcl_srvs
 import rclpy
 import signal
 import sensor_msgs.msg as sensor_msgs
@@ -81,18 +83,31 @@ class Backend(qt_core.QObject):
             ]
         )
 
+        # dynamic parameter clients
+        self.battery_parameters_client = self.node.create_client(
+            rcl_srvs.SetParameters,
+            '/battery/set_parameters'
+        )
+
     def spin(self):
-        try:
-            while rclpy.ok() and not self.shutdown_requested:
-                rclpy.spin_once(self.node, timeout_sec=0.1)
-        except KeyboardInterrupt:
-            pass
+        initialising = False
+        while rclpy.ok() and not self.shutdown_requested and not initialising:
+            if self.battery_parameters_client.wait_for_service(timeout_sec=0.1):
+                initialising = True
+                self.node.get_logger().info("initialised")
+            else:
+                self.node.get_logger().info("service '/battery/set_parameters' unavailable, waiting...")
+        while rclpy.ok() and not self.shutdown_requested:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
+            self.node.get_logger().info("spinning")
         self.node.destroy_node()
+        self.node.get_logger().info("exiting spin")
 
     def publish_button_message(self, publisher):
         publisher.publish(std_msgs.Empty())
 
-    def shutdown_requested_callback(self):
+    def terminate_ros_spinner(self):
+        self.node.get_logger().info("shutdown requested")
         self.shutdown_requested = True
 
     # TODO: shift to the ui
@@ -140,13 +155,34 @@ class Backend(qt_core.QObject):
 
     def update_battery_charging_status(self, charging):
         # TODO: set the parameter
-        self.node.get_logger().info("received update_battery_charging_status signal")
+        self.node.get_logger().info("received update_battery_charging_status signald")
+        self.node.get_logger().info("again")
+
+        request = rcl_srvs.SetParameters.Request()
+        self.node.get_logger().info("create parameter")
+
+        parameter = rcl_msgs.Parameter()
+        parameter.name = "battery/charging"
+        parameter.value.type = rcl_msgs.ParameterType.PARAMETER_BOOL
+        parameter.value.bool_value = True
+
+        self.node.get_logger().info("created")
+        request.parameters.append(parameter)
+        self.node.get_logger().info('calling')
+        future = self.battery_parameters_client.call_async(request)
+        self.node.get_logger().info("future.result %s" % future.result())
+        self.node.get_logger().info('spinning until complete')
+        rclpy.spin_until_future_complete(self.node, future)
+        if future.result() is not None:
+            self.node.get_logger().info('result of set charging status parameter: %s' % future.result())
+        else:
+            self.node.get_logger().error('exception while calling service: %r' % future.exception())
+        self.node.get_logger().info('done')
 
 
 ##############################################################################
 # Main
 ##############################################################################
-
 
 def main():
     # picks up sys.argv automagically internally
@@ -176,7 +212,13 @@ def main():
         backend.update_battery_charging_status
     )
     main_window.request_shutdown.connect(
-        backend.shutdown_requested_callback
+        backend.terminate_ros_spinner
+    )
+
+    # sig interrupt handling
+    signal.signal(
+        signal.SIGINT,
+        lambda unused_signal, unused_frame: main_window.close()
     )
 
     # qt ... up
@@ -186,6 +228,9 @@ def main():
     result = app.exec_()
 
     # shutdown
+    backend.node.get_logger().info("joining")
     ros_thread.join()
+    backend.node.get_logger().info("joined")
     rclpy.shutdown()
+    backend.node.get_logger().info("rclpy shutdown")
     sys.exit(result)
