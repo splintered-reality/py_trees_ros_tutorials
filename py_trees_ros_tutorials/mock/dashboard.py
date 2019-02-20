@@ -162,7 +162,7 @@ class Backend(qt_core.QObject):
         self.node.get_logger().info("create parameter")
 
         parameter = rcl_msgs.Parameter()
-        parameter.name = "battery/charging"
+        parameter.name = "charging"
         parameter.value.type = rcl_msgs.ParameterType.PARAMETER_BOOL
         parameter.value.bool_value = True
 
@@ -171,13 +171,13 @@ class Backend(qt_core.QObject):
         self.node.get_logger().info('calling')
         future = self.battery_parameters_client.call_async(request)
         self.node.get_logger().info("future.result %s" % future.result())
-        self.node.get_logger().info('spinning until complete')
-        rclpy.spin_until_future_complete(self.node, future)
-        if future.result() is not None:
-            self.node.get_logger().info('result of set charging status parameter: %s' % future.result())
-        else:
-            self.node.get_logger().error('exception while calling service: %r' % future.exception())
-        self.node.get_logger().info('done')
+#         self.node.get_logger().info('spinning until complete')
+#         rclpy.spin_until_future_complete(self.node, future, executor=rclpy.executors.SingleThreadedExecutor())
+#         if future.result() is not None:
+#             self.node.get_logger().info('result of set charging status parameter: %s' % future.result())
+#         else:
+#             self.node.get_logger().error('exception while calling service: %r' % future.exception())
+#         self.node.get_logger().info('done')
 
 
 ##############################################################################
