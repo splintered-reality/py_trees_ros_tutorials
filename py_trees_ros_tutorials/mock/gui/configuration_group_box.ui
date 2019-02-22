@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>reconfigure_group_box</class>
- <widget class="QGroupBox" name="reconfigure_group_box">
+ <class>ConfigurationGroupBox</class>
+ <widget class="QGroupBox" name="ConfigurationGroupBox">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -14,7 +14,7 @@
    <string>GroupBox</string>
   </property>
   <property name="title">
-   <string>Dynamic Reconfigure</string>
+   <string>Configuration</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
@@ -24,14 +24,20 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="battery_charging_check_box">
         <property name="text">
          <string>Charging</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QSlider" name="battery_slider">
+       <widget class="QSlider" name="battery_percentage_slider">
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="sliderPosition">
+         <number>50</number>
+        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>

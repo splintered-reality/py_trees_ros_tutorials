@@ -27,9 +27,9 @@
      </widget>
     </item>
     <item>
-     <widget class="ReconfigureGroupBox" name="reconfigure_group_box">
+     <widget class="ConfigurationGroupBox" name="configuration_group_box">
       <property name="title">
-       <string>Dynamic Reconfigure</string>
+       <string>Configuration</string>
       </property>
      </widget>
     </item>
@@ -41,7 +41,7 @@
      <x>0</x>
      <y>0</y>
      <width>551</width>
-     <height>35</height>
+     <height>29</height>
     </rect>
    </property>
    <property name="defaultUp">
@@ -58,9 +58,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ReconfigureGroupBox</class>
+   <class>ConfigurationGroupBox</class>
    <extends>QGroupBox</extends>
-   <header location="global">py_trees_ros_tutorials.mock.gui.reconfigure_group_box</header>
+   <header location="global">py_trees_ros_tutorials.mock.gui.configuration_group_box</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

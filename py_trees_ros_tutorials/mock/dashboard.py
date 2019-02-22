@@ -7,7 +7,6 @@
 ##############################################################################
 # Documentation
 ##############################################################################
-
 """
 Launch a qt dashboard for the tutorials.
 """
@@ -16,17 +15,18 @@ Launch a qt dashboard for the tutorials.
 ##############################################################################
 
 import functools
-import os
 import py_trees_ros
+import rcl_interfaces.msg as rcl_msgs
+import rcl_interfaces.srv as rcl_srvs
 import rclpy
 import signal
+import sensor_msgs.msg as sensor_msgs
 import std_msgs.msg as std_msgs
 import sys
 import threading
 
-import PyQt5.QtWidgets as qt_widgets
 import PyQt5.QtCore as qt_core
-# import PyQt5.uic as qt_ui
+import PyQt5.QtWidgets as qt_widgets
 
 # To use generated files instead of loading ui's directly
 from . import gui
@@ -36,36 +36,11 @@ from . import gui
 ##############################################################################
 
 
-def resources_directory():
-    return os.path.join(os.path.dirname(__file__), 'gui')
-
-
-class MainWindow(qt_widgets.QMainWindow):
-
-    request_shutdown = qt_core.pyqtSignal(name="requestShutdown")
-
-    def __init__(self):
-        super().__init__()
-
-        # Use generated files - bugfree when using promotions & resources
-        self.ui = gui.main_window.Ui_MainWindow()
-
-        # Use ui files directly - pyqt5 has bugs for promotions & resources
-#         (Ui_MainWindow, _) = qt_ui.loadUiType(
-#             os.path.join(resources_directory(), 'main_window.ui'),
-#             from_imports=True  # make sure to use from . import <my_resource_file>
-#         )
-#         self.ui = Ui_MainWindow()
-
-        self.ui.setupUi(self)
-
-    def closeEvent(self, unused_event):
-        self.request_shutdown.emit()
-
-
 class Backend(qt_core.QObject):
 
     led_colour_changed = qt_core.pyqtSignal(str, name="ledColourChanged")
+    battery_percentage_changed = qt_core.pyqtSignal(float, name="batteryPercentageChanged")
+    battery_charging_status_changed = qt_core.pyqtSignal(float, name="batteryChargingStatusChanged")
 
     def __init__(self, dashboard_group_box):
         super().__init__()
@@ -74,6 +49,7 @@ class Backend(qt_core.QObject):
         self.node = rclpy.create_node("dashboard")
 
         self.shutdown_requested = False
+        self.last_battery_charging_status = None
 
         not_latched = False  # latched = True
         self.publishers = py_trees_ros.utilities.Publishers(
@@ -97,27 +73,39 @@ class Backend(qt_core.QObject):
         )
 
         latched = True
-        # unlatched = False
+        unlatched = False
         self.subscribers = py_trees_ros.utilities.Subscribers(
             self.node,
             [
                 ("report", "/tree/report", std_msgs.String, latched, self.reality_report_callback),
-                ("led_strip", "/led_strip/display", std_msgs.String, latched, self.led_strip_display_callback)
+                ("led_strip", "/led_strip/display", std_msgs.String, latched, self.led_strip_display_callback),
+                ("battery_state", "/battery/state", sensor_msgs.BatteryState, unlatched, self.battery_state_callback)
             ]
         )
 
+        # dynamic parameter clients
+        self.battery_parameters_client = self.node.create_client(
+            rcl_srvs.SetParameters,
+            '/battery/set_parameters'
+        )
+
     def spin(self):
-        try:
-            while rclpy.ok() and not self.shutdown_requested:
-                rclpy.spin_once(self.node, timeout_sec=0.1)
-        except KeyboardInterrupt:
-            pass
+        initialising = False
+        while rclpy.ok() and not self.shutdown_requested and not initialising:
+            if self.battery_parameters_client.wait_for_service(timeout_sec=0.1):
+                initialising = True
+                self.node.get_logger().info("initialised")
+            else:
+                self.node.get_logger().info("service '/battery/set_parameters' unavailable, waiting...")
+        while rclpy.ok() and not self.shutdown_requested:
+            rclpy.spin_once(self.node, timeout_sec=0.1)
         self.node.destroy_node()
 
     def publish_button_message(self, publisher):
         publisher.publish(std_msgs.Empty())
 
-    def shutdown_requested_callback(self):
+    def terminate_ros_spinner(self):
+        self.node.get_logger().info("shutdown requested")
         self.shutdown_requested = True
 
     # TODO: shift to the ui
@@ -136,7 +124,6 @@ class Backend(qt_core.QObject):
             self.ui.ui.cancel_push_button.setEnabled(False)
 
     def led_strip_display_callback(self, msg):
-        print("Got callback")
         colour = "grey"
         if not msg.data:
             self.node.get_logger().info("no colour specified, setting '{}'".format(colour))
@@ -146,11 +133,52 @@ class Backend(qt_core.QObject):
             colour = msg.data
         self.led_colour_changed.emit(colour)
 
+    def battery_state_callback(self, msg):
+        """
+        Args:
+            msg (:class:`sensor_msgs.msg.BatteryState`): battery state
+        """
+        self.battery_percentage_changed.emit(msg.percentage)
+        if msg.power_supply_status == sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_DISCHARGING:
+            charging = False
+        else:
+            charging = True
+        if charging != self.last_battery_charging_status:
+            self.battery_charging_status_changed.emit(charging)
+        self.last_battery_charging_status = charging
+
+    def update_battery_percentage(self, percentage):
+        request = rcl_srvs.SetParameters.Request()
+        parameter = rcl_msgs.Parameter()
+        parameter.name = "charging_percentage"
+        parameter.value.type = rcl_msgs.ParameterType.PARAMETER_DOUBLE
+        parameter.value.double_value = percentage
+        request.parameters.append(parameter)
+        unused_future = self.battery_parameters_client.call_async(request)
+
+    def update_battery_charging_status(self, charging):
+        request = rcl_srvs.SetParameters.Request()
+        parameter = rcl_msgs.Parameter()
+        parameter.name = "charging"
+        parameter.value.type = rcl_msgs.ParameterType.PARAMETER_BOOL
+        parameter.value.bool_value = True
+        request.parameters.append(parameter)
+        unused_future = self.battery_parameters_client.call_async(request)
+
+        # no need to check for the response, though do note that
+        # if you do, you're probably in the wrong thread if you're
+        # checking for futures
+        #
+        # rclpy.spin_until_future_complete(self.node, future, executor=rclpy.executors.SingleThreadedExecutor())
+        # if future.result() is not None:
+        #     self.node.get_logger().info('result of set charging status parameter: %s' % future.result())
+        # else:
+        #     self.node.get_logger().error('exception while calling service: %r' % future.exception())
+
 
 ##############################################################################
 # Main
 ##############################################################################
-
 
 def main():
     # picks up sys.argv automagically internally
@@ -160,15 +188,33 @@ def main():
 
     # the players
     app = qt_widgets.QApplication(sys.argv)
-    main_window = MainWindow()
+    main_window = gui.main_window.MainWindow()
     backend = Backend(main_window.ui.dashboard_group_box)
 
     # sigslots
     backend.led_colour_changed.connect(
         main_window.ui.dashboard_group_box.set_led_strip_colour
     )
+    backend.battery_percentage_changed.connect(
+        main_window.ui.configuration_group_box.set_battery_percentage
+    )
+    backend.battery_charging_status_changed.connect(
+        main_window.ui.configuration_group_box.set_charging_status
+    )
+    main_window.ui.configuration_group_box.change_battery_percentage.connect(
+        backend.update_battery_percentage
+    )
+    main_window.ui.configuration_group_box.change_battery_charging_status.connect(
+        backend.update_battery_charging_status
+    )
     main_window.request_shutdown.connect(
-        backend.shutdown_requested_callback
+        backend.terminate_ros_spinner
+    )
+
+    # sig interrupt handling
+    signal.signal(
+        signal.SIGINT,
+        lambda unused_signal, unused_frame: main_window.close()
     )
 
     # qt ... up
@@ -178,6 +224,9 @@ def main():
     result = app.exec_()
 
     # shutdown
+    backend.node.get_logger().info("joining")
     ros_thread.join()
+    backend.node.get_logger().info("joined")
     rclpy.shutdown()
+    backend.node.get_logger().info("rclpy shutdown")
     sys.exit(result)

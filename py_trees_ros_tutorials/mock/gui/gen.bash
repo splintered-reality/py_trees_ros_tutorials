@@ -66,15 +66,48 @@ install_package ()
   return 0
 }
 
+generate_ui ()
+{
+  NAME=$1
+pyuic5 --from-imports -o ${NAME}_ui.py ${NAME}.ui
+  if [ $? -ne 0 ]; then
+    pretty_error "  $(padded_message ${NAME} "failed")"
+    return 1
+  fi
+  pretty_print "  $(padded_message ${NAME} "generated")"
+  return 0 
+}
+
+generate_qrc ()
+{
+  NAME=$1
+pyrcc5 -o ${NAME}_rc.py ${NAME}.qrc
+  if [ $? -ne 0 ]; then
+    pretty_error "  $(padded_message ${NAME} "failed")"
+    return 1
+  fi
+  pretty_print "  $(padded_message ${NAME} "generated")"
+  return 0 
+}
+
 ##############################################################################
 
+echo ""
+
+echo -e "${CYAN}Dependencies${RESET}"
 install_package pyqt5-dev-tools || return
 
-# Uncomment to gen & import instead of load ui's
-pyuic5 --from-imports -o main_window.py main_window.ui
+echo ""
 
-# No way of loading resources
-pyrcc5 main_window.qrc -o main_window_rc.py
+echo -e "${CYAN}Generating UIs${RESET}"
+generate_ui configuration_group_box
+generate_ui dashboard_group_box
+generate_ui main_window
+
+echo ""
+
+echo -e "${CYAN}Generating QRCs${RESET}"
+generate_qrc main_window
 
 echo ""
 echo "I'm grooty, you should be too."
