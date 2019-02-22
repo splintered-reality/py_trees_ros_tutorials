@@ -99,9 +99,7 @@ class Backend(qt_core.QObject):
                 self.node.get_logger().info("service '/battery/set_parameters' unavailable, waiting...")
         while rclpy.ok() and not self.shutdown_requested:
             rclpy.spin_once(self.node, timeout_sec=0.1)
-            self.node.get_logger().info("spinning")
         self.node.destroy_node()
-        self.node.get_logger().info("exiting spin")
 
     def publish_button_message(self, publisher):
         publisher.publish(std_msgs.Empty())
@@ -150,34 +148,32 @@ class Backend(qt_core.QObject):
         self.last_battery_charging_status = charging
 
     def update_battery_percentage(self, percentage):
-        # TODO: set the parameter
-        self.node.get_logger().info("received update_battery_percentage signal")
+        request = rcl_srvs.SetParameters.Request()
+        parameter = rcl_msgs.Parameter()
+        parameter.name = "charging_percentage"
+        parameter.value.type = rcl_msgs.ParameterType.PARAMETER_DOUBLE
+        parameter.value.double_value = percentage
+        request.parameters.append(parameter)
+        unused_future = self.battery_parameters_client.call_async(request)
 
     def update_battery_charging_status(self, charging):
-        # TODO: set the parameter
-        self.node.get_logger().info("received update_battery_charging_status signald")
-        self.node.get_logger().info("again")
-
         request = rcl_srvs.SetParameters.Request()
-        self.node.get_logger().info("create parameter")
-
         parameter = rcl_msgs.Parameter()
         parameter.name = "charging"
         parameter.value.type = rcl_msgs.ParameterType.PARAMETER_BOOL
         parameter.value.bool_value = True
-
-        self.node.get_logger().info("created")
         request.parameters.append(parameter)
-        self.node.get_logger().info('calling')
-        future = self.battery_parameters_client.call_async(request)
-        self.node.get_logger().info("future.result %s" % future.result())
-#         self.node.get_logger().info('spinning until complete')
-#         rclpy.spin_until_future_complete(self.node, future, executor=rclpy.executors.SingleThreadedExecutor())
-#         if future.result() is not None:
-#             self.node.get_logger().info('result of set charging status parameter: %s' % future.result())
-#         else:
-#             self.node.get_logger().error('exception while calling service: %r' % future.exception())
-#         self.node.get_logger().info('done')
+        unused_future = self.battery_parameters_client.call_async(request)
+
+        # no need to check for the response, though do note that
+        # if you do, you're probably in the wrong thread if you're
+        # checking for futures
+        #
+        # rclpy.spin_until_future_complete(self.node, future, executor=rclpy.executors.SingleThreadedExecutor())
+        # if future.result() is not None:
+        #     self.node.get_logger().info('result of set charging status parameter: %s' % future.result())
+        # else:
+        #     self.node.get_logger().error('exception while calling service: %r' % future.exception())
 
 
 ##############################################################################
