@@ -84,19 +84,26 @@ class Backend(qt_core.QObject):
         )
 
         # dynamic parameter clients
-        self.battery_parameters_client = self.node.create_client(
-            rcl_srvs.SetParameters,
-            '/battery/set_parameters'
-        )
+        self.parameter_clients = {
+            'battery': self.node.create_client(
+                rcl_srvs.SetParameters,
+                '/battery/set_parameters'
+            ),
+            'safety_sensors': self.node.create_client(
+                rcl_srvs.SetParameters,
+                '/safety_sensors/set_parameters'
+            )
+        }
 
     def spin(self):
-        initialising = False
-        while rclpy.ok() and not self.shutdown_requested and not initialising:
-            if self.battery_parameters_client.wait_for_service(timeout_sec=0.1):
-                initialising = True
-                self.node.get_logger().info("initialised")
-            else:
-                self.node.get_logger().info("service '/battery/set_parameters' unavailable, waiting...")
+        initialised = {name: False for name in self.parameter_clients.keys()}
+        while rclpy.ok() and not self.shutdown_requested and not all(value for value in initialised.values()):
+            for name, client in self.parameter_clients.items():
+                if client.wait_for_service(timeout_sec=0.1):
+                    initialised[name] = True
+                    self.node.get_logger().info("'{}' initialised".format(name))
+                else:
+                    self.node.get_logger().info("service '/{}/set_parameters' unavailable, waiting...".format(name))
         while rclpy.ok() and not self.shutdown_requested:
             rclpy.spin_once(self.node, timeout_sec=0.1)
         self.node.destroy_node()
@@ -154,16 +161,16 @@ class Backend(qt_core.QObject):
         parameter.value.type = rcl_msgs.ParameterType.PARAMETER_DOUBLE
         parameter.value.double_value = percentage
         request.parameters.append(parameter)
-        unused_future = self.battery_parameters_client.call_async(request)
+        unused_future = self.parameter_clients['battery'].call_async(request)
 
     def update_battery_charging_status(self, charging):
         request = rcl_srvs.SetParameters.Request()
         parameter = rcl_msgs.Parameter()
         parameter.name = "charging"
         parameter.value.type = rcl_msgs.ParameterType.PARAMETER_BOOL
-        parameter.value.bool_value = True
+        parameter.value.bool_value = charging
         request.parameters.append(parameter)
-        unused_future = self.battery_parameters_client.call_async(request)
+        unused_future = self.parameter_clients['battery'].call_async(request)
 
         # no need to check for the response, though do note that
         # if you do, you're probably in the wrong thread if you're
@@ -174,6 +181,15 @@ class Backend(qt_core.QObject):
         #     self.node.get_logger().info('result of set charging status parameter: %s' % future.result())
         # else:
         #     self.node.get_logger().error('exception while calling service: %r' % future.exception())
+
+    def update_safety_sensors_enabled(self, enabled):
+        request = rcl_srvs.SetParameters.Request()
+        parameter = rcl_msgs.Parameter()
+        parameter.name = "enabled"
+        parameter.value.type = rcl_msgs.ParameterType.PARAMETER_BOOL
+        parameter.value.bool_value = enabled
+        request.parameters.append(parameter)
+        unused_future = self.parameter_clients['safety_sensors'].call_async(request)
 
 
 ##############################################################################
@@ -206,6 +222,9 @@ def main():
     )
     main_window.ui.configuration_group_box.change_battery_charging_status.connect(
         backend.update_battery_charging_status
+    )
+    main_window.ui.configuration_group_box.change_safety_sensors_enabled.connect(
+        backend.update_safety_sensors_enabled
     )
     main_window.request_shutdown.connect(
         backend.terminate_ros_spinner
