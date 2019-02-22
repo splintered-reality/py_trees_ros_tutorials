@@ -81,6 +81,7 @@ setup(
              'mock-battery = py_trees_ros_tutorials.mock.battery:main',
              'mock-dashboard = py_trees_ros_tutorials.mock.dashboard:main',
              'mock-led-strip = py_trees_ros_tutorials.mock.led_strip:main',
+             'mock-safety-sensors = py_trees_ros_tutorials.mock.safety_sensors:main',
              # Standalone launcher scripts
              'launch-mock-robot = py_trees_ros_tutorials.mock.launch:main',
          ],

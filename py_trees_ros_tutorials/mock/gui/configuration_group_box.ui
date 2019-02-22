@@ -63,11 +63,18 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="safety_sensors_group_box">
      <property name="title">
-      <string>Other</string>
+      <string>Safety Sensors</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QCheckBox" name="safety_sensors_enabled_check_box">
+        <property name="text">
+         <string>Enabled</string>
+        </property>
+       </widget>
+      </item>
       <item>
        <spacer name="verticalSpacer_2">
         <property name="orientation">
