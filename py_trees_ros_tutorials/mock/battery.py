@@ -18,21 +18,18 @@ Mocks a battery provider.
 ##############################################################################
 
 import argparse
-# import dynamic_reconfigure.server
 import py_trees_ros
 import rclpy
 import rclpy.parameter
 import sensor_msgs.msg as sensor_msgs
 import sys
 
-# from py_trees_msgs.cfg import BatteryConfig
-
 ##############################################################################
 # Class
 ##############################################################################
 
 
-class Battery:
+class Battery(object):
     """
     Mocks the processed battery state for a robot (/battery/sensor_state)
     as well as a possible charging source (/battery/charging_source).
@@ -53,7 +50,8 @@ class Battery:
 
           * how fast it charges/discharges
 
-    On startup it is in a DISCHARGING state. Use ``rqt_reconfigure`` to change the battery state.
+    On startup it is in a DISCHARGING state. Use the ``dashboard`` to dynamically
+    reconfigure the parameters.
     """
     def __init__(self):
         # node
@@ -90,14 +88,6 @@ class Battery:
         self.battery.present = True
         self.battery.location = ""
         self.battery.serial_number = ""
-
-    def update_parameters(self, parameters):
-        """
-        Args:
-            parameters ([:class:`rclpy.parameters.Parameter`]): incoming configuration
-            level (:obj:`int`):
-        """
-        self.node.set_parameters(parameters)
 
     def spin(self):
         """
