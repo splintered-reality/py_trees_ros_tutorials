@@ -46,7 +46,23 @@ class ActionServer(object):
 
     Use the ``dashboard`` to dynamically reconfigure the parameters.
     """
-    def __init__(self, action_name, action_type, worker, goal_received_callback=None, duration=None):
+    def __init__(self,
+                 action_name,
+                 action_type,
+                 worker,
+                 goal_received_callback=None,
+                 duration=None):
+        self.node = rclpy.create_node(
+            action_name,
+            initial_parameters=[
+                rclpy.parameter.Parameter(
+                    'duration',
+                    rclpy.parameter.Parameter.Type.DOUBLE,
+                    5.0  # seconds
+                ),
+            ]
+        )
+
         self.worker = worker
         self.goal_received_callback = goal_received_callback
 #         self.action_server = actionlib.SimpleActionServer(action_name,
@@ -58,32 +74,16 @@ class ActionServer(object):
         self.title = action_name.replace('_', ' ').title()
         self.action = action_type()
 
-        # dynamic reconfigure
-        self.parameters = None
-        # note this instantiation will automatically trigger the callback, so
-        # self.parameters *will* get initialised
-        self.dynamic_reconfigure_server = dynamic_reconfigure.server.Server(
-            MockActionServerConfig,
-            self.dynamic_reconfigure_callback
-        )
-        # forcibly override the default/rosparam configured duration
-        if duration is not None:
-            self.dynamic_reconfigure_server.update_configuration({"duration": duration})
-
-    def dynamic_reconfigure_callback(self, config, unused_level):
+    def spin(self):
         """
-        Args:
-            config (:obj:`dynamic_reconfigure.encoding.Config`): incoming configuration
-            level (:obj:`int`):
+        Spin around, updating battery state and publishing the result.
         """
-        self.parameters = config
-        return config
-
-    def start(self):
-        """
-        Start the action server.
-        """
-        self.action_server.start()
+        # self.action_server.start()
+        try:
+            rclpy.spin(self.node)
+        except KeyboardInterrupt:
+            pass
+        self.node.destroy_node()
 
     def execute(self, goal):
         """

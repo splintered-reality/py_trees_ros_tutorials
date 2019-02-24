@@ -16,7 +16,7 @@ install_requires = [
     'launch',
     'launch_ros',
     'py_trees',
-    # 'py_trees_msgs',
+    # 'py_trees_ros_interfaces',
     # 'rclpy',
     'ros2launch',
     'ros2param',
