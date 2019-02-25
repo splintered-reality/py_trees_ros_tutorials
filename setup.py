@@ -78,11 +78,15 @@ setup(
     entry_points={
          'console_scripts': [
              # These are redirected to lib/<package_name> by setup.cfg
+             # Mocks
              'mock-battery = py_trees_ros_tutorials.mock.battery:main',
              'mock-dashboard = py_trees_ros_tutorials.mock.dashboard:main',
              'mock-led-strip = py_trees_ros_tutorials.mock.led_strip:main',
              'mock-safety-sensors = py_trees_ros_tutorials.mock.safety_sensors:main',
-             # Standalone launcher scripts
+             # Mock Tests
+             'mock-dock-client = py_trees_ros_tutorials.mock.action_clients:dock',
+             'mock-rotate-client = py_trees_ros_tutorials.mock.action_clients:rotate',
+             # Launchers (directly runnable)
              'launch-mock-robot = py_trees_ros_tutorials.mock.launch:main',
          ],
      },
