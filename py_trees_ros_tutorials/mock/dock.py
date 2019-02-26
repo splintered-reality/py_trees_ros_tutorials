@@ -34,7 +34,7 @@ class Dock(actions.GenericServer):
     """
     def __init__(self):
         super().__init__(
-            action_name="dock",
+            action_name="docking_controller",
             action_type_string="Dock",
             worker=self.worker,
             goal_received_callback=self.goal_received_callback,

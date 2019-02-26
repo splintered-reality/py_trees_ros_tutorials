@@ -18,9 +18,10 @@ Mocks a battery provider.
 ##############################################################################
 
 import action_msgs.msg as action_msgs  # GoalStatus
+import action_msgs.srv as action_srvs  # CancelGoal
 import py_trees_ros_interfaces.action as py_trees_actions  # Dock, Rotate
 import rclpy
-import rclpy.action  # ActionClient
+# import rclpy.action  # ActionClient
 
 ##############################################################################
 # Class
@@ -44,12 +45,33 @@ class ActionClient(object):
     def __init__(self,
                  node_name,
                  action_name,
-                 action_type):
+                 action_type_string):
         self.node = rclpy.create_node(node_name)
         self.action_name = action_name
-        self.action_type = action_type
-        self.action_client = rclpy.action.ActionClient(self.node, action_type, action_name)
-        # self._action_client = ActionClient(self, Fibonacci, 'fibonacci')
+        self.action_type = action_type_string
+        self.goal_type = getattr(
+            py_trees_actions,
+            action_type_string + "_Goal"
+        )
+        self.result_type = getattr(
+            py_trees_actions,
+            action_type_string + "_Result"
+        )
+        self.clients = {
+            "goal": self.node.create_client(
+                self.goal_type,
+                "docking_controller/goal"
+            ),
+            "result": self.node.create_client(
+                self.goal_type,
+                "docking_controller/result"
+            ),
+            "cancel": self.node.create_client(
+                action_srvs.CancelGoal,
+                "docking_controller/cancel"
+            )
+        }
+        # self.action_client = rclpy.action.ActionClient(self.node, action_type, action_name)
 
     def goal_response_callback(self, future):
         goal_handle = future.result()
@@ -76,13 +98,13 @@ class ActionClient(object):
         rclpy.shutdown()
 
     def send_goal(self):
-        self.node.get_logger().info('Waiting for action server...')
-        self._action_client.wait_for_server()
+        # self.node.get_logger().info('waiting for action server...')
+        # self._action_client.wait_for_server()
 
-        goal_msg = self.action_type.Goal()
+        goal_msg = self.goal_type()
         goal_msg.order = 10
 
-        self.node.get_logger().info('Sending goal request...')
+        self.node.get_logger().info('sending goal request...')
 
         self._send_goal_future = self._action_client.send_goal_async(
             goal_msg,
@@ -91,8 +113,16 @@ class ActionClient(object):
         self._send_goal_future.add_done_callback(self.goal_response_callback)
 
     def spin(self):
-        self.send_goal()
+        initialised = {name: False for name in self.clients.keys()}
         try:
+            while rclpy.ok() and not all(value for value in initialised.values()):
+                for name, client in self.clients.items():
+                    if client.wait_for_service(timeout_sec=0.1):
+                        initialised[name] = True
+                        self.node.get_logger().info("'{}' initialised".format(name))
+                    else:
+                        self.node.get_logger().info("service '' unavailable, waiting...".format(name))
+            # self.send_goal()
             rclpy.spin(self.node)
         except KeyboardInterrupt:
             pass
@@ -104,7 +134,7 @@ def dock(args=None):
     action_client = ActionClient(
         node_name="dock_client",
         action_name="dock",
-        action_type=py_trees_actions.Dock
+        action_type_string="Dock"  # py_trees_actions.Dock
         )
     action_client.spin()
 
@@ -114,6 +144,6 @@ def rotate(args=None):
     action_client = ActionClient(
         node_name="rotate_client",
         action_name="rotate",
-        action_type=py_trees_actions.Rotate
+        action_type_string="Rotate"  # py_trees_actions.Rotate
         )
     action_client.spin()
