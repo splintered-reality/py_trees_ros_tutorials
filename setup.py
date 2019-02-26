@@ -81,6 +81,7 @@ setup(
              # Mocks
              'mock-battery = py_trees_ros_tutorials.mock.battery:main',
              'mock-dashboard = py_trees_ros_tutorials.mock.dashboard:main',
+             'mock-docking-controller = py_trees_ros_tutorials.mock.dock:main',
              'mock-led-strip = py_trees_ros_tutorials.mock.led_strip:main',
              'mock-safety-sensors = py_trees_ros_tutorials.mock.safety_sensors:main',
              # Mock Tests
