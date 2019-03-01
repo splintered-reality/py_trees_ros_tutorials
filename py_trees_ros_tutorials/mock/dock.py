@@ -18,6 +18,7 @@ Mocks a docking controller
 ##############################################################################
 
 import argparse
+import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
 import sys
 
@@ -36,7 +37,7 @@ class Dock(actions.GenericServer):
         super().__init__(
             action_name="docking_controller",
             action_type_string="Dock",
-            worker=self.worker,
+            custom_execute_callback=self.custom_execute_callback,
             goal_received_callback=self.goal_received_callback,
             duration=2.0
         )
@@ -47,12 +48,16 @@ class Dock(actions.GenericServer):
         else:
             self.title = "UnDock"
 
-    def worker(self):
+    def custom_execute_callback(self):
         """
         Create some appropriate feedback.
         """
         # TODO: send some feedback message
-        # self.action.action_feedback = py_trees_msgs.DockFeedback(self.percent_completed)
+        self.feedback_publisher.publish(
+            py_trees_actions.Dock_Feedback(
+                percentage_completed=self.percent_completed
+            )
+        )
 
 
 def main():

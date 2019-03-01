@@ -18,9 +18,10 @@ Mocks an action server.
 ##############################################################################
 
 import action_msgs.srv as action_srvs
-import asyncio
 import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
+import rclpy.callback_groups
+import rclpy.executors
 import rclpy.parameter
 import rclpy.qos
 import time
@@ -52,7 +53,7 @@ class GenericServer(object):
     Args:
         action_name (:obj:`str`): name of the action server (e.g. move_base)
         action_type (:obj:`any`): type of the action server (e.g. move_base_msgs.msg.MoveBaseAction
-        worker (:obj:`func`): callback to be executed inside the execute loop, no args
+        custom_execute_callback (:obj:`func`): callback to be executed inside the execute loop, no args
         goal_recieved_callback(:obj:`func`): callback to be executed immediately upon receiving a goal
         duration (:obj:`float`): forcibly override the dyn reconf time for a goal to complete (seconds)
 
@@ -61,8 +62,8 @@ class GenericServer(object):
     def __init__(self,
                  action_name,
                  action_type_string,  # "Dock" or "Rotate"
-                 worker,
-                 goal_received_callback=None,
+                 custom_execute_callback=lambda: None,
+                 goal_received_callback=lambda request: None,
                  duration=None):
         self.node = rclpy.create_node(
             action_name,
@@ -75,13 +76,13 @@ class GenericServer(object):
             ]
         )
 
-        self.worker = worker
         self.frequency = 3.0  # hz
         self.percent_completed = 0
         self.goal_received = None
         self.title = ""  # action_name.replace('_', ' ').title()
         self.duration = self.node.get_parameter("duration").value
 
+        self.custom_execute_callback = custom_execute_callback
         self.custom_goal_callback = goal_received_callback
 
         self.service_callbacks = {}
@@ -103,24 +104,20 @@ class GenericServer(object):
 
         self.services = {}
         self.service_types = {}
+        self.callback_groups = {}
         for service_name in ["goal", "result", "cancel"]:
             self.service_types[service_name] = getattr(
                 self.service_callbacks[service_name]["module"],
                 self.service_callbacks[service_name]["class"]
             )
+            self.callback_groups[service_name] = rclpy.callback_groups.MutuallyExclusiveCallbackGroup()
             self.services[service_name] = self.node.create_service(
                 self.service_types[service_name],
                 "~/" + service_name,
                 self.service_callbacks[service_name]["callback"],
+                callback_group=self.callback_groups[service_name],
                 qos_profile=rclpy.qos.qos_profile_services_default
             )
-
-        self.services["cancel"] = self.node.create_service(
-            self.service_types["cancel"],
-            "~/" + service_name,
-            self.service_callbacks[service_name],
-            qos_profile=rclpy.qos.qos_profile_services_default
-        )
 
         self.feedback_message_type = getattr(
             py_trees_actions,
@@ -130,22 +127,20 @@ class GenericServer(object):
             msg_type=self.feedback_message_type,
             topic="~/feedback")
 
+        self.executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
+        self.executor.add_node(self.node)
+
     def spin(self):
         """
         Spin around, updating battery state and publishing the result.
         """
-        # TODO: replace when rclpy has a Rate
-        # rate = rclpy.Rate(frequency)  # hz
         try:
             while rclpy.ok():
-                rclpy.spin_once(self.node, timeout_sec=0.1)
-                self.node.get_logger().info("spinning")
-                # self.execute_once()
-                # time.sleep(1.0/self.frequency)
-                # TODO: once we have rates
-                # rate.sleep()
+                self.executor.spin_once(timeout_sec=0.1)
+                # self.node.get_logger().info("spinning")
         except KeyboardInterrupt:
             pass
+        self.executor.shutdown()
         self.node.destroy_node()
 
     def goal_service_callback(self, request, response):
@@ -174,7 +169,6 @@ class GenericServer(object):
         """
         self.node.get_logger().info("received a result request\n    %s" % request)
         self.execute()
-        self.node.get_logger().info("executed")
         return response
 
     def execute(self):
@@ -193,15 +187,15 @@ class GenericServer(object):
                 increment = 100 / (self.frequency * self.duration)
                 if self.percent_completed >= 100.0:
                     self.percent_completed = 100.0
-                    self.node.get_logger().info("{prefix}feedback 100%".format(prefix=prefix))
+                    self.node.get_logger().info("{prefix}feedback 100%%".format(prefix=prefix))
                     success = True
                 else:
                     self.node.get_logger().info("{prefix}feedback {percent:.2f}%%".format(prefix=prefix, percent=self.percent_completed))
                     self.percent_completed += increment
-                    self.worker()
+                    self.custom_execute_callback()
             # TODO: use a rate when they have it
             time.sleep(1.0 / self.frequency)
         if success:
-            self.node.get_logger().info("{prefix}goal success".format(prefix=prefix))
+            self.node.get_logger().info("{prefix}goal executed with success".format(prefix=prefix))
             # TODO: send goal result with SUCCESS
             self.goal_received = None
