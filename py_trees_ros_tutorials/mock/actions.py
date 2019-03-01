@@ -17,6 +17,7 @@ Mocks an action server.
 # Imports
 ##############################################################################
 
+import action_msgs.msg as action_msgs  # GoalStatus
 import action_msgs.srv as action_srvs
 import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
@@ -169,6 +170,7 @@ class GenericServer(object):
         """
         self.node.get_logger().info("received a result request\n    %s" % request)
         self.execute()
+        response.action_status = action_msgs.GoalStatus.STATUS_SUCCEEDED
         return response
 
     def execute(self):

@@ -48,10 +48,12 @@ class ActionClient(object):
     def __init__(self,
                  node_name,
                  action_name,
-                 action_type_string):
+                 action_type_string,
+                 action_server_namespace):
         self.node = rclpy.create_node(node_name)
         self.action_name = action_name
         self.action_type = action_type_string
+        self.action_server_namespace = action_server_namespace
         self.goal_type = getattr(
             py_trees_ros_actions,
             action_type_string + "_Goal"
@@ -63,15 +65,15 @@ class ActionClient(object):
         self.clients = {
             "goal": self.node.create_client(
                 self.goal_type,
-                "docking_controller/goal"
+                "{}/goal".format(self.action_server_namespace)
             ),
             "result": self.node.create_client(
                 self.result_type,
-                "docking_controller/result"
+                "{}/result".format(self.action_server_namespace)
             ),
             "cancel": self.node.create_client(
                 action_srvs.CancelGoal,
-                "docking_controller/cancel"
+                "{}/cancel".format(self.action_server_namespace)
             )
         }
         # self.action_client = rclpy.action.ActionClient(self.node, action_type, action_name)
@@ -82,9 +84,9 @@ class ActionClient(object):
     def process_result(self, future):
         status = future.result().action_status
         if status == action_msgs.GoalStatus.STATUS_SUCCEEDED:
-            self.node.get_logger().info('goal succeeded! Result: {0}'.format(future.result().sequence))
+            self.node.get_logger().info('goal success!')
         else:
-            self.node.get_logger().info('goal failed with status: {0}'.format(status))
+            self.node.get_logger().info('goal failed with status {0}'.format(status))
 
     def send_goal(self, uuid_msg):
         # send and wait for the goal response
@@ -107,7 +109,7 @@ class ActionClient(object):
                         initialised[name] = True
                         self.node.get_logger().info("'{}' initialised".format(name))
                     else:
-                        self.node.get_logger().info("service '' unavailable, waiting...".format(name))
+                        self.node.get_logger().info("service '{}' unavailable, waiting...".format(self.action_server_namespace + "/" + name))
 
             uuid_msg = py_trees_ros.utilities.uuid4_to_msg()
             self.send_goal(uuid_msg)
@@ -131,7 +133,8 @@ def dock(args=None):
     action_client = ActionClient(
         node_name="dock_client",
         action_name="dock",
-        action_type_string="Dock"  # py_trees_ros_actions.Dock
+        action_type_string="Dock",  # py_trees_ros_actions.Dock
+        action_server_namespace="/docking_controller"
         )
     action_client.spin()
 
@@ -141,6 +144,7 @@ def rotate(args=None):
     action_client = ActionClient(
         node_name="rotate_client",
         action_name="rotate",
-        action_type_string="Rotate"  # py_trees_ros_actions.Rotate
+        action_type_string="Rotate",  # py_trees_ros_actions.Rotate
+        action_server_namespace="/rotation_controller"
         )
     action_client.spin()
