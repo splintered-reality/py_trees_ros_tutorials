@@ -36,7 +36,7 @@ class Dock(actions.GenericServer):
     def __init__(self):
         super().__init__(
             action_name="docking_controller",
-            action_type_string="Dock",
+            action_type=(py_trees_actions, "Dock"),
             custom_execute_callback=self.custom_execute_callback,
             goal_received_callback=self.goal_received_callback,
             duration=2.0

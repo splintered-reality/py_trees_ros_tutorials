@@ -62,7 +62,7 @@ class GenericServer(object):
     """
     def __init__(self,
                  action_name,
-                 action_type_string,  # "Dock" or "Rotate"
+                 action_type,  # e.g. (py_trees_ros_interfaces.action, "Dock")
                  custom_execute_callback=lambda: None,
                  goal_received_callback=lambda request: None,
                  duration=None):
@@ -88,14 +88,14 @@ class GenericServer(object):
 
         self.service_callbacks = {}
         self.service_callbacks["goal"] = {
-            "module": py_trees_actions,
+            "module": action_type[0],
             "callback": self.goal_service_callback,
-            "class": action_type_string + "_Goal"
+            "class": action_type[1] + "_Goal"
         }
         self.service_callbacks["result"] = {
-            "module": py_trees_actions,
+            "module": action_type[0],
             "callback": self.result_service_callback,
-            "class": action_type_string + "_Result"
+            "class": action_type[1] + "_Result"
         }
         self.service_callbacks["cancel"] = {
             "module": action_srvs,
@@ -122,7 +122,7 @@ class GenericServer(object):
 
         self.feedback_message_type = getattr(
             py_trees_actions,
-            action_type_string + "_Feedback"
+            action_type[1] + "_Feedback"
         )
         self.feedback_publisher = self.node.create_publisher(
             msg_type=self.feedback_message_type,

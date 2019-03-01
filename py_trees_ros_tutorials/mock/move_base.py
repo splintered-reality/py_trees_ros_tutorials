@@ -30,18 +30,24 @@ from . import actions
 ##############################################################################
 
 
-class Rotate(actions.GenericServer):
+class MoveBase(actions.GenericServer):
     """
-    Simple server that controls a full rotation of the robot.
+    Simulates:
+
+    * move base interface
+    * publishing on /odom (nav_msgs.msg.Odometry)
+    * publishing on /pose (geometry_msgs.msg.PoseWithCovarianceStamped)
 
     Args:
-        rotation_rate (:obj:`float`): rate of rotation )rad/s)
+        odometry_topic (:obj:`str`): name of the odometry topic
+        pose_topic (:obj:`str`): name of the pose (with covariance stamped) topic
+        duration (:obj:`int`): time for a goal to complete (seconds)
     """
-    def __init__(self, rotation_rate=1.57):
-        super().__init__(action_name="rotation_controller",
-                         action_type=(py_trees_actions, "Rotate"),
+    def __init__(self, odometry_topic='/odom', pose_topic='/pose', duration=None):
+        super().__init__(action_name="move_base",
+                         action_type_string=move_base_msgs.MoveBaseAction,
                          custom_execute_callback=self.custom_execute_callback,
-                         duration=2.0 * math.pi / rotation_rate
+                         duration=duration
                          )
 
     def custom_execute_callback(self):
