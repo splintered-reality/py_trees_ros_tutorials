@@ -82,11 +82,13 @@ setup(
              'mock-battery = py_trees_ros_tutorials.mock.battery:main',
              'mock-dashboard = py_trees_ros_tutorials.mock.dashboard:main',
              'mock-docking-controller = py_trees_ros_tutorials.mock.dock:main',
-             'mock-rotation-controller = py_trees_ros_tutorials.mock.rotate:main',
              'mock-led-strip = py_trees_ros_tutorials.mock.led_strip:main',
+             'mock-move-base = py_trees_ros_tutorials.mock.move_base:main',
+             'mock-rotation-controller = py_trees_ros_tutorials.mock.rotate:main',
              'mock-safety-sensors = py_trees_ros_tutorials.mock.safety_sensors:main',
              # Mock Tests
              'mock-dock-client = py_trees_ros_tutorials.mock.action_clients:dock',
+             'mock-move-base-client = py_trees_ros_tutorials.mock.action_clients:move_base',
              'mock-rotate-client = py_trees_ros_tutorials.mock.action_clients:rotate',
              # Launchers (directly runnable)
              'launch-mock-robot = py_trees_ros_tutorials.mock.launch:main',

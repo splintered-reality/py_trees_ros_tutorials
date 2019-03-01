@@ -3,6 +3,9 @@
 	<name>py_trees_ros_tutorials</name>
 	<comment></comment>
 	<projects>
+		<project>py_trees</project>
+		<project>py_trees_ros</project>
+		<project>py_trees_ros_interfaces</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

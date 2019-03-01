@@ -148,3 +148,14 @@ def rotate(args=None):
         action_server_namespace="/rotation_controller"
         )
     action_client.spin()
+
+
+def move_base(args=None):
+    rclpy.init(args=args)
+    action_client = ActionClient(
+        node_name="move_base_client",
+        action_name="move_base",
+        action_type_string="MoveBase",  # py_trees_ros_actions.MoveBase
+        action_server_namespace="/move_base"
+        )
+    action_client.spin()
