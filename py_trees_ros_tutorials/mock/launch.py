@@ -34,7 +34,8 @@ def generate_launch_description():
     ##########################################################################
     # Mock Robot Nodes
     ##########################################################################
-    for node_name in ['battery', 'dashboard', 'led_strip', 'safety_sensors']:
+    for node_name in ['battery', 'dashboard', 'docking_controller',
+                      'led_strip', 'rotation_controller', 'safety_sensors']:
         node_executable = "mock-{}".format(node_name.replace('_', '-'))
         launch_description.add_action(
             launch_ros.actions.Node(

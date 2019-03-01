@@ -12,8 +12,8 @@
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/py_trees</url>
-  <url type="repository">https://github.com/splintered-treality/py_trees_ros</url>
-  <url type="bugtracker">https://github.com/splintered-treality/py_trees_ros/issues</url>
+  <url type="repository">https://github.com/splintered-treality/py_trees_ros_tutorials</url>
+  <url type="bugtracker">https://github.com/splintered-treality/py_trees_ros_tutorials/issues</url>
 
   <author>Daniel Stonier</author>
 
@@ -35,7 +35,7 @@
   <doc_depend>python-rospkg</doc_depend>
   <doc_depend>python3-pyqt5</doc_depend>
   <doc_depend>py_trees</doc_depend>
-  <doc_depend>py_trees_msgs</doc_depend>
+  <doc_depend>py_trees_interfaces</doc_depend>
   <doc_depend>rosbag</doc_depend>
   <doc_depend>rospy</doc_depend>
   <doc_depend>sensor_msgs</doc_depend>
@@ -55,12 +55,13 @@
   <!-- core dependencies -->
   <exec_depend>py_trees</exec_depend>
   <exec_depend>py_trees_ros</exec_depend>
+  <exec_depend>py_trees_ros_interfaces</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>uuid_msgs</exec_depend>
+  <exec_depend>unique_identifier_msgs</exec_depend>
 
   <!-- launch dependencies -->
-  <exec_depend>python3-pyqt5</exec_depend>
+  <exec_depend>python3-qt5-bindings</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>ros2launch</exec_depend>
