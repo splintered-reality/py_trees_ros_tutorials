@@ -39,7 +39,7 @@ class Rotate(actions.GenericServer):
     """
     def __init__(self, rotation_rate=1.57):
         super().__init__(action_name="rotation_controller",
-                         action_type_string="Rotate",
+                         action_type=(py_trees_actions, "Rotate"),
                          custom_execute_callback=self.custom_execute_callback,
                          duration=2.0 * math.pi / rotation_rate
                          )
