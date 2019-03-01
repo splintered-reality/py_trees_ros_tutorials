@@ -18,6 +18,7 @@ Mocks an action server.
 ##############################################################################
 
 import action_msgs.srv as action_srvs
+import asyncio
 import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
 import rclpy.parameter
@@ -78,7 +79,7 @@ class GenericServer(object):
         self.frequency = 3.0  # hz
         self.percent_completed = 0
         self.goal_received = None
-        self.title = action_name.replace('_', ' ').title()
+        self.title = ""  # action_name.replace('_', ' ').title()
         self.duration = self.node.get_parameter("duration").value
 
         self.custom_goal_callback = goal_received_callback
@@ -110,7 +111,7 @@ class GenericServer(object):
             self.services[service_name] = self.node.create_service(
                 self.service_types[service_name],
                 "~/" + service_name,
-                self.service_callbacks[service_name],
+                self.service_callbacks[service_name]["callback"],
                 qos_profile=rclpy.qos.qos_profile_services_default
             )
 
@@ -120,7 +121,7 @@ class GenericServer(object):
             self.service_callbacks[service_name],
             qos_profile=rclpy.qos.qos_profile_services_default
         )
-        
+
         self.feedback_message_type = getattr(
             py_trees_actions,
             action_type_string + "_Feedback"
@@ -137,35 +138,46 @@ class GenericServer(object):
         # rate = rclpy.Rate(frequency)  # hz
         try:
             while rclpy.ok():
-                rclpy.spin_once(self.node)
-                self.execute_once()
-                time.sleep(1.0/self.frequency)
+                rclpy.spin_once(self.node, timeout_sec=0.1)
+                self.node.get_logger().info("spinning")
+                # self.execute_once()
+                # time.sleep(1.0/self.frequency)
                 # TODO: once we have rates
                 # rate.sleep()
         except KeyboardInterrupt:
             pass
         self.node.destroy_node()
 
-    def goal_service_callback(self, goal_request):
+    def goal_service_callback(self, request, response):
+        prefix = "[" + self.title + "] " if self.title else ""
         if self.goal_received:
-            self.node.get_logger().info("[{title}] pre-empted a goal".format(title=self.title))
-            # TODO: send back current goal's result with ERROR
+            self.node.get_logger().info("{prefix}not permitting pre-emptions, rejecting".format(prefix=prefix))
+            response.accepted = False
             pass
         else:
-            self.node.get_logger().info("[{title}] received a goal".format(title=self.title))
-        self.goal_received = goal_request
-        self.custom_goal_callback(goal_request)
-        self.percent_completed = 0
-        self.duration = self.node.get_parameter("duration").value
-        # TODO: some response
+            self.node.get_logger().info("{prefix}received a goal".format(prefix=prefix))
+            self.goal_received = request
+            self.custom_goal_callback(request)
+            self.percent_completed = 0
+            self.duration = self.node.get_parameter("duration").value
 
-    def cancel_service_callback(self, cancel_request):
-        pass
+        response.accepted = True
+        return response
 
-    def result_service_callback(self, result_request):
-        pass
+    def cancel_service_callback(self, request, response):
+        return response
 
-    def execute_once(self, goal):
+    def result_service_callback(self, request, response):
+        """
+        Bit wierd, using this to trigger the actual work. Alternative
+        would be to asyncio this one and await execute()
+        """
+        self.node.get_logger().info("received a result request\n    %s" % request)
+        self.execute()
+        self.node.get_logger().info("executed")
+        return response
+
+    def execute(self):
         """
         Check for pre-emption, but otherwise just spin around gradually incrementing
         a hypothetical 'percent' done.
@@ -175,18 +187,21 @@ class GenericServer(object):
         """
         # goal.details (e.g. pose) = don't care
         success = False
-        if self.goal_received:
-            increment = 100 / (self.frequency * self.duration)
-            while True:
-                if self.percent_completed >= 100:
-                    self.node.get_logger().info("[{title}] feedback 100%".format(title=self.title))
+        prefix = "[" + self.title + "] " if self.title else ""
+        while not success:
+            if self.goal_received:
+                increment = 100 / (self.frequency * self.duration)
+                if self.percent_completed >= 100.0:
+                    self.percent_completed = 100.0
+                    self.node.get_logger().info("{prefix}feedback 100%".format(prefix=prefix))
                     success = True
-                    break
                 else:
-                    self.node.get_logger().info("[{title}] feedback {percent:.2f}%".format(title=self.title, percent=self.percent_completed))
+                    self.node.get_logger().info("{prefix}feedback {percent:.2f}%%".format(prefix=prefix, percent=self.percent_completed))
                     self.percent_completed += increment
                     self.worker()
+            # TODO: use a rate when they have it
+            time.sleep(1.0 / self.frequency)
         if success:
-            self.node.get_logger().info("[{title}] goal success".format(title=self.title))
+            self.node.get_logger().info("{prefix}goal success".format(prefix=prefix))
             # TODO: send goal result with SUCCESS
             self.goal_received = None
