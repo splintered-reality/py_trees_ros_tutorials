@@ -43,7 +43,7 @@ def generate_launch_description():
                 package='py_trees_ros_tutorials',
                 node_name=node_name,
                 node_executable=node_executable,
-                output='screen'  # screen is awkward, it's after the fact
+                output='screen'
             )
         )
     launch_description.add_action(

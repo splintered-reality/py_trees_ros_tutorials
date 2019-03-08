@@ -72,9 +72,8 @@ setup(
         "behaviour trees for robotics."
     ),
     license='BSD',
-    # test_suite = 'nose.collector',
+    # test_suite="tests"
     # tests_require=['nose', 'pytest', 'flake8', 'yanc', 'nose-htmloutput']
-    # tests_require=['pytest'],
     entry_points={
          'console_scripts': [
              # These are redirected to lib/<package_name> by setup.cfg
@@ -90,8 +89,12 @@ setup(
              'mock-dock-client = py_trees_ros_tutorials.mock.action_clients:dock',
              'mock-move-base-client = py_trees_ros_tutorials.mock.action_clients:move_base',
              'mock-rotate-client = py_trees_ros_tutorials.mock.action_clients:rotate',
-             # Launchers (directly runnable)
+             # Mock Launcher
              'launch-mock-robot = py_trees_ros_tutorials.mock.launch:main',
+             # Tutorial Nodes
+             'tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:tutorial_main',
+             # Tutorial Launchers (directly runnable)
+             'launch-tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:launch_main',
          ],
      },
 )
