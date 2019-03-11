@@ -187,8 +187,13 @@ def tutorial_main():
         console.logerror(console.red + "failed to setup the tree, aborting [{}]".format(str(e)) + console.reset)
         sys.exit(1)
 
+    timer = behaviour_tree.node.create_timer(0.5, behaviour_tree.tick)
+
     try:
         rclpy.spin(behaviour_tree.node)
-        # TODO: behaviour_tree.tick_tock(500)
     except KeyboardInterrupt:
         pass
+
+    behaviour_tree.node.destroy_timer(timer)
+    behaviour_tree.node.destroy_node()
+    rclpy.shutdown()
