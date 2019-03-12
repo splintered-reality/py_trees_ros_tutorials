@@ -116,13 +116,13 @@ def generate_launch_description():
 
 def launch_main():
     """Inspired by launch_ros/examples"""
-    #launch_description = generate_launch_description()
+    launch_description = generate_launch_description()
 
     print('')
     print(console.green + 'Introspection' + console.reset)
     print('')
 
-    #print(launch.LaunchIntrospector().format_launch_description(launch_description))
+    print(launch.LaunchIntrospector().format_launch_description(launch_description))
 
     print('')
     print(console.green + 'Launch' + console.reset)
@@ -135,7 +135,7 @@ def launch_main():
             prefix_output_with_name=False
         )
     )
-    #ls.include_launch_description(launch_description)
+    ls.include_launch_description(launch_description)
     ls.include_launch_description(mock.launch.generate_launch_description())
     return ls.run()
 
@@ -144,7 +144,7 @@ def launch_main():
 ##############################################################################
 
 
-def tutorial_tree():
+def tutorial_create_root():
     """
     Create a basic tree and start a 'Topics2BB' work sequence that
     takes the asynchronicity out of subscription.
@@ -160,17 +160,20 @@ def tutorial_tree():
     #                                                threshold=30.0
     #                                                )
     priorities = py_trees.composites.Selector("Priorities")
-    idle = py_trees.behaviours.Running(name="Idle")
+    # idle = py_trees.behaviours.Running(name="Idle")
+    flipper = py_trees.behaviours.Periodic(
+        name="Flipper",
+        n=2)
 
     root.add_child(topics2bb)
     # TODO: topics2bb.add_child(battery2bb)
     root.add_child(priorities)
-    priorities.add_child(idle)
+    priorities.add_child(flipper)
     return root
 
 
-def tutorial_shutdown(behaviour_tree):
-    behaviour_tree.interrupt()
+def tutorial_shutdown(tree):
+    tree.interrupt()
 
 
 def tutorial_main():
@@ -178,22 +181,25 @@ def tutorial_main():
     Entry point for the demo script.
     """
     rclpy.init(args=None)
-    root = tutorial_tree()
-    behaviour_tree = py_trees_ros.trees.BehaviourTree(root)
+    root = tutorial_create_root()
+    tree = py_trees_ros.trees.BehaviourTree(
+        root=root,
+        ascii_tree_debug=True
+    )
     # TODO: rospy.on_shutdown(functools.partial(tutorial_shutdown, behaviour_tree))
     try:
-        behaviour_tree.setup(timeout=15)
+        tree.setup(timeout=15)
     except Exception as e:
         console.logerror(console.red + "failed to setup the tree, aborting [{}]".format(str(e)) + console.reset)
         sys.exit(1)
 
-    timer = behaviour_tree.node.create_timer(0.5, behaviour_tree.tick)
+    timer = tree.node.create_timer(0.5, tree.tick)
 
     try:
-        rclpy.spin(behaviour_tree.node)
+        rclpy.spin(tree.node)
     except KeyboardInterrupt:
         pass
 
-    behaviour_tree.node.destroy_timer(timer)
-    behaviour_tree.node.destroy_node()
+    tree.node.destroy_timer(timer)
+    tree.node.destroy_node()
     rclpy.shutdown()
