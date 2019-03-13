@@ -160,7 +160,7 @@ def tutorial_create_root():
     #                                                threshold=30.0
     #                                                )
     priorities = py_trees.composites.Selector("Priorities")
-    # idle = py_trees.behaviours.Running(name="Idle")
+    idle = py_trees.behaviours.Running(name="Idle")
     flipper = py_trees.behaviours.Periodic(
         name="Flipper",
         n=2)
@@ -169,6 +169,7 @@ def tutorial_create_root():
     # TODO: topics2bb.add_child(battery2bb)
     root.add_child(priorities)
     priorities.add_child(flipper)
+    priorities.add_child(idle)
     return root
 
 
