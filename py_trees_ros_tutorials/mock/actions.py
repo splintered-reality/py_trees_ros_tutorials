@@ -128,22 +128,6 @@ class GenericServer(object):
             msg_type=self.feedback_message_type,
             topic="~/feedback")
 
-        self.executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
-        self.executor.add_node(self.node)
-
-    def spin(self):
-        """
-        Spin around, updating battery state and publishing the result.
-        """
-        try:
-            while rclpy.ok():
-                self.executor.spin_once(timeout_sec=0.1)
-                # self.node.get_logger().info("spinning")
-        except KeyboardInterrupt:
-            pass
-        self.executor.shutdown()
-        self.node.destroy_node()
-
     def goal_service_callback(self, request, response):
         prefix = "[" + self.title + "] " if self.title else ""
         if self.goal_received:
