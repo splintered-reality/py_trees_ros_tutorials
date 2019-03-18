@@ -142,6 +142,9 @@ class Battery(object):
             self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
         self.publishers.state.publish(msg=self.battery)
 
+    def shutdown(self):
+        self.node.destroy_node()
+
 
 def main():
     """
@@ -153,4 +156,5 @@ def main():
     rclpy.init()  # picks up sys.argv automagically internally
     battery = Battery()
     battery.spin()
+    battery.shutdown()
     rclpy.shutdown()
