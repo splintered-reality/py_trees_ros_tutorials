@@ -46,9 +46,6 @@ def generate_launch_description():
                 output='screen'
             )
         )
-    launch_description.add_action(
-        launch.actions.LogInfo(msg=["I'm froody, you should be too."]),
-    )
     return launch_description
 
 ##############################################################################
@@ -78,4 +75,9 @@ def main():
         )
     )
     ls.include_launch_description(launch_description)
+
+    launch_description.add_action(
+        launch.actions.LogInfo(msg=["I'm froody, you should be too."]),
+    )
+
     return ls.run()

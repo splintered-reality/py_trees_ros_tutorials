@@ -185,3 +185,9 @@ class GenericServer(object):
             self.node.get_logger().info("{prefix}goal executed with success".format(prefix=prefix))
             # TODO: send goal result with SUCCESS
             self.goal_received = None
+
+    def shutdown(self):
+        """
+        Cleanup
+        """
+        self.node.destroy_node()

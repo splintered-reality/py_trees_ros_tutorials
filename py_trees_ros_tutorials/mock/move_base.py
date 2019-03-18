@@ -94,7 +94,7 @@ class MoveBase(actions.GenericServer):
         if self.publish_timer is not None:
             self.publish_timer.cancel()
             self.node.destroy_timer(self.publish_timer)
-        self.node.destroy_node()
+        super().shutdown()
 
 
 def main():

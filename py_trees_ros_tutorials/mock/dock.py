@@ -69,5 +69,15 @@ def main():
     parser.parse_args(command_line_args)
     rclpy.init()  # picks up sys.argv automagically internally
     docking_controller = Dock()
-    docking_controller.spin()
+
+    executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
+    executor.add_node(docking_controller.node)
+
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
+
+    docking_controller.shutdown()
+    executor.shutdown()
     rclpy.shutdown()
