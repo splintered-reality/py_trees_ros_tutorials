@@ -97,32 +97,43 @@ from . import mock
 ##############################################################################
 
 
-def generate_launch_description():
+def generate_tree_launch_description():
     """Launch the tutorial"""
     launch_description = launch.LaunchDescription()
     launch_description.add_action(
         launch_ros.actions.Node(
             package='py_trees_ros_tutorials',
             node_name="one",
-            node_executable="tutorial-one-data-gathering",
-            output='screen'
+            node_executable="tree-data-gathering",
+            output='screen',
+            # workaround to print to stdout till https://github.com/ros2/launch/issues/188
+            # but...this fails too - https://github.com/ros2/launch/issues/203
+            # env={'PYTHONUNBUFFERED': '1'}
         )
-    )
-    launch_description.add_action(
-        launch.actions.LogInfo(msg=["I'm froody, you should be too."]),
     )
     return launch_description
 
 
+def generate_froody_launch_description():
+    froody_launch_description = launch.LaunchDescription()
+    froody_launch_description.add_action(
+        launch.actions.LogInfo(msg=["I'm froody, you should be too."]),
+    )
+    return froody_launch_description
+
+
 def launch_main():
     """Inspired by launch_ros/examples"""
-    launch_description = generate_launch_description()
+    launch_descriptions = []
+    launch_descriptions.append(mock.launch.generate_launch_description())
+    # launch_descriptions.append(generate_tree_launch_description())
 
     print('')
     print(console.green + 'Introspection' + console.reset)
     print('')
 
-    print(launch.LaunchIntrospector().format_launch_description(launch_description))
+    for launch_description in launch_descriptions:
+        print(launch.LaunchIntrospector().format_launch_description(launch_description))
 
     print('')
     print(console.green + 'Launch' + console.reset)
@@ -135,8 +146,10 @@ def launch_main():
             prefix_output_with_name=False
         )
     )
-    ls.include_launch_description(launch_description)
-    ls.include_launch_description(mock.launch.generate_launch_description())
+    for launch_description in launch_descriptions:
+        ls.include_launch_description(launch_description)
+    ls.include_launch_description(generate_froody_launch_description())
+
     return ls.run()
 
 ##############################################################################
@@ -155,10 +168,10 @@ def tutorial_create_root():
     root = py_trees.composites.Parallel("Tutorial")
 
     topics2bb = py_trees.composites.Sequence("Topics2BB")
-    # TODO: battery2bb = py_trees_ros.battery.ToBlackboard(name="Battery2BB",
-    #                                                topic_name="/battery/state",
-    #                                                threshold=30.0
-    #                                                )
+    battery2bb = py_trees_ros.battery.ToBlackboard(name="Battery2BB",
+                                                   topic_name="/battery/state",
+                                                   threshold=30.0
+                                                   )
     priorities = py_trees.composites.Selector("Priorities")
     idle = py_trees.behaviours.Running(name="Idle")
     flipper = py_trees.behaviours.Periodic(
@@ -166,15 +179,11 @@ def tutorial_create_root():
         n=2)
 
     root.add_child(topics2bb)
-    # TODO: topics2bb.add_child(battery2bb)
+    topics2bb.add_child(battery2bb)
     root.add_child(priorities)
     priorities.add_child(flipper)
     priorities.add_child(idle)
     return root
-
-
-def tutorial_shutdown(tree):
-    tree.interrupt()
 
 
 def tutorial_main():
@@ -187,20 +196,18 @@ def tutorial_main():
         root=root,
         ascii_tree_debug=True
     )
-    # TODO: rospy.on_shutdown(functools.partial(tutorial_shutdown, behaviour_tree))
     try:
         tree.setup(timeout=15)
     except Exception as e:
         console.logerror(console.red + "failed to setup the tree, aborting [{}]".format(str(e)) + console.reset)
         sys.exit(1)
 
-    timer = tree.node.create_timer(0.5, tree.tick)
+    tree.tick_tock(period_ms=1000.0)
 
     try:
         rclpy.spin(tree.node)
     except KeyboardInterrupt:
         pass
 
-    tree.node.destroy_timer(timer)
-    tree.node.destroy_node()
+    tree.shutdown()
     rclpy.shutdown()

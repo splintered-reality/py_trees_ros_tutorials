@@ -92,9 +92,9 @@ setup(
              # Mock Launcher
              'launch-mock-robot = py_trees_ros_tutorials.mock.launch:main',
              # Tutorial Nodes
-             'tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:tutorial_main',
+             'tree-data-gathering = py_trees_ros_tutorials.one_data_gathering:tutorial_main',
              # Tutorial Launchers (directly runnable)
-             'launch-tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:launch_main',
+             'tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:launch_main',
          ],
      },
 )
