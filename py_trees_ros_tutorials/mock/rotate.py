@@ -66,5 +66,15 @@ def main():
     parser.parse_args(command_line_args)
     rclpy.init()  # picks up sys.argv automagically internally
     rotation_controller = Rotate()
-    rotation_controller.spin()
+
+    executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
+    executor.add_node(rotation_controller.node)
+
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
+
+    rotation_controller.shutdown()
+    executor.shutdown()
     rclpy.shutdown()

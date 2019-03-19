@@ -17,12 +17,11 @@ Mocks a battery provider.
 # Imports
 ##############################################################################
 
-import uuid
 
 import action_msgs.msg as action_msgs  # GoalStatus
 import action_msgs.srv as action_srvs  # CancelGoal
+import py_trees_ros
 import py_trees_ros_interfaces.action as py_trees_ros_actions  # Dock, Rotate
-import py_trees_ros.utilities
 import rclpy
 # import rclpy.action  # ActionClient
 
@@ -111,7 +110,7 @@ class ActionClient(object):
                     else:
                         self.node.get_logger().info("service '{}' unavailable, waiting...".format(self.action_server_namespace + "/" + name))
 
-            uuid_msg = py_trees_ros.utilities.uuid4_to_msg()
+            uuid_msg = py_trees_ros.conversions.uuid4_to_msg()
             self.send_goal(uuid_msg)
 
             request = self.result_type.Request(action_goal_id=uuid_msg)

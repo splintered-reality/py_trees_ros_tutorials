@@ -19,7 +19,6 @@ Mocks a simple action server that rotates the robot 360 degrees.
 
 import argparse
 import geometry_msgs.msg as geometry_msgs
-import math
 import py_trees_ros.utilities
 import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
@@ -83,13 +82,19 @@ class MoveBase(actions.GenericServer):
         # self.odometry.pose.pose.position.x += 0.01
         self.pose.pose.pose.position.x += 0.01
 
-    def publish(self, unused_event):
+    def publish(self):
         """
         Most things expect a continous stream of odometry/pose messages, so we
         run this from a timer.
         """
         # self.publishers.odometry.publish(self.odometry)
         self.publishers.pose.publish(self.pose)
+
+    def shutdown(self):
+        if self.publish_timer is not None:
+            self.publish_timer.cancel()
+            self.node.destroy_timer(self.publish_timer)
+        super().shutdown()
 
 
 def main():
@@ -99,7 +104,17 @@ def main():
     parser = argparse.ArgumentParser(description='Mock a docking controller')
     command_line_args = rclpy.utilities.remove_ros_args(args=sys.argv)[1:]
     parser.parse_args(command_line_args)
+
     rclpy.init()  # picks up sys.argv automagically internally
     move_base_controller = MoveBase()
-    move_base_controller.spin()
+    executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
+    executor.add_node(move_base_controller.node)
+
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
+
+    move_base_controller.shutdown()
+    executor.shutdown()
     rclpy.shutdown()

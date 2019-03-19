@@ -43,12 +43,9 @@ def generate_launch_description():
                 package='py_trees_ros_tutorials',
                 node_name=node_name,
                 node_executable=node_executable,
-                output='screen'  # screen is awkward, it's after the fact
+                output='screen'
             )
         )
-    launch_description.add_action(
-        launch.actions.LogInfo(msg=["I'm froody, you should be too."]),
-    )
     return launch_description
 
 ##############################################################################
@@ -78,4 +75,9 @@ def main():
         )
     )
     ls.include_launch_description(launch_description)
+
+    launch_description.add_action(
+        launch.actions.LogInfo(msg=["I'm froody, you should be too."]),
+    )
+
     return ls.run()

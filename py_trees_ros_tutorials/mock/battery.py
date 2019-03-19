@@ -116,10 +116,12 @@ class Battery(object):
         # update state
         if charging:
             charging_percentage = min(100.0, charging_percentage + charging_increment)
-            self.node.get_logger().info("Charging...{:.1f}%%".format(charging_percentage))
+            if charging_percentage % 5.0 < 0.1:
+                self.node.get_logger().info("Charging...{:.1f}%%".format(charging_percentage))
         else:
             charging_percentage = max(0.0, charging_percentage - charging_increment)
-            self.node.get_logger().info("Discharging...{:.1f}%%".format(charging_percentage))
+            if charging_percentage % 2.5 < 0.1:
+                self.node.get_logger().info("Discharging...{:.1f}%%".format(charging_percentage))
 
         # update parameters (TODO: need a guard?)
         self.node.set_parameters([
@@ -142,6 +144,9 @@ class Battery(object):
             self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
         self.publishers.state.publish(msg=self.battery)
 
+    def shutdown(self):
+        self.node.destroy_node()
+
 
 def main():
     """
@@ -153,4 +158,5 @@ def main():
     rclpy.init()  # picks up sys.argv automagically internally
     battery = Battery()
     battery.spin()
+    battery.shutdown()
     rclpy.shutdown()
