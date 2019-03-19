@@ -81,7 +81,6 @@ A glimpse of the blackboard with battery updates:
 # Imports
 ##############################################################################
 
-import functools
 import launch
 import launch_ros.actions
 import py_trees
@@ -165,7 +164,9 @@ def tutorial_create_root():
     Returns:
         :class:`~py_trees.behaviour.Behaviour`: the root of the tree
     """
-    root = py_trees.composites.Parallel("Tutorial")
+    root = py_trees.composites.Parallel(
+        name="Tutorial",
+        policy=py_trees.common.ParallelPolicy.SuccessOnOne())
 
     topics2bb = py_trees.composites.Sequence("Topics2BB")
     battery2bb = py_trees_ros.battery.ToBlackboard(name="Battery2BB",
@@ -174,9 +175,7 @@ def tutorial_create_root():
                                                    )
     priorities = py_trees.composites.Selector("Priorities")
     idle = py_trees.behaviours.Running(name="Idle")
-    flipper = py_trees.behaviours.Periodic(
-        name="Flipper",
-        n=2)
+    flipper = py_trees.behaviours.Periodic(name="Flipper", n=2)
 
     root.add_child(topics2bb)
     topics2bb.add_child(battery2bb)
