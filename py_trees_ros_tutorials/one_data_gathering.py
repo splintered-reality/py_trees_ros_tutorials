@@ -103,7 +103,7 @@ def generate_tree_launch_description():
     launch_description.add_action(
         launch_ros.actions.Node(
             package='py_trees_ros_tutorials',
-            node_name="one",
+            # node_name="one", # ha, it's a multi-node process
             node_executable="tree-data-gathering",
             output='screen',
             # workaround to print to stdout till https://github.com/ros2/launch/issues/188
@@ -126,7 +126,7 @@ def launch_main():
     """Inspired by launch_ros/examples"""
     launch_descriptions = []
     launch_descriptions.append(mock.launch.generate_launch_description())
-    # launch_descriptions.append(generate_tree_launch_description())
+    launch_descriptions.append(generate_tree_launch_description())
 
     print('')
     print(console.green + 'Introspection' + console.reset)

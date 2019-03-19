@@ -95,6 +95,9 @@ setup(
              'tree-data-gathering = py_trees_ros_tutorials.one_data_gathering:tutorial_main',
              # Tutorial Launchers (directly runnable)
              'tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:launch_main',
+             # Other
+             'testies = py_trees_ros_tutorials.testies:main',
+             'launch-testies = py_trees_ros_tutorials.launch_testies:main',
          ],
      },
 )
