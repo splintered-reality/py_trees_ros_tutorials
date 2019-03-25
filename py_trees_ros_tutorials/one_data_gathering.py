@@ -12,36 +12,31 @@
 About
 ^^^^^
 
-In this, the first of the tutorials, we start out by using a behaviour to
-collect battery data from a ros subscriber and cache the result on the
+In this, the first of the tutorials, we start out with a behaviour that
+collects battery data from a subscriber and stores the result on the
 blackboard for other behaviours to utilise.
 
-Data gathering up front via subscribers is a useful practice that can
-by justified by one of a variety of reasons. In order of priority:
+Data gathering up front via subscribers is a useful convention for
+a number of reasons:
 
-* Lock incoming data for the remainder of the tick so that decision making is consistent across the entire tree
-* Avoid invoking the rospy threading model when it is not necessary
-* Python access to the blackboard is easier than ROS api handling
+* Freeze incoming data for remaining behaviours in the tree tick so that decision making is consistent across the entire tree
+* Avoid redundantly invoking multiple subscribers to the same topic when not necessary
+* Python access to the blackboard is easier than ROS middleware handling
 
-In short, it takes the asynchronicity out of
-the subscriber callbacks and when it comes to sharing the data, it is
-far simpler to access the blackboard than to manage multiple subscribers
-spread across the entire behaviour tree.
-
-Usually you will end up with a collection
-of data gatherers at the front end of your behaviour tree which will always
-run and will happen before any decision branching can occur in the tree.
+Typically data gatherers will be assembled underneath a parallel at or near
+the very root of the tree so they may always trigger their update() method
+and be processed before any decision making behaviours elsewhere in the tree.
 
 Tree
 ^^^^
 
-.. graphviz:: dot/tutorial-one.dot
+.. graphviz:: dot/tutorial-one-data-gathering.dot
 
-.. literalinclude:: ../py_trees_ros_tutorials/one.py
+.. literalinclude:: ../py_trees_ros_tutorials/one_data_gathering.py
    :language: python
    :linenos:
    :lines: 95-117
-   :caption: py_trees_ros_tutorials/one.py#create_root
+   :caption: py_trees_ros_tutorials/one_data_gathering.py#tutorial_create_root
 
 Along with the data gathering side, you'll also notice the dummy branch for
 priority jobs (complete with idle behaviour that is always
@@ -70,9 +65,9 @@ Running
 
 .. code-block:: bash
 
-    $ roslaunch py_trees_ros tutorial_one.launch --screen
+    $ ros2 run py_trees_ros_tutorials tutorial-one-data-gathering
 
-A glimpse of the blackboard with battery updates:
+Battery updates on the blackboard:
 
 .. image:: images/tutorial-one-blackboard.gif
 """
@@ -90,6 +85,7 @@ import rclpy
 import sys
 
 from . import mock
+from . import utilities
 
 ##############################################################################
 # Launcher
@@ -113,43 +109,16 @@ def generate_tree_launch_description():
     return launch_description
 
 
-def generate_froody_launch_description():
-    froody_launch_description = launch.LaunchDescription()
-    froody_launch_description.add_action(
-        launch.actions.LogInfo(msg=["I'm froody, you should be too."]),
-    )
-    return froody_launch_description
-
-
 def launch_main():
-    """Inspired by launch_ros/examples"""
+    """A rosrunnable launch."""
     launch_descriptions = []
     launch_descriptions.append(mock.launch.generate_launch_description())
     launch_descriptions.append(generate_tree_launch_description())
-
-    print('')
-    print(console.green + 'Introspection' + console.reset)
-    print('')
-
-    for launch_description in launch_descriptions:
-        print(launch.LaunchIntrospector().format_launch_description(launch_description))
-
-    print('')
-    print(console.green + 'Launch' + console.reset)
-    print('')
-
-    # ls = LaunchService(debug=True)
-    ls = launch.LaunchService()
-    ls.include_launch_description(
-        launch_ros.get_default_launch_description(
-            prefix_output_with_name=False
-        )
+    launch_service = utilities.generate_ros_launch_service(
+        launch_descriptions=launch_descriptions,
+        debug=False
     )
-    for launch_description in launch_descriptions:
-        ls.include_launch_description(launch_description)
-    ls.include_launch_description(generate_froody_launch_description())
-
-    return ls.run()
+    return launch_service.run()
 
 ##############################################################################
 # Tutorial
@@ -159,23 +128,27 @@ def launch_main():
 def tutorial_create_root():
     """
     Create a basic tree and start a 'Topics2BB' work sequence that
-    takes the asynchronicity out of subscription.
+    will become responsible for data gathering behaviours.
 
     Returns:
         :class:`~py_trees.behaviour.Behaviour`: the root of the tree
     """
     root = py_trees.composites.Parallel(
         name="Tutorial",
-        policy=py_trees.common.ParallelPolicy.SuccessOnOne())
+        policy=py_trees.common.ParallelPolicy.SuccessOnAll(
+            synchronise=False
+        )
+    )
 
     topics2bb = py_trees.composites.Sequence("Topics2BB")
-    battery2bb = py_trees_ros.battery.ToBlackboard(name="Battery2BB",
-                                                   topic_name="/battery/state",
-                                                   threshold=30.0
-                                                   )
-    priorities = py_trees.composites.Selector("Priorities")
+    battery2bb = py_trees_ros.battery.ToBlackboard(
+        name="Battery2BB",
+        topic_name="/battery/state",
+        threshold=30.0
+    )
+    priorities = py_trees.composites.Selector("Tasks")
     idle = py_trees.behaviours.Running(name="Idle")
-    flipper = py_trees.behaviours.Periodic(name="Flipper", n=2)
+    flipper = py_trees.behaviours.Periodic(name="Flip Eggs", n=2)
 
     root.add_child(topics2bb)
     topics2bb.add_child(battery2bb)

@@ -16,10 +16,8 @@ Launch the mock robot.
 ##############################################################################
 
 import launch
-# import launch.actions
-# import launch.substitutions
 import launch_ros.actions
-import py_trees.console as console
+import py_trees_ros_tutorials.utilities as utilities
 
 ##############################################################################
 # Helpers
@@ -54,30 +52,11 @@ def generate_launch_description():
 
 
 def main():
-    """Inspired by launch_ros/examples"""
-    launch_description = generate_launch_description()
-
-    print('')
-    print(console.green + 'Introspection' + console.reset)
-    print('')
-
-    print(launch.LaunchIntrospector().format_launch_description(launch_description))
-
-    print('')
-    print(console.green + 'Launch' + console.reset)
-    print('')
-
-    # ls = LaunchService(debug=True)
-    ls = launch.LaunchService()
-    ls.include_launch_description(
-        launch_ros.get_default_launch_description(
-            prefix_output_with_name=False
-        )
+    """A rosrunnable launch."""
+    launch_descriptions = []
+    launch_descriptions.append(generate_launch_description())
+    launch_service = utilities.generate_ros_launch_service(
+        launch_descriptions=launch_descriptions,
+        debug=False
     )
-    ls.include_launch_description(launch_description)
-
-    launch_description.add_action(
-        launch.actions.LogInfo(msg=["I'm froody, you should be too."]),
-    )
-
-    return ls.run()
+    return launch_service.run()
