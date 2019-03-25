@@ -15,6 +15,7 @@ Modules supporting the mock robot and tutorials for py_trees on ROS2.
 ##############################################################################
 
 from . import mock
+from . import utilities
 
 ##############################################################################
 # Version
