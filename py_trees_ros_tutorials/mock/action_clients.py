@@ -23,7 +23,9 @@ import action_msgs.srv as action_srvs  # CancelGoal
 import py_trees_ros
 import py_trees_ros_interfaces.action as py_trees_ros_actions  # Dock, Rotate
 import rclpy
-# import rclpy.action  # ActionClient
+import rclpy.action  # ActionClient
+import unique_identifier_msgs.msg as unique_identifier_msgs
+import uuid
 
 ##############################################################################
 # Class
@@ -47,35 +49,32 @@ class ActionClient(object):
     def __init__(self,
                  node_name,
                  action_name,
-                 action_type_string,
+                 action_type,
                  action_server_namespace):
-        self.node = rclpy.create_node(node_name)
+        self.action_type = action_type
         self.action_name = action_name
-        self.action_type = action_type_string
         self.action_server_namespace = action_server_namespace
-        self.goal_type = getattr(
-            py_trees_ros_actions,
-            action_type_string + "_Goal"
+        self.node_name = node_name
+
+    def setup(self):
+        self.node = rclpy.create_node(self.node_name)
+        self.action_client = rclpy.action.ActionClient(
+            node=self.node,
+            action_type=self.action_type,
+            action_name=self.action_name
         )
-        self.result_type = getattr(
-            py_trees_ros_actions,
-            action_type_string + "_Result"
-        )
-        self.clients = {
-            "goal": self.node.create_client(
-                self.goal_type,
-                "{}/goal".format(self.action_server_namespace)
-            ),
-            "result": self.node.create_client(
-                self.result_type,
-                "{}/result".format(self.action_server_namespace)
-            ),
-            "cancel": self.node.create_client(
-                action_srvs.CancelGoal,
-                "{}/cancel".format(self.action_server_namespace)
+        self.node.get_logger().info(
+            'waiting for server [{}]'.format(
+                self.action_server_namespace
             )
-        }
-        # self.action_client = rclpy.action.ActionClient(self.node, action_type, action_name)
+        )
+        result = self.action_client.wait_for_server(timeout_sec=2.0)
+        if not result:
+            self.node.get_logger().error(
+                "timed out waiting for the server [{}]".format(
+                    self.action_server_namespace
+                )
+            )
 
     def feedback_callback(self, feedback):
         self.node.get_logger().info('Received feedback: {0}'.format(feedback.sequence))
@@ -87,43 +86,31 @@ class ActionClient(object):
         else:
             self.node.get_logger().info('goal failed with status {0}'.format(status))
 
-    def send_goal(self, uuid_msg):
-        # send and wait for the goal response
-        self.node.get_logger().info('sending goal request...')
-        request = self.goal_type.Request(action_goal_id=uuid_msg)
-        self.node.get_logger().info("goal request: %s" % request)
-        future = self.clients["goal"].call_async(request)
-        rclpy.spin_until_future_complete(self.node, future)
+    def send_goal(self):
+        goal_uuid = unique_identifier_msgs.UUID(
+            uuid=list(uuid.uuid4().bytes)
+        )
+        self.node.get_logger().info('sending goal...')
+        future = self.action_client.send_goal_async(
+                self.action_type.Goal(),
+                feedback_callback=self.feedback_callback,
+                goal_uuid=goal_uuid)
+        rclpy.spin_until_future_complete(self.node, future, self.executor)
         if future.result() is not None and future.result().accepted is True:
             self.node.get_logger().info("...goal accepted %s" % future.result())
         else:
             self.node.get_logger().info('...goal rejected [%r]' % (future.exception()))
+        return future.result()
 
     def spin(self):
-        initialised = {name: False for name in self.clients.keys()}
-        try:
-            while rclpy.ok() and not all(value for value in initialised.values()):
-                for name, client in self.clients.items():
-                    if client.wait_for_service(timeout_sec=0.1):
-                        initialised[name] = True
-                        self.node.get_logger().info("'{}' initialised".format(name))
-                    else:
-                        self.node.get_logger().info("service '{}' unavailable, waiting...".format(self.action_server_namespace + "/" + name))
+        self.executor = rclpy.executors.SingleThreadedExecutor()
+        self.executor.add_node(self.node)
+        goal_handle = self.send_goal()
+        if goal_handle is None:
+            return
 
-            uuid_msg = py_trees_ros.conversions.uuid4_to_msg()
-            self.send_goal(uuid_msg)
-
-            request = self.result_type.Request(action_goal_id=uuid_msg)
-            self.node.get_logger().info("result request %s" % request)
-            future = self.clients["result"].call_async(request)
-            self.node.get_logger().info("   future %s" % future)
-            while rclpy.ok():
-                rclpy.spin_once(self.node, timeout_sec=0.1)
-                if future.done():
-                    self.process_result(future)
-                    break
-        except KeyboardInterrupt:
-            pass
+    def shutdown(self):
+        self.action_client.destroy()
         self.node.destroy_node()
 
 
@@ -132,10 +119,15 @@ def dock(args=None):
     action_client = ActionClient(
         node_name="dock_client",
         action_name="dock",
-        action_type_string="Dock",  # py_trees_ros_actions.Dock
+        action_type=py_trees_ros_actions.Dock,
         action_server_namespace="/docking_controller"
         )
-    action_client.spin()
+    try:
+        action_client.setup()
+        action_client.spin()
+    except KeyboardInterrupt:
+        pass
+    action_client.shutdown()
 
 
 def rotate(args=None):
@@ -143,10 +135,15 @@ def rotate(args=None):
     action_client = ActionClient(
         node_name="rotate_client",
         action_name="rotate",
-        action_type_string="Rotate",  # py_trees_ros_actions.Rotate
+        action_type=py_trees_ros_actions.Rotate,
         action_server_namespace="/rotation_controller"
         )
-    action_client.spin()
+    try:
+        action_client.setup()
+        action_client.spin()
+    except KeyboardInterrupt:
+        pass
+    action_client.shutdown()
 
 
 def move_base(args=None):
@@ -154,7 +151,12 @@ def move_base(args=None):
     action_client = ActionClient(
         node_name="move_base_client",
         action_name="move_base",
-        action_type_string="MoveBase",  # py_trees_ros_actions.MoveBase
+        action_type=py_trees_ros_actions.MoveBase,
         action_server_namespace="/move_base"
         )
-    action_client.spin()
+    try:
+        action_client.setup()
+        action_client.spin()
+    except KeyboardInterrupt:
+        pass
+    action_client.shutdown()

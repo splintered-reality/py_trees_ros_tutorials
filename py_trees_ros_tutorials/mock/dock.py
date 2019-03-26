@@ -37,7 +37,7 @@ class Dock(actions.GenericServer):
         super().__init__(
             action_name="docking_controller",
             action_type=(py_trees_actions, "Dock"),
-            custom_execute_callback=self.custom_execute_callback,
+            generate_feedback_message=self.generate_feedback_message,
             goal_received_callback=self.goal_received_callback,
             duration=2.0
         )
@@ -48,16 +48,16 @@ class Dock(actions.GenericServer):
         else:
             self.title = "UnDock"
 
-    def custom_execute_callback(self):
+    def generate_feedback_message(self):
         """
         Create some appropriate feedback.
         """
         # TODO: send some feedback message
-        self.feedback_publisher.publish(
-            py_trees_actions.Dock_Feedback(
-                percentage_completed=self.percent_completed
-            )
+        msg = py_trees_actions.Dock_Feedback(
+            percentage_completed=self.percent_completed
         )
+        self.feedback_publisher.publish(msg)
+        return msg
 
 
 def main():

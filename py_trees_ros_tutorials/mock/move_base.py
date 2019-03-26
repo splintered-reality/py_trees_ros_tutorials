@@ -46,21 +46,21 @@ class MoveBase(actions.GenericServer):
     """
     def __init__(self, odometry_topic='/odom', pose_topic='/pose', duration=None):
         super().__init__(action_name="move_base",
-                         action_type=(py_trees_actions, "MoveBase"),
-                         custom_execute_callback=self.custom_execute_callback,
+                         action_type=py_trees_actions.MoveBase,
+                         generate_feedback_message=self.generate_feedback_message,
                          duration=duration
                          )
         # self.odometry = nav_msgs.Odometry()
         # self.odometry.pose.pose.position = geometry_msgs.Point(0, 0, 0)
-        self.pose = geometry_msgs.PoseWithCovarianceStamped()
-        self.pose.pose.pose.position = geometry_msgs.Point(x=0.0, y=0.0, z=0.0)
+        self.pose = geometry_msgs.PoseStamped()
+        self.pose.pose.position = geometry_msgs.Point(x=0.0, y=0.0, z=0.0)
 
         # publishers
         not_latched = False  # latched = True
         self.publishers = py_trees_ros.utilities.Publishers(
             self.node,
             [
-                ('pose', pose_topic, geometry_msgs.PoseWithCovarianceStamped, not_latched),
+                ('pose', pose_topic, geometry_msgs.PoseStamped, not_latched),
                 # ('odometry', odometry_topic, nav_msgs.Odometry, not_latched)
             ]
         )
@@ -72,7 +72,7 @@ class MoveBase(actions.GenericServer):
             callback=self.publish
         )
 
-    def custom_execute_callback(self):
+    def generate_feedback_message(self):
         """
         Increment the odometry and pose towards the goal.
         """
@@ -80,7 +80,10 @@ class MoveBase(actions.GenericServer):
         # but we could take the feedback from the action
         # and increment this to that proportion
         # self.odometry.pose.pose.position.x += 0.01
-        self.pose.pose.pose.position.x += 0.01
+        self.pose.pose.position.x += 0.01
+        msg = py_trees_actions.MoveBase_Feedback()  # .Feedback() is more proper, but indexing can't find it
+        msg.base_position = self.pose
+        return msg
 
     def publish(self):
         """
