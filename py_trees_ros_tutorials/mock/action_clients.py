@@ -64,6 +64,7 @@ class ActionClient(object):
             self.generate_feedback_message = lambda msg: str(msg)
         else:
             self.generate_feedback_message = generate_feedback_message
+        self.cancel = cancel
 
     def setup(self):
         self.node = rclpy.create_node(self.node_name)
@@ -86,7 +87,7 @@ class ActionClient(object):
             raise RuntimeError(message)
 
     def feedback_callback(self, msg):
-        self.node.get_logger().info('Feedback: {0}'.format(self.generate_feedback_message(msg)))
+        self.node.get_logger().info('feedback: {0}'.format(self.generate_feedback_message(msg)))
 
     def process_result(self, future):
         status = future.result().action_status
@@ -113,25 +114,43 @@ class ActionClient(object):
 
     def spin(self):
         self.executor = rclpy.executors.SingleThreadedExecutor()
-        self.executor.add_node(self.node)
         goal_handle = self.send_goal()
         if goal_handle is None:
             return
-        future = goal_handle.get_result_async()
-        rclpy.spin_until_future_complete(self.node, future, self.executor)
-        # Status: https://github.com/ros2/rcl_interfaces/blob/master/action_msgs/msg/GoalStatus.msg
-        status_strings = {
-            0: "STATUS_UNKNOWN",
-            1: "STATUS_ACCEPTED",
-            2: "STATUS_EXECUTING",
-            3: "STATUS_CANCELING",
-            4: "STATUS_SUCCEEDED",
-            5: "STATUS_CANCELED",
-            6: "STATUS_ABORTED"
-        }
-        self.node.get_logger().info("Result")
-        self.node.get_logger().info("  status: {}".format(status_strings[future.result().action_status]))
-        self.node.get_logger().info("  message: {}".format(future.result().message))
+        result_future = goal_handle.get_result_async()
+        self.executor.add_node(self.node)
+        count = 0
+        timeout_sec = 0.1
+        while rclpy.ok() and not result_future.done():
+            self.executor.spin_once(timeout_sec=timeout_sec)
+            count += 1
+            if count == int(1.0/timeout_sec):
+                if self.cancel:
+                    self.node.get_logger().info("sending a cancel request...")
+                    cancel_future = goal_handle.cancel_goal_async()
+        if self.cancel:
+            if not cancel_future.done():
+                self.node.get_logger().error("spin loop exited before receiving the cancel response")
+            else:
+                self.node.get_logger().info("cancelled [goal id: {}]".format(
+                    cancel_future.result())  # .goals_canceling[0].goal_id) ... is empty?
+                )
+        if not result_future.done():
+            self.node.get_logger().error("rclpy shut down before receiving the result")
+        else:
+            # Status: https://github.com/ros2/rcl_interfaces/blob/master/action_msgs/msg/GoalStatus.msg
+            status_strings = {
+                0: "STATUS_UNKNOWN",
+                1: "STATUS_ACCEPTED",
+                2: "STATUS_EXECUTING",
+                3: "STATUS_CANCELING",
+                4: "STATUS_SUCCEEDED",
+                5: "STATUS_CANCELED",
+                6: "STATUS_ABORTED"
+            }
+            self.node.get_logger().info("Result")
+            self.node.get_logger().info("  status: {}".format(status_strings[result_future.result().action_status]))
+            self.node.get_logger().info("  message: {}".format(result_future.result().message))
 
     def shutdown(self):
         self.action_client.destroy()

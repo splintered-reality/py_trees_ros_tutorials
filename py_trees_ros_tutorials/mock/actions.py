@@ -60,6 +60,11 @@ class GenericServer(object):
         duration (:obj:`float`): forcibly override the dyn reconf time for a goal to complete (seconds)
 
     Use the ``dashboard`` to dynamically reconfigure the parameters.
+
+    There are some shortcomings in this class that could be addressed to make it more robust:
+
+     - check for matching goal id's when disrupting execution
+     - execute multiple requests in parallel / pre-emption (not even tried)
     """
     def __init__(self,
                  action_name,
@@ -103,7 +108,7 @@ class GenericServer(object):
             handle_accepted_callback=self.handle_accepted_callback,
             result_timeout=10
         )
-        print("DJS: Setup")
+        self.cancel_goal_ids = []  # list of unique_identifier_msgs.msg.UUID
 
     def goal_callback(self, goal_request):
         if self.goal_received:
@@ -121,10 +126,23 @@ class GenericServer(object):
             self.duration = self.node.get_parameter("duration").value
             return rclpy.action.server.GoalResponse.ACCEPT
 
-    def cancel_callback(self, cancel_request):
-        """No cancellations."""
-        self.node.get_logger().info("{prefix}no cancellations accepted".format(prefix=self.prefix))
-        return rclpy.action.CancelResponse.REJECT
+    def cancel_callback(
+            self,
+            cancel_request: rclpy.action.server.ServerGoalHandle
+         ) -> rclpy.action.CancelResponse:
+        """
+        No cancellations.
+
+        Args:
+            cancel_request (:class:`~rclpy.action.server.ServerGoalHandle`):
+                handle with information about the
+                goal that is requested to be cancelled
+        """
+        self.node.get_logger().info("{prefix}cancel requested: [{goal_id}]".format(
+            prefix=self.prefix,
+            goal_id=cancel_request.goal_id))
+        self.cancel_goal_ids.append(cancel_request.goal_id)
+        return rclpy.action.CancelResponse.ACCEPT
 
 #     def result_service_callback(self, request, response):
 #         """
@@ -136,7 +154,10 @@ class GenericServer(object):
 #         response.action_status = action_msgs.GoalStatus.STATUS_SUCCEEDED
 #         return response
 
-    def execute_goal_callback(self, goal_handle):
+    def execute_goal_callback(
+            self,
+            goal_handle: rclpy.action.server.ServerGoalHandle
+         ):
         """
         Check for pre-emption, but otherwise just spin around gradually incrementing
         a hypothetical 'percent' done.
@@ -153,8 +174,7 @@ class GenericServer(object):
                 prefix=self.prefix
             )
         )
-        success = False
-        while not success:
+        while True:
             if self.goal_received:
                 increment = 100 / (self.frequency * self.duration)
                 if self.percent_completed >= 100.0:
@@ -164,7 +184,22 @@ class GenericServer(object):
                             prefix=self.prefix
                         )
                     )
-                    success = True
+                    result = self.action_type.Result()
+                    result.message = "{prefix}goal executed with success".format(prefix=self.prefix)
+                    self.node.get_logger().info(result.message)
+                    goal_handle.set_succeeded()
+                    self.goal_received = None
+                    return result
+                elif goal_handle.goal_id in self.cancel_goal_ids:
+                    self.cancel_goal_ids.remove(goal_handle.goal_id)
+                    result = self.action_type.Result()
+                    result.message = "{prefix}goal cancelled at {percentage:.2f}%%".format(
+                        prefix=self.prefix,
+                        percentage=self.percent_completed)
+                    self.node.get_logger().info(result.message)
+                    goal_handle.set_canceled()
+                    self.goal_received = None
+                    return result
                 else:
                     self.node.get_logger().info(
                         "{prefix}feedback {percent:.2f}%%".format(
@@ -178,13 +213,6 @@ class GenericServer(object):
 
             # TODO: use a rate when they have it
             time.sleep(1.0 / self.frequency)
-        if success:
-            result = self.action_type.Result()
-            result.message = "{prefix}goal executed with success".format(prefix=self.prefix)
-            self.node.get_logger().info(result.message)
-            goal_handle.set_succeeded()
-            self.goal_received = None
-            return result
 
     def handle_accepted_callback(self, goal_handle):
         self.node.get_logger().info("{prefix}handle accepted".format(prefix=self.prefix))
