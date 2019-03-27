@@ -20,10 +20,12 @@ Mocks a battery provider.
 
 import action_msgs.msg as action_msgs  # GoalStatus
 import action_msgs.srv as action_srvs  # CancelGoal
+import argparse
 import py_trees_ros
 import py_trees_ros_interfaces.action as py_trees_ros_actions  # Dock, Rotate
 import rclpy
 import rclpy.action  # ActionClient
+import sys
 import unique_identifier_msgs.msg as unique_identifier_msgs
 import uuid
 
@@ -51,6 +53,7 @@ class ActionClient(object):
                  action_name,
                  action_type,
                  action_server_namespace,
+                 cancel=False,
                  generate_feedback_message=None
                  ):
         self.action_type = action_type
@@ -135,6 +138,23 @@ class ActionClient(object):
         self.node.destroy_node()
 
 
+##############################################################################
+# Programs
+##############################################################################
+
+def command_line_argument_parser():
+    parser = argparse.ArgumentParser(
+        description="action client",
+        epilog="And his noodly appendage reached forth to tickle the blessed...\n"
+    )
+    parser.add_argument(
+        '-c', '--cancel',
+        action='store_true',
+        default=False,
+        help='send a cancel request a short period after sending the goal request')
+    return parser.parse_args(sys.argv[1:])
+
+
 def dock(args=None):
     rclpy.init(args=args)
     action_client = ActionClient(
@@ -169,13 +189,15 @@ def rotate(args=None):
 
 def move_base(args=None):
     rclpy.init(args=args)
+    args = command_line_argument_parser()
     action_client = ActionClient(
         node_name="move_base_client",
         action_name="move_base",
         action_type=py_trees_ros_actions.MoveBase,
         action_server_namespace="/move_base",
-        generate_feedback_message=lambda msg: str(msg.base_position.pose.position.x)
-        )
+        cancel=args.cancel,
+        generate_feedback_message=lambda msg: "x={0:.2f}m".format(msg.base_position.pose.position.x),
+    )
     try:
         action_client.setup()
         action_client.spin()
