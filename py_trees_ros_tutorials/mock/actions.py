@@ -65,7 +65,7 @@ class GenericServer(object):
                  action_name,
                  action_type,  # e.g. (py_trees_ros_interfaces.action, "Dock")
                  generate_feedback_message=None,
-                 custom_goal_callback=lambda request: None,
+                 goal_received_callback=lambda request: None,
                  duration=None):
         self.node = rclpy.create_node(
             action_name,
@@ -90,7 +90,7 @@ class GenericServer(object):
             self.generate_feedback_message = lambda: self.action_type.Feedback()
         else:
             self.generate_feedback_message = generate_feedback_message
-        self.custom_goal_callback = custom_goal_callback
+        self.goal_received_callback = goal_received_callback
 
         self.action_server = rclpy.action.ActionServer(
             self.node,
@@ -116,7 +116,7 @@ class GenericServer(object):
         else:
             self.node.get_logger().info("{prefix}received a goal".format(prefix=self.prefix))
             self.goal_received = goal_request
-            self.custom_goal_callback(goal_request)
+            self.goal_received_callback(goal_request)
             self.percent_completed = 0
             self.duration = self.node.get_parameter("duration").value
             return rclpy.action.server.GoalResponse.ACCEPT

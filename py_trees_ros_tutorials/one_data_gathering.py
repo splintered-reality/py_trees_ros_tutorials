@@ -78,6 +78,7 @@ Battery updates on the blackboard:
 
 import launch
 import launch_ros.actions
+import os
 import py_trees
 import py_trees_ros.trees
 import py_trees.console as console
@@ -94,6 +95,9 @@ from . import utilities
 
 def generate_tree_launch_description():
     """Launch the tutorial"""
+    python_unbuffered_environment = os.environ.copy()
+    python_unbuffered_environment['PYTHONUNBUFFERED'] = '1'
+
     launch_description = launch.LaunchDescription()
     launch_description.add_action(
         launch_ros.actions.Node(
@@ -103,7 +107,7 @@ def generate_tree_launch_description():
             output='screen',
             # workaround to print to stdout till https://github.com/ros2/launch/issues/188
             # but...this fails too - https://github.com/ros2/launch/issues/203
-            # env={'PYTHONUNBUFFERED': '1'}
+            # env=python_unbuffered_environment
         )
     )
     return launch_description

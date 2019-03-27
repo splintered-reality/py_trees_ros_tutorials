@@ -50,11 +50,17 @@ class ActionClient(object):
                  node_name,
                  action_name,
                  action_type,
-                 action_server_namespace):
+                 action_server_namespace,
+                 generate_feedback_message=None
+                 ):
         self.action_type = action_type
         self.action_name = action_name
         self.action_server_namespace = action_server_namespace
         self.node_name = node_name
+        if generate_feedback_message is None:
+            self.generate_feedback_message = lambda msg: str(msg)
+        else:
+            self.generate_feedback_message = generate_feedback_message
 
     def setup(self):
         self.node = rclpy.create_node(self.node_name)
@@ -70,14 +76,14 @@ class ActionClient(object):
         )
         result = self.action_client.wait_for_server(timeout_sec=2.0)
         if not result:
-            self.node.get_logger().error(
-                "timed out waiting for the server [{}]".format(
+            message = "timed out waiting for the server [{}]".format(
                     self.action_server_namespace
                 )
-            )
+            self.node.get_logger().error(message)
+            raise RuntimeError(message)
 
-    def feedback_callback(self, feedback):
-        self.node.get_logger().info('Received feedback: {0}'.format(feedback.sequence))
+    def feedback_callback(self, msg):
+        self.node.get_logger().info('Feedback: {0}'.format(self.generate_feedback_message(msg)))
 
     def process_result(self, future):
         status = future.result().action_status
@@ -108,6 +114,21 @@ class ActionClient(object):
         goal_handle = self.send_goal()
         if goal_handle is None:
             return
+        future = goal_handle.get_result_async()
+        rclpy.spin_until_future_complete(self.node, future, self.executor)
+        # Status: https://github.com/ros2/rcl_interfaces/blob/master/action_msgs/msg/GoalStatus.msg
+        status_strings = {
+            0: "STATUS_UNKNOWN",
+            1: "STATUS_ACCEPTED",
+            2: "STATUS_EXECUTING",
+            3: "STATUS_CANCELING",
+            4: "STATUS_SUCCEEDED",
+            5: "STATUS_CANCELED",
+            6: "STATUS_ABORTED"
+        }
+        self.node.get_logger().info("Result")
+        self.node.get_logger().info("  status: {}".format(status_strings[future.result().action_status]))
+        self.node.get_logger().info("  message: {}".format(future.result().message))
 
     def shutdown(self):
         self.action_client.destroy()
@@ -152,7 +173,8 @@ def move_base(args=None):
         node_name="move_base_client",
         action_name="move_base",
         action_type=py_trees_ros_actions.MoveBase,
-        action_server_namespace="/move_base"
+        action_server_namespace="/move_base",
+        generate_feedback_message=lambda msg: str(msg.base_position.pose.position.x)
         )
     try:
         action_client.setup()
