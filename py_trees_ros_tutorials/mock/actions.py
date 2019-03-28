@@ -108,7 +108,6 @@ class GenericServer(object):
             handle_accepted_callback=self.handle_accepted_callback,
             result_timeout=10
         )
-        self.cancel_goal_ids = []  # list of unique_identifier_msgs.msg.UUID
 
     def goal_callback(self, goal_request):
         if self.goal_received:
@@ -128,7 +127,7 @@ class GenericServer(object):
 
     def cancel_callback(
             self,
-            cancel_request: rclpy.action.server.ServerGoalHandle
+            goal_handle: rclpy.action.server.ServerGoalHandle
          ) -> rclpy.action.CancelResponse:
         """
         No cancellations.
@@ -140,8 +139,7 @@ class GenericServer(object):
         """
         self.node.get_logger().info("{prefix}cancel requested: [{goal_id}]".format(
             prefix=self.prefix,
-            goal_id=cancel_request.goal_id))
-        self.cancel_goal_ids.append(cancel_request.goal_id)
+            goal_id=goal_handle.goal_id))
         return rclpy.action.CancelResponse.ACCEPT
 
 #     def result_service_callback(self, request, response):
@@ -177,7 +175,17 @@ class GenericServer(object):
         while True:
             if self.goal_received:
                 increment = 100 / (self.frequency * self.duration)
-                if self.percent_completed >= 100.0:
+                if goal_handle.is_cancel_requested:
+                    self.cancel_goal_ids.remove(goal_handle.goal_id)
+                    result = self.action_type.Result()
+                    result.message = "{prefix}goal cancelled at {percentage:.2f}%%".format(
+                        prefix=self.prefix,
+                        percentage=self.percent_completed)
+                    self.node.get_logger().info(result.message)
+                    goal_handle.set_canceled()
+                    self.goal_received = None
+                    return result
+                elif self.percent_completed >= 100.0:
                     self.percent_completed = 100.0
                     self.node.get_logger().info(
                         "{prefix}feedback 100%%".format(
@@ -188,16 +196,6 @@ class GenericServer(object):
                     result.message = "{prefix}goal executed with success".format(prefix=self.prefix)
                     self.node.get_logger().info(result.message)
                     goal_handle.set_succeeded()
-                    self.goal_received = None
-                    return result
-                elif goal_handle.goal_id in self.cancel_goal_ids:
-                    self.cancel_goal_ids.remove(goal_handle.goal_id)
-                    result = self.action_type.Result()
-                    result.message = "{prefix}goal cancelled at {percentage:.2f}%%".format(
-                        prefix=self.prefix,
-                        percentage=self.percent_completed)
-                    self.node.get_logger().info(result.message)
-                    goal_handle.set_canceled()
                     self.goal_received = None
                     return result
                 else:
