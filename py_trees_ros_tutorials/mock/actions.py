@@ -98,9 +98,9 @@ class GenericServer(object):
         self.goal_received_callback = goal_received_callback
 
         self.action_server = rclpy.action.ActionServer(
-            self.node,
-            self.action_type,
-            action_name,
+            node=self.node,
+            action_type=self.action_type,
+            action_name=action_name,
             callback_group=rclpy.callback_groups.ReentrantCallbackGroup(),  # needed?
             cancel_callback=self.cancel_callback,
             execute_callback=self.execute_goal_callback,
@@ -163,9 +163,6 @@ class GenericServer(object):
         Args:
             goal_handle (:class:`~rclpy.action.server.ServerGoalHandle`): the goal handle of the executing action
         """
-        # TODO: put this all under a timer?
-        # If you want to check for cancellations, check goal_handle.is_cancel_requested
-
         # goal.details (e.g. pose) = don't care
         self.node.get_logger().info(
             "{prefix}executing a goal".format(
