@@ -85,7 +85,6 @@ class GenericServer(object):
 
         self.frequency = 3.0  # hz
         self.percent_completed = 0
-        self.goal_received = None
         self.title = ""  # action_name.replace('_', ' ').title()
         self.duration = self.node.get_parameter("duration").value
         self.prefix = "[" + self.title + "] " if self.title else ""
@@ -110,20 +109,19 @@ class GenericServer(object):
         )
 
     def goal_callback(self, goal_request):
-        if self.goal_received:
-            self.node.get_logger().info(
-                "{prefix}not permitting pre-emptions, rejecting".format(
-                    prefix=self.prefix
-                )
-            )
-            return rclpy.action.server.GoalResponse.REJECT
-        else:
-            self.node.get_logger().info("{prefix}received a goal".format(prefix=self.prefix))
-            self.goal_received = goal_request
-            self.goal_received_callback(goal_request)
-            self.percent_completed = 0
-            self.duration = self.node.get_parameter("duration").value
-            return rclpy.action.server.GoalResponse.ACCEPT
+        """
+        Args:
+            goal_request: of <action_type>.GoalRequest with members
+                goal_id (unique_identifier.msgs.UUID) and those specified in the action
+        """
+#         if self.goal_received:
+#             self.node.get_logger().info("{prefix}pre-empting".format(prefix=self.prefix))
+#         else:
+        self.node.get_logger().info("{prefix}received a goal".format(prefix=self.prefix))
+        self.goal_received_callback(goal_request)
+        self.percent_completed = 0
+        self.duration = self.node.get_parameter("duration").value
+        return rclpy.action.server.GoalResponse.ACCEPT
 
     def cancel_callback(
             self,
@@ -169,18 +167,16 @@ class GenericServer(object):
                 prefix=self.prefix
             )
         )
+        increment = 100 / (self.frequency * self.duration)
         while True:
-            if self.goal_received:
-                increment = 100 / (self.frequency * self.duration)
+            if goal_handle.is_active:
                 if goal_handle.is_cancel_requested:
-                    self.cancel_goal_ids.remove(goal_handle.goal_id)
                     result = self.action_type.Result()
                     result.message = "{prefix}goal cancelled at {percentage:.2f}%%".format(
                         prefix=self.prefix,
                         percentage=self.percent_completed)
                     self.node.get_logger().info(result.message)
                     goal_handle.set_canceled()
-                    self.goal_received = None
                     return result
                 elif self.percent_completed >= 100.0:
                     self.percent_completed = 100.0
@@ -193,7 +189,6 @@ class GenericServer(object):
                     result.message = "{prefix}goal executed with success".format(prefix=self.prefix)
                     self.node.get_logger().info(result.message)
                     goal_handle.set_succeeded()
-                    self.goal_received = None
                     return result
                 else:
                     self.node.get_logger().info(
