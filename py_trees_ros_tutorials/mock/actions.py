@@ -82,7 +82,6 @@ class GenericServer(object):
                 ),
             ]
         )
-
         self.frequency = 3.0  # hz
         self.percent_completed = 0
         self.title = ""  # action_name.replace('_', ' ').title()
@@ -95,6 +94,8 @@ class GenericServer(object):
         else:
             self.generate_feedback_message = generate_feedback_message
         self.goal_received_callback = goal_received_callback
+        self.currently_executing_goal_handle = None
+        self.preempt_requested = []  # list of unique_identifier_msgs.UUID (goal_id's)
 
         self.action_server = rclpy.action.ActionServer(
             node=self.node,
@@ -114,9 +115,6 @@ class GenericServer(object):
             goal_request: of <action_type>.GoalRequest with members
                 goal_id (unique_identifier.msgs.UUID) and those specified in the action
         """
-#         if self.goal_received:
-#             self.node.get_logger().info("{prefix}pre-empting".format(prefix=self.prefix))
-#         else:
         self.node.get_logger().info("{prefix}received a goal".format(prefix=self.prefix))
         self.goal_received_callback(goal_request)
         self.percent_completed = 0
@@ -170,7 +168,16 @@ class GenericServer(object):
         increment = 100 / (self.frequency * self.duration)
         while True:
             if goal_handle.is_active:
-                if goal_handle.is_cancel_requested:
+                if goal_handle.goal_id in self.preempt_requested:
+                    self.preempt_requested.remove(goal_handle.goal_id)
+                    result = self.action_type.Result()
+                    result.message = "{prefix}goal pre-empted at {percentage:.2f}%%".format(
+                        prefix=self.prefix,
+                        percentage=self.percent_completed)
+                    self.node.get_logger().info(result.message)
+                    goal_handle.set_aborted()
+                    return result
+                elif goal_handle.is_cancel_requested:
                     result = self.action_type.Result()
                     result.message = "{prefix}goal cancelled at {percentage:.2f}%%".format(
                         prefix=self.prefix,
@@ -206,6 +213,10 @@ class GenericServer(object):
 
     def handle_accepted_callback(self, goal_handle):
         self.node.get_logger().info("{prefix}handle accepted".format(prefix=self.prefix))
+        if self.currently_executing_goal_handle is not None:
+            self.node.get_logger().info("{prefix}pre-empting".format(prefix=self.prefix))
+            self.preempt_requested.append(self.currently_executing_goal_handle.goal_id)
+        self.currently_executing_goal_handle = goal_handle
         goal_handle.execute()
 
     def shutdown(self):
