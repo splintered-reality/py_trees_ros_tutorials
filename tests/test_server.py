@@ -10,6 +10,7 @@ import rclpy.action
 import rclpy.callback_groups
 import rclpy.executors
 import test_msgs.action as test_actions
+import threading
 import time
 
 ##############################################################################
@@ -18,17 +19,15 @@ import time
 
 
 class GenericServer(object):
-    def __init__(self,
-                 action_name,
-                 action_type):
-        self.node = rclpy.create_node(action_name)
-
-        self.action_type = action_type
+    def __init__(self):
+        self.node = rclpy.create_node("generic_server")
+        self.goal_handle = None
+        self.goal_lock = threading.Lock()
 
         self.action_server = rclpy.action.ActionServer(
             node=self.node,
-            action_type=self.action_type,
-            action_name=action_name,
+            action_type=test_actions.Fibonacci,
+            action_name="fibonacci",
             callback_group=rclpy.callback_groups.ReentrantCallbackGroup(),  # needed?
             execute_callback=self.execute_goal_callback,
             goal_callback=self.goal_callback,
@@ -47,9 +46,11 @@ class GenericServer(object):
 
     def handle_accepted_callback(self, goal_handle):
         self.node.get_logger().info("handle accepted")
-        goal_handle.execute()
+        with self.goal_lock:
+            self.goal_handle = goal_handle
+            goal_handle.execute()
 
-    def execute_goal_callback(
+    async def execute_goal_callback(
             self,
             goal_handle: rclpy.action.server.ServerGoalHandle
          ):
@@ -67,14 +68,15 @@ class GenericServer(object):
         duration = 5.0
         increment = 100 / (frequency * duration)
         percent_completed = 0.0
-        feedback_message = self.action_type.Feedback()
-        print(self.foo)
+        feedback_message = test_actions.Fibonacci.Feedback()
         while True:
             if goal_handle.is_active:
+                # if percent_completed >= 50.0:
+                #     print(self.foo)
                 if percent_completed >= 100.0:
                     percent_completed = 100.0
                     self.node.get_logger().info("feedback 100%%")
-                    result = self.action_type.Result()
+                    result = test_actions.Fibonacci.Result()
                     result.sequence = feedback_message.sequence
                     self.node.get_logger().info(str(result.sequence))
                     goal_handle.set_succeeded()
@@ -88,28 +90,36 @@ class GenericServer(object):
                     percent_completed += increment
                     feedback_message.sequence.append(int(percent_completed))
                     goal_handle.publish_feedback(feedback_message)
+                    time.sleep(1.0 / frequency)
+            else:  # ! active
+                self.node.get_logger().info("aborted")
+                return test_actions.Fibonacci.Result()
 
-            time.sleep(1.0 / frequency)
+    def abort(self):
+        with self.goal_lock:
+            if self.goal_handle and self.goal_handle.is_active:
+                self.node.get_logger().info("aborting...")
+                self.goal_handle.set_aborted()
 
     def shutdown(self):
+        print("middle of shutdown")
         self.action_server.destroy()
         self.node.destroy_node()
 
 
 if __name__ == '__main__':
     rclpy.init()  # picks up sys.argv automagically internally
-    move_base_controller = GenericServer(
-        action_name="fibonacci",
-        action_type=test_actions.Fibonacci
-    )
+    fibonacci = GenericServer()
     executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
-    executor.add_node(move_base_controller.node)
+    executor.add_node(fibonacci.node)
 
     try:
         executor.spin()
     except KeyboardInterrupt:
-        pass
+        fibonacci.abort()
+        executor.spin_once(timeout_sec=0.5)
+        print("Keyboard Interrupt")
 
-    move_base_controller.shutdown()
+    fibonacci.shutdown()
     executor.shutdown()
     rclpy.shutdown()
