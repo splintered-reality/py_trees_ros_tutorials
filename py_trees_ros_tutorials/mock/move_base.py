@@ -109,15 +109,21 @@ def main():
     parser.parse_args(command_line_args)
 
     rclpy.init()  # picks up sys.argv automagically internally
-    move_base_controller = MoveBase()
+    move_base = MoveBase()
     executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
-    executor.add_node(move_base_controller.node)
+    executor.add_node(move_base.node)
 
     try:
         executor.spin()
     except KeyboardInterrupt:
-        pass
+        move_base.abort()
+        # caveat: often broken, whether with spin_once multiple times or this, the
+        # usual mysterious:
+        #   The following exception was never retrieved: PyCapsule_GetPointer
+        #   called with invalid PyCapsule object
+        executor.shutdown()  # finishes all remaining work and exits
 
-    move_base_controller.shutdown()
-    executor.shutdown()
+    print("move base")
+    move_base.shutdown()
+    print("rclpy")
     rclpy.shutdown()

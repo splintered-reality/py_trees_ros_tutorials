@@ -64,16 +64,20 @@ def main():
     command_line_args = rclpy.utilities.remove_ros_args(args=sys.argv)[1:]
     parser.parse_args(command_line_args)
     rclpy.init()  # picks up sys.argv automagically internally
-    rotation_controller = Rotate()
+    rotation = Rotate()
 
     executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
-    executor.add_node(rotation_controller.node)
+    executor.add_node(rotation.node)
 
     try:
         executor.spin()
     except KeyboardInterrupt:
-        pass
+        rotation.abort()
+        # caveat: often broken, whether with spin_once multiple times or this, the
+        # usual mysterious:
+        #   The following exception was never retrieved: PyCapsule_GetPointer
+        #   called with invalid PyCapsule object
+        executor.shutdown()  # finishes all remaining work and exits
 
-    rotation_controller.shutdown()
-    executor.shutdown()
+    rotation.shutdown()
     rclpy.shutdown()

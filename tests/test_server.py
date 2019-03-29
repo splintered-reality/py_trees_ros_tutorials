@@ -116,9 +116,9 @@ if __name__ == '__main__':
     try:
         executor.spin()
     except KeyboardInterrupt:
+        print("Keyboard Interrupt")
         fibonacci.abort()
         executor.spin_once(timeout_sec=0.5)
-        print("Keyboard Interrupt")
 
     fibonacci.shutdown()
     executor.shutdown()

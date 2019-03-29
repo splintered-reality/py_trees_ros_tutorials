@@ -17,25 +17,25 @@ Mocks an action server.
 # Imports
 ##############################################################################
 
-import action_msgs.msg as action_msgs  # GoalStatus
-import action_msgs.srv as action_srvs
 import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
 import rclpy.action
 import rclpy.callback_groups
-import rclpy.executors
 import rclpy.parameter
-import rclpy.qos
+import threading
 import time
 
 ##############################################################################
-# Fake
+# Action Server
 ##############################################################################
 #
 # References:
-#  rclpy/action/client.py: https://github.com/ros2/rclpy/blob/master/rclpy/rclpy/action/client.py
+#
+#  action client         : https://github.com/ros2/rclpy/blob/master/rclpy/rclpy/action/client.py
+#  action server         : https://github.com/ros2/rclpy/blob/master/rclpy/rclpy/action/server.py
+#  action client PR      : https://github.com/ros2/rclpy/pull/257
 #  action server PR      : https://github.com/ros2/rclpy/pull/270
-#  action client example : https://github.com/ros2/examples/pull/222
+#  action examples       : https://github.com/ros2/examples/tree/master/rclpy/actions
 #
 # Note:
 #  currently:  py_trees_ros_interfaces.action.Dock_Goal.Request()
@@ -82,11 +82,11 @@ class GenericServer(object):
                 ),
             ]
         )
+        self.goal_handle = None
+        self.goal_lock = threading.Lock()
         self.frequency = 3.0  # hz
         self.percent_completed = 0
-        self.title = ""  # action_name.replace('_', ' ').title()
         self.duration = self.node.get_parameter("duration").value
-        self.prefix = "[" + self.title + "] " if self.title else ""
 
         self.action_type = action_type
         if generate_feedback_message is None:
@@ -94,8 +94,8 @@ class GenericServer(object):
         else:
             self.generate_feedback_message = generate_feedback_message
         self.goal_received_callback = goal_received_callback
-        self.currently_executing_goal_handle = None
-        self.preempt_requested = []  # list of unique_identifier_msgs.UUID (goal_id's)
+        self.goal_handle = None
+        self.preempt_goal_ids = []  # list of unique_identifier_msgs.UUID (goal_id's)
 
         self.action_server = rclpy.action.ActionServer(
             node=self.node,
@@ -115,7 +115,7 @@ class GenericServer(object):
             goal_request: of <action_type>.GoalRequest with members
                 goal_id (unique_identifier.msgs.UUID) and those specified in the action
         """
-        self.node.get_logger().info("{prefix}received a goal".format(prefix=self.prefix))
+        self.node.get_logger().info("received a goal")
         self.goal_received_callback(goal_request)
         self.percent_completed = 0
         self.duration = self.node.get_parameter("duration").value
@@ -133,20 +133,9 @@ class GenericServer(object):
                 handle with information about the
                 goal that is requested to be cancelled
         """
-        self.node.get_logger().info("{prefix}cancel requested: [{goal_id}]".format(
-            prefix=self.prefix,
+        self.node.get_logger().info("cancel requested: [{goal_id}]".format(
             goal_id=goal_handle.goal_id))
         return rclpy.action.CancelResponse.ACCEPT
-
-#     def result_service_callback(self, request, response):
-#         """
-#         Bit wierd, using this to trigger the actual work. Alternative
-#         would be to asyncio this one and await execute()
-#         """
-#         self.node.get_logger().info("received a result request\n    %s" % request)
-#         self.execute()
-#         response.action_status = action_msgs.GoalStatus.STATUS_SUCCEEDED
-#         return response
 
     def execute_goal_callback(
             self,
@@ -160,64 +149,67 @@ class GenericServer(object):
             goal_handle (:class:`~rclpy.action.server.ServerGoalHandle`): the goal handle of the executing action
         """
         # goal.details (e.g. pose) = don't care
-        self.node.get_logger().info(
-            "{prefix}executing a goal".format(
-                prefix=self.prefix
-            )
-        )
+        self.node.get_logger().info("executing a goal")
         increment = 100 / (self.frequency * self.duration)
         while True:
-            if goal_handle.is_active:
-                if goal_handle.goal_id in self.preempt_requested:
-                    self.preempt_requested.remove(goal_handle.goal_id)
-                    result = self.action_type.Result()
-                    result.message = "{prefix}goal pre-empted at {percentage:.2f}%%".format(
-                        prefix=self.prefix,
-                        percentage=self.percent_completed)
-                    self.node.get_logger().info(result.message)
-                    goal_handle.set_aborted()
-                    return result
-                elif goal_handle.is_cancel_requested:
-                    result = self.action_type.Result()
-                    result.message = "{prefix}goal cancelled at {percentage:.2f}%%".format(
-                        prefix=self.prefix,
-                        percentage=self.percent_completed)
-                    self.node.get_logger().info(result.message)
-                    goal_handle.set_canceled()
-                    return result
-                elif self.percent_completed >= 100.0:
-                    self.percent_completed = 100.0
-                    self.node.get_logger().info(
-                        "{prefix}feedback 100%%".format(
-                            prefix=self.prefix
-                        )
-                    )
-                    result = self.action_type.Result()
-                    result.message = "{prefix}goal executed with success".format(prefix=self.prefix)
-                    self.node.get_logger().info(result.message)
-                    goal_handle.set_succeeded()
-                    return result
-                else:
-                    self.node.get_logger().info(
-                        "{prefix}feedback {percent:.2f}%%".format(
-                            prefix=self.prefix, percent=self.percent_completed
-                        )
-                    )
-                    self.percent_completed += increment
-                    goal_handle.publish_feedback(
-                        self.generate_feedback_message()
-                    )
-
             # TODO: use a rate when they have it
             time.sleep(1.0 / self.frequency)
+            self.percent_completed += increment
+            with self.goal_lock:
+                if goal_handle.is_active:
+                    if goal_handle.goal_id in self.preempt_goal_ids:
+                        self.preempt_goal_ids.remove(goal_handle.goal_id)
+                        result = self.action_type.Result()
+                        result.message = "goal pre-empted at {percentage:.2f}%%".format(
+                            percentage=self.percent_completed)
+                        self.node.get_logger().info(result.message)
+                        goal_handle.set_aborted()
+                        return result
+                    elif goal_handle.is_cancel_requested:
+                        result = self.action_type.Result()
+                        result.message = "goal cancelled at {percentage:.2f}%%".format(
+                            percentage=self.percent_completed)
+                        self.node.get_logger().info(result.message)
+                        goal_handle.set_canceled()
+                        return result
+                    elif self.percent_completed >= 100.0:
+                        self.percent_completed = 100.0
+                        self.node.get_logger().info("feedback 100%%")
+                        result = self.action_type.Result()
+                        result.message = "goal executed with success"
+                        self.node.get_logger().info(result.message)
+                        goal_handle.set_succeeded()
+                        return result
+                    else:
+                        self.node.get_logger().info("feedback {percentage:.2f}%%".format(
+                            percentage=self.percent_completed))
+                        goal_handle.publish_feedback(
+                            self.generate_feedback_message()
+                        )
+                else:  # ! active
+                    self.node.get_logger().info("aborted")
+                    result = self.action_type.Result()
+                    self.node.get_logger().info("resulted")
+                    return result
 
     def handle_accepted_callback(self, goal_handle):
-        self.node.get_logger().info("{prefix}handle accepted".format(prefix=self.prefix))
-        if self.currently_executing_goal_handle is not None:
-            self.node.get_logger().info("{prefix}pre-empting".format(prefix=self.prefix))
-            self.preempt_requested.append(self.currently_executing_goal_handle.goal_id)
-        self.currently_executing_goal_handle = goal_handle
-        goal_handle.execute()
+        self.node.get_logger().info("handle accepted")
+        with self.goal_lock:
+            if self.goal_handle is not None:
+                self.node.get_logger().info("pre-empting")
+                self.preempt_goal_ids.append(self.goal_handle.goal_id)
+            self.goal_handle = goal_handle
+            goal_handle.execute()
+
+    def abort(self):
+        """
+        This method is typically only used when the system is shutting down and
+        there is an executing goal that needs to be abruptly terminated.
+        """
+        with self.goal_lock:
+            if self.goal_handle and self.goal_handle.is_active:
+                self.node.get_logger().info("aborting...")
+                self.goal_handle.set_aborted()
 
     def shutdown(self):
         """
