@@ -1,6 +1,5 @@
 eclipse.preferences.version=1
 encoding//py_trees_ros_tutorials/launch_testies.py=utf-8
-encoding//py_trees_ros_tutorials/mock/action_clients.py=utf-8
 encoding//py_trees_ros_tutorials/mock/actions.py=utf-8
 encoding//py_trees_ros_tutorials/mock/battery.py=utf-8
 encoding//py_trees_ros_tutorials/mock/dashboard.py=utf-8
@@ -17,6 +16,4 @@ encoding//py_trees_ros_tutorials/mock/safety_sensors.py=utf-8
 encoding//py_trees_ros_tutorials/one_data_gathering.py=utf-8
 encoding//py_trees_ros_tutorials/testies.py=utf-8
 encoding//py_trees_ros_tutorials/utilities.py=utf-8
-encoding//tests/client.py=utf-8
-encoding//tests/server.py=utf-8
-encoding//tests/test_server.py=utf-8
+encoding//tests/test_actions.py=utf-8

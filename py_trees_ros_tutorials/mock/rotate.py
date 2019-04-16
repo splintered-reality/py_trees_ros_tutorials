@@ -38,7 +38,8 @@ class Rotate(actions.GenericServer):
         rotation_rate (:obj:`float`): rate of rotation )rad/s)
     """
     def __init__(self, rotation_rate=1.57):
-        super().__init__(action_name="rotation_controller",
+        super().__init__(node_name="rotation_controller",
+                         action_name="rotate",
                          action_type=py_trees_actions.Rotate,
                          generate_feedback_message=self.generate_feedback_message,
                          duration=2.0 * math.pi / rotation_rate
@@ -52,7 +53,6 @@ class Rotate(actions.GenericServer):
         msg = py_trees_actions.Rotate_Feedback()  # Rotate.Feedback() works, but the indexer can't find it
         msg.percentage_completed = self.percent_completed
         msg.angle_rotated = 2*math.pi*self.percent_completed/100.0
-        self.feedback_publisher.publish(msg)
         return msg
 
 
