@@ -209,9 +209,8 @@ class GenericServer(object):
                             self.generate_feedback_message()
                         )
                 else:  # ! active
-                    self.node.get_logger().info("aborted")
+                    self.node.get_logger().info("goal is no longer active, aborting")
                     result = self.action_type.Result()
-                    self.node.get_logger().info("resulted")
                     return result
 
     def handle_accepted_callback(self, goal_handle):
