@@ -38,23 +38,22 @@ class Rotate(actions.GenericServer):
         rotation_rate (:obj:`float`): rate of rotation )rad/s)
     """
     def __init__(self, rotation_rate=1.57):
-        super().__init__(action_name="rotation_controller",
-                         action_type=(py_trees_actions, "Rotate"),
-                         custom_execute_callback=self.custom_execute_callback,
+        super().__init__(node_name="rotation_controller",
+                         action_name="rotate",
+                         action_type=py_trees_actions.Rotate,
+                         generate_feedback_message=self.generate_feedback_message,
                          duration=2.0 * math.pi / rotation_rate
                          )
 
-    def custom_execute_callback(self):
+    def generate_feedback_message(self):
         """
         Create some appropriate feedback.
         """
         # TODO: send some feedback message
-        self.feedback_publisher.publish(
-            py_trees_actions.Rotate_Feedback(
-                percentage_completed=self.percent_completed,
-                angle_rotated=2*math.pi*self.percent_completed/100.0
-            )
-        )
+        msg = py_trees_actions.Rotate_Feedback()  # Rotate.Feedback() works, but the indexer can't find it
+        msg.percentage_completed = self.percent_completed
+        msg.angle_rotated = 2*math.pi*self.percent_completed/100.0
+        return msg
 
 
 def main():
@@ -65,16 +64,20 @@ def main():
     command_line_args = rclpy.utilities.remove_ros_args(args=sys.argv)[1:]
     parser.parse_args(command_line_args)
     rclpy.init()  # picks up sys.argv automagically internally
-    rotation_controller = Rotate()
+    rotation = Rotate()
 
     executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
-    executor.add_node(rotation_controller.node)
+    executor.add_node(rotation.node)
 
     try:
         executor.spin()
     except KeyboardInterrupt:
-        pass
+        rotation.abort()
+        # caveat: often broken, whether with spin_once multiple times or this, the
+        # usual mysterious:
+        #   The following exception was never retrieved: PyCapsule_GetPointer
+        #   called with invalid PyCapsule object
+        executor.shutdown()  # finishes all remaining work and exits
 
-    rotation_controller.shutdown()
-    executor.shutdown()
+    rotation.shutdown()
     rclpy.shutdown()

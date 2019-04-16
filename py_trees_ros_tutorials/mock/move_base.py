@@ -19,7 +19,6 @@ Mocks a simple action server that rotates the robot 360 degrees.
 
 import argparse
 import geometry_msgs.msg as geometry_msgs
-import py_trees_ros.utilities
 import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
 import sys
@@ -33,46 +32,23 @@ from . import actions
 
 class MoveBase(actions.GenericServer):
     """
-    Simulates:
-
-    * move base interface
-    * publishing on /odom (nav_msgs.msg.Odometry)
-    * publishing on /pose (geometry_msgs.msg.PoseWithCovarianceStamped)
+    Simulates a move base style interface
 
     Args:
-        odometry_topic (:obj:`str`): name of the odometry topic
-        pose_topic (:obj:`str`): name of the pose (with covariance stamped) topic
         duration (:obj:`int`): time for a goal to complete (seconds)
     """
-    def __init__(self, odometry_topic='/odom', pose_topic='/pose', duration=None):
-        super().__init__(action_name="move_base",
-                         action_type=(py_trees_actions, "MoveBase"),
-                         custom_execute_callback=self.custom_execute_callback,
-                         duration=duration
-                         )
-        # self.odometry = nav_msgs.Odometry()
-        # self.odometry.pose.pose.position = geometry_msgs.Point(0, 0, 0)
-        self.pose = geometry_msgs.PoseWithCovarianceStamped()
-        self.pose.pose.pose.position = geometry_msgs.Point(x=0.0, y=0.0, z=0.0)
-
-        # publishers
-        not_latched = False  # latched = True
-        self.publishers = py_trees_ros.utilities.Publishers(
-            self.node,
-            [
-                ('pose', pose_topic, geometry_msgs.PoseWithCovarianceStamped, not_latched),
-                # ('odometry', odometry_topic, nav_msgs.Odometry, not_latched)
-            ]
+    def __init__(self, duration=None):
+        super().__init__(
+            node_name="move_base_controller",
+            action_name="move_base",
+            action_type=py_trees_actions.MoveBase,
+            generate_feedback_message=self.generate_feedback_message,
+            duration=duration
         )
-        self.publishers.pose.publish(self.pose)
-        # self.publishers.odometry.publish(self.odometry)
+        self.pose = geometry_msgs.PoseStamped()
+        self.pose.pose.position = geometry_msgs.Point(x=0.0, y=0.0, z=0.0)
 
-        self.publish_timer = self.node.create_timer(
-            timer_period_sec=0.5,
-            callback=self.publish
-        )
-
-    def custom_execute_callback(self):
+    def generate_feedback_message(self):
         """
         Increment the odometry and pose towards the goal.
         """
@@ -80,21 +56,10 @@ class MoveBase(actions.GenericServer):
         # but we could take the feedback from the action
         # and increment this to that proportion
         # self.odometry.pose.pose.position.x += 0.01
-        self.pose.pose.pose.position.x += 0.01
-
-    def publish(self):
-        """
-        Most things expect a continous stream of odometry/pose messages, so we
-        run this from a timer.
-        """
-        # self.publishers.odometry.publish(self.odometry)
-        self.publishers.pose.publish(self.pose)
-
-    def shutdown(self):
-        if self.publish_timer is not None:
-            self.publish_timer.cancel()
-            self.node.destroy_timer(self.publish_timer)
-        super().shutdown()
+        self.pose.pose.position.x += 0.01
+        msg = py_trees_actions.MoveBase_Feedback()  # .Feedback() is more proper, but indexing can't find it
+        msg.base_position = self.pose
+        return msg
 
 
 def main():
@@ -106,15 +71,19 @@ def main():
     parser.parse_args(command_line_args)
 
     rclpy.init()  # picks up sys.argv automagically internally
-    move_base_controller = MoveBase()
+    move_base = MoveBase()
     executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
-    executor.add_node(move_base_controller.node)
+    executor.add_node(move_base.node)
 
     try:
         executor.spin()
     except KeyboardInterrupt:
-        pass
+        move_base.abort()
+        # caveat: often broken, with multiple spin_once or shutdown, error is the
+        # mysterious:
+        #   The following exception was never retrieved: PyCapsule_GetPointer
+        #   called with invalid PyCapsule object
+        executor.shutdown()  # finishes all remaining work and exits
 
-    move_base_controller.shutdown()
-    executor.shutdown()
+    move_base.shutdown()
     rclpy.shutdown()

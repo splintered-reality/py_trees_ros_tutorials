@@ -33,13 +33,14 @@ class Dock(actions.GenericServer):
     """
     Simple server that docks if the goal is true, undocks otherwise.
     """
-    def __init__(self):
+    def __init__(self, duration=2.0):
         super().__init__(
-            action_name="docking_controller",
-            action_type=(py_trees_actions, "Dock"),
-            custom_execute_callback=self.custom_execute_callback,
+            node_name="docking_controller",
+            action_name="dock",
+            action_type=py_trees_actions.Dock,
+            generate_feedback_message=self.generate_feedback_message,
             goal_received_callback=self.goal_received_callback,
-            duration=2.0
+            duration=duration
         )
 
     def goal_received_callback(self, goal):
@@ -48,16 +49,15 @@ class Dock(actions.GenericServer):
         else:
             self.title = "UnDock"
 
-    def custom_execute_callback(self):
+    def generate_feedback_message(self):
         """
         Create some appropriate feedback.
         """
         # TODO: send some feedback message
-        self.feedback_publisher.publish(
-            py_trees_actions.Dock_Feedback(
-                percentage_completed=self.percent_completed
-            )
+        msg = py_trees_actions.Dock_Feedback(
+            percentage_completed=self.percent_completed
         )
+        return msg
 
 
 def main():
@@ -68,16 +68,20 @@ def main():
     command_line_args = rclpy.utilities.remove_ros_args(args=sys.argv)[1:]
     parser.parse_args(command_line_args)
     rclpy.init()  # picks up sys.argv automagically internally
-    docking_controller = Dock()
+    docking = Dock()
 
     executor = rclpy.executors.MultiThreadedExecutor(num_threads=4)
-    executor.add_node(docking_controller.node)
+    executor.add_node(docking.node)
 
     try:
         executor.spin()
     except KeyboardInterrupt:
-        pass
+        docking.abort()
+        # caveat: often broken, whether with spin_once multiple times or this, the
+        # usual mysterious:
+        #   The following exception was never retrieved: PyCapsule_GetPointer
+        #   called with invalid PyCapsule object
+        executor.shutdown()  # finishes all remaining work and exits
 
-    docking_controller.shutdown()
-    executor.shutdown()
+    docking.shutdown()
     rclpy.shutdown()
