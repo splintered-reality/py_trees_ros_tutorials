@@ -62,7 +62,7 @@ class GenericServer(object):
         node_name (:obj:`str`): name to use for the node (e.g. docking_controller)
         action_name (:obj:`str`): name of the action server (e.g. dock)
         action_type (:obj:`any`): type of the action server (e.g. py_trees_ros_interfaces.Dock
-        custom_execute_callback (:obj:`func`): callback to be executed inside the execute loop, no args
+        generate_feedback_message (:obj:`func`): formatter for feedback messages, takes action_type.Feedback messages and returns strings
         goal_recieved_callback(:obj:`func`): callback to be executed immediately upon receiving a goal
         duration (:obj:`float`): forcibly override the dyn reconf time for a goal to complete (seconds)
 
@@ -112,7 +112,7 @@ class GenericServer(object):
 
         self.action_type = action_type
         if generate_feedback_message is None:
-            self.generate_feedback_message = lambda: self.action_type.Feedback()
+            self.generate_feedback_message = lambda msg: "{}".format(msg)
         else:
             self.generate_feedback_message = generate_feedback_message
         self.goal_received_callback = goal_received_callback
@@ -314,7 +314,7 @@ class GenericClient(object):
 
     def send_cancel_request(self):
 
-        self.node.get_logger().info('Canceling goal')
+        self.node.get_logger().info('Cancelling goal')
 
         if self._goal_handle is not None:
             future = self._goal_handle.cancel_goal_async()
@@ -325,7 +325,7 @@ class GenericClient(object):
     def cancel_response_callback(self, future):
         cancel_response = future.result()
         if len(cancel_response.goals_canceling) > 0:
-            self.node.get_logger().info('Goal successfully canceled')
+            self.node.get_logger().info('Goal successfully cancelled')
         else:
             self.node.get_logger().info('Goal failed to cancel')
 

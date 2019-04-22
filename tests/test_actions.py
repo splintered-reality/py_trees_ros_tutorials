@@ -10,12 +10,10 @@
 ##############################################################################
 
 import action_msgs.msg as action_msgs  # GoalStatus
-import operator
 import py_trees
 import py_trees.console as console
 import rclpy
 import rclpy.executors
-import sensor_msgs.msg as sensor_msgs
 import time
 import unittest
 
