@@ -4,28 +4,6 @@ from setuptools import find_packages, setup
 
 package_name = 'py_trees_ros_tutorials'
 
-install_requires = [
-    # build
-    'setuptools',
-    # runtime
-    #  - can only add pure python package dependencies here
-    #  - runtime scripts will fail if not found
-    #      (so some utility exists to duplicate package.xml <exec_depend> here)
-    #  - doesn't cover ros2 python packages installed by ament_cmake
-    #    - though presumably this could be fixed
-    'launch',
-    'launch_ros',
-    'py_trees',
-    # 'py_trees_ros_interfaces',
-    # 'rclpy',
-    'ros2launch',
-    'ros2param',
-    'ros2run',
-    'ros2service',
-    'ros2topic',
-    # 'std_msgs'
-]
-
 setup(
     name=package_name,
     version='0.1.0',  # also update package.xml and version.py
@@ -50,7 +28,7 @@ setup(
         #  ),
     ],
     package_data={'py_trees_ros_tutorials': ['mock/gui/*']},
-    install_requires=install_requires,
+    install_requires=[],  # it's all lies (c.f. package.xml, but no use case for this yet)
     extras_require={},
     author='Daniel Stonier',
     maintainer='Daniel Stonier <d.stonier@gmail.com>',
