@@ -170,7 +170,7 @@ def tutorial_main():
     root = tutorial_create_root()
     tree = py_trees_ros.trees.BehaviourTree(
         root=root,
-        ascii_tree_debug=True
+        unicode_tree_debug=True
     )
     try:
         tree.setup(timeout=15)
