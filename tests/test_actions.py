@@ -160,7 +160,7 @@ class TestActionServers(unittest.TestCase):
         goal_handle = goal_future.result()
 
         # preempt with another goal
-        next_goal_future = client.action_client.send_goal_async(client.action_type.Goal())
+        unused_next_goal_future = client.action_client.send_goal_async(client.action_type.Goal())
 
         # Await preempted goal result future
         result_future = goal_handle.get_result_async()
