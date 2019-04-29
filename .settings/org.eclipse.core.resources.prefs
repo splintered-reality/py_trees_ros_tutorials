@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//doc/conf.py=utf-8
 encoding//py_trees_ros_tutorials/launch_testies.py=utf-8
 encoding//py_trees_ros_tutorials/mock/actions.py=utf-8
 encoding//py_trees_ros_tutorials/mock/battery.py=utf-8

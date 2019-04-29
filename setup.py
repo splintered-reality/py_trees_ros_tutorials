@@ -1,56 +1,70 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+import os
+
+from distutils import log
 from setuptools import find_packages, setup
+from setuptools.command.develop import develop
+from setuptools.command.install import install
 
 package_name = 'py_trees_ros_tutorials'
 
-install_requires = [
-    # build
-    'setuptools',
-    # runtime
-    #  - can only add pure python package dependencies here
-    #  - runtime scripts will fail if not found
-    #      (so some utility exists to duplicate package.xml <exec_depend> here)
-    #  - doesn't cover ros2 python packages installed by ament_cmake
-    #    - though presumably this could be fixed
-    'launch',
-    'launch_ros',
-    'py_trees',
-    # 'py_trees_ros_interfaces',
-    # 'rclpy',
-    'ros2launch',
-    'ros2param',
-    'ros2run',
-    'ros2service',
-    'ros2topic',
-    # 'std_msgs'
-]
+
+# This is somewhat dodgy as it will escape any override from, e.g. the command
+# line or a setup.cfg configuration. It does however, get us around the problem
+# of setup.cfg influencing requirements install on rtd installs
+#
+# TODO: should be a way of detecting whether scripts_dir has been influenced
+# from outside
+def redirect_install_dir(command_subclass):
+
+    original_run = command_subclass.run
+
+    def modified_run(self):
+        if self.prefix is not None:
+            # typical ros2 pathway
+            new_script_dir = os.path.join(self.prefix, 'lib', package_name)
+        else:
+            # TODO must be a more intelligent way of stitching this...
+            # Warning: script_dir is typically a 'bin' path, if ever someone sets it
+            # somewhere wildly different from the command line or
+            print("Script dir: %s" % self.script_dir)
+            new_script_dir = os.path.abspath(
+                os.path.join(
+                    self.script_dir, os.pardir, 'lib', package_name
+                )
+            )
+        log.info("redirecting scripts")
+        log.info("  from: {}".format(self.script_dir))
+        log.info("    to: {}".format(new_script_dir))
+        self.script_dir = new_script_dir
+        original_run(self)
+
+    command_subclass.run = modified_run
+    return command_subclass
+
+
+@redirect_install_dir
+class OverrideDevelop(develop):
+    pass
+
+
+@redirect_install_dir
+class OverrideInstall(install):
+    pass
+
 
 setup(
+    cmdclass={
+        'develop': OverrideDevelop,
+        'install': OverrideInstall
+    },
     name=package_name,
     version='0.1.0',  # also update package.xml and version.py
     packages=find_packages(exclude=['tests*', 'docs*', 'launch*']),
-    data_files=[
-        ('share/' + package_name, ['package.xml']),
-        # launchers
-        # ('share/' + package_name + '/launch',
-        #  [
-        #      'launch/mock_robot.launch.py',
-        #  ]
-        #  ),
-        # global scripts
-        #   note: package specific scripts use the entry_points
-        #   configured by setup.cfg
-        # ('bin',
-        #  [
-        #     'scripts/py-trees-blackboard-watcher',
-        #     'scripts/py-trees-tree-watcher',
-        #     'scripts/py-trees-latched-echo'
-        #  ]
-        #  ),
-    ],
+    data_files=[('share/' + package_name, ['package.xml'])],
     package_data={'py_trees_ros_tutorials': ['mock/gui/*']},
-    install_requires=install_requires,
+    install_requires=[],  # it's all lies (c.f. package.xml, but no use case for this yet)
     extras_require={},
     author='Daniel Stonier',
     maintainer='Daniel Stonier <d.stonier@gmail.com>',
@@ -76,7 +90,6 @@ setup(
     # tests_require=['nose', 'pytest', 'flake8', 'yanc', 'nose-htmloutput']
     entry_points={
          'console_scripts': [
-             # These are redirected to lib/<package_name> by setup.cfg
              # Mocks
              'mock-battery = py_trees_ros_tutorials.mock.battery:main',
              'mock-dashboard = py_trees_ros_tutorials.mock.dashboard:main',
@@ -90,7 +103,7 @@ setup(
              'mock-move-base-client = py_trees_ros_tutorials.mock.actions:move_base_client',
              'mock-rotate-client = py_trees_ros_tutorials.mock.actions:rotate_client',
              # Mock Launcher
-             'launch-mock-robot = py_trees_ros_tutorials.mock.launch:main',
+             'mock-robot = py_trees_ros_tutorials.mock.launch:main',
              # Tutorial Nodes
              'tree-data-gathering = py_trees_ros_tutorials.one_data_gathering:tutorial_main',
              # Tutorial Launchers (directly runnable)
