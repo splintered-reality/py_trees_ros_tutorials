@@ -9,6 +9,7 @@ encoding//py_trees_ros_tutorials/mock/gui/configuration_group_box.py=utf-8
 encoding//py_trees_ros_tutorials/mock/gui/configuration_group_box_ui.py=utf-8
 encoding//py_trees_ros_tutorials/mock/gui/dashboard_group_box.py=utf-8
 encoding//py_trees_ros_tutorials/mock/gui/main_window.py=utf-8
+encoding//py_trees_ros_tutorials/mock/gui/main_window_rc.py=utf-8
 encoding//py_trees_ros_tutorials/mock/launch.py=utf-8
 encoding//py_trees_ros_tutorials/mock/led_strip.py=utf-8
 encoding//py_trees_ros_tutorials/mock/move_base.py=utf-8

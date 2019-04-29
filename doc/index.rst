@@ -18,6 +18,7 @@ Behaviour trees for ros in python.
    :maxdepth: 1
    :caption: Reference
 
+   modules
    changelog
 
 Indices and tables
