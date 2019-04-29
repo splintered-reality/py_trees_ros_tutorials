@@ -1,32 +1,56 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+import os
+
+from distutils import log
 from setuptools import find_packages, setup
+from setuptools.command.develop import develop
+from setuptools.command.install import install
 
 package_name = 'py_trees_ros_tutorials'
 
+
+# This is somewhat dodgy as it will escape any override from, e.g. the command
+# line or a setup.cfg configuration. It does however, get us around the problem
+# of setup.cfg influencing requirements install on rtd installs
+#
+# TODO: should be a way of detecting whether scripts_dir has been influenced
+# from outside
+def redirect_install_dir(command_subclass):
+
+    original_run = command_subclass.run
+
+    def modified_run(self):
+        new_script_dir = os.path.join(self.prefix, 'lib', package_name)
+        log.info("redirecting scripts")
+        log.info("  from: {}".format(self.script_dir))
+        log.info("    to: {}".format(new_script_dir))
+        self.script_dir = new_script_dir
+        original_run(self)
+
+    command_subclass.run = modified_run
+    return command_subclass
+
+
+@redirect_install_dir
+class OverrideDevelop(develop):
+    pass
+
+
+@redirect_install_dir
+class OverrideInstall(install):
+    pass
+
+
 setup(
+    cmdclass={
+        'develop': OverrideDevelop,
+        'install': OverrideInstall
+    },
     name=package_name,
     version='0.1.0',  # also update package.xml and version.py
     packages=find_packages(exclude=['tests*', 'docs*', 'launch*']),
-    data_files=[
-        ('share/' + package_name, ['package.xml']),
-        # launchers
-        # ('share/' + package_name + '/launch',
-        #  [
-        #      'launch/mock_robot.launch.py',
-        #  ]
-        #  ),
-        # global scripts
-        #   note: package specific scripts use the entry_points
-        #   configured by setup.cfg
-        # ('bin',
-        #  [
-        #     'scripts/py-trees-blackboard-watcher',
-        #     'scripts/py-trees-tree-watcher',
-        #     'scripts/py-trees-latched-echo'
-        #  ]
-        #  ),
-    ],
+    data_files=[('share/' + package_name, ['package.xml'])],
     package_data={'py_trees_ros_tutorials': ['mock/gui/*']},
     install_requires=[],  # it's all lies (c.f. package.xml, but no use case for this yet)
     extras_require={},
@@ -54,7 +78,6 @@ setup(
     # tests_require=['nose', 'pytest', 'flake8', 'yanc', 'nose-htmloutput']
     entry_points={
          'console_scripts': [
-             # These are redirected to lib/<package_name> by setup.cfg
              # Mocks
              'mock-battery = py_trees_ros_tutorials.mock.battery:main',
              'mock-dashboard = py_trees_ros_tutorials.mock.dashboard:main',
@@ -68,7 +91,7 @@ setup(
              'mock-move-base-client = py_trees_ros_tutorials.mock.actions:move_base_client',
              'mock-rotate-client = py_trees_ros_tutorials.mock.actions:rotate_client',
              # Mock Launcher
-             'launch-mock-robot = py_trees_ros_tutorials.mock.launch:main',
+             'mock-robot = py_trees_ros_tutorials.mock.launch:main',
              # Tutorial Nodes
              'tree-data-gathering = py_trees_ros_tutorials.one_data_gathering:tutorial_main',
              # Tutorial Launchers (directly runnable)
