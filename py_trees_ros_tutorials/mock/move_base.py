@@ -19,6 +19,7 @@ Mocks a simple action server that rotates the robot 360 degrees.
 
 import argparse
 import geometry_msgs.msg as geometry_msgs
+import py_trees_ros.mock.actions
 import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
 import sys
@@ -30,7 +31,7 @@ from . import actions
 ##############################################################################
 
 
-class MoveBase(actions.GenericServer):
+class MoveBase(py_trees_ros.mock.actions.GenericServer):
     """
     Simulates a move base style interface
 

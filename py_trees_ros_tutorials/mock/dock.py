@@ -18,6 +18,7 @@ Mocks a docking controller
 ##############################################################################
 
 import argparse
+import py_trees_ros.mock.actions
 import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
 import sys
@@ -29,7 +30,7 @@ from . import actions
 ##############################################################################
 
 
-class Dock(actions.GenericServer):
+class Dock(py_trees_ros.mock.actions.GenericServer):
     """
     Simple server that docks if the goal is true, undocks otherwise.
     """

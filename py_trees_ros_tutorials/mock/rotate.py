@@ -19,6 +19,7 @@ Mocks a simple action server that rotates the robot 360 degrees.
 
 import argparse
 import math
+import py_trees_ros.mock.actions
 import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
 import sys
@@ -30,7 +31,7 @@ from . import actions
 ##############################################################################
 
 
-class Rotate(actions.GenericServer):
+class Rotate(py_trees_ros.mock.actions.GenericServer):
     """
     Simple server that controls a full rotation of the robot.
 
