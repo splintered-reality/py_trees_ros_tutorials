@@ -21,7 +21,19 @@ def redirect_install_dir(command_subclass):
     original_run = command_subclass.run
 
     def modified_run(self):
-        new_script_dir = os.path.join(self.prefix, 'lib', package_name)
+        if self.prefix is not None:
+            # typical ros2 pathway
+            new_script_dir = os.path.join(self.prefix, 'lib', package_name)
+        else:
+            # TODO must be a more intelligent way of stitching this...
+            # Warning: script_dir is typically a 'bin' path, if ever someone sets it
+            # somewhere wildly different from the command line or
+            print("Script dir: %s" % self.script_dir)
+            new_script_dir = os.path.abspath(
+                os.path.join(
+                    self.script_dir, os.pardir, 'lib', package_name
+                )
+            )
         log.info("redirecting scripts")
         log.info("  from: {}".format(self.script_dir))
         log.info("    to: {}".format(new_script_dir))
