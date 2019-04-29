@@ -27,7 +27,7 @@ import unittest.mock
 
 project_dir = os.path.abspath(
     os.path.join(
-        os.path.abspath(__file__), os.pardir, os.pardir
+        os.path.abspath(__file__), os.pardir
     )
 )
 
