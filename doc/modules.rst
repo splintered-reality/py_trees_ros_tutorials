@@ -9,22 +9,6 @@ py_trees_ros_tutorials
 .. automodule:: py_trees_ros_tutorials
    :synopsis: tutorials for py_trees in ros
 
-py_trees_ros_tutorials.utilities
---------------------------------
-
-.. automodule:: py_trees_ros_tutorials.utilities
-    :members:
-    :show-inheritance:
-    :synopsis: utilities for the tutorials and launchers
-
-py_trees_ros_tutorials.version
-------------------------------
-
-.. automodule:: py_trees_ros_tutorials.version
-    :members:
-    :show-inheritance:
-    :synopsis: package version number for users of the package
-
 py_trees_ros_tutorials.mock
 ---------------------------
 
@@ -32,15 +16,14 @@ py_trees_ros_tutorials.mock
    :synopsis: utilities and components for mocking a robot
 
 py_trees_ros_tutorials.mock.actions
------------------------------------
-
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: py_trees_ros_tutorials.mock.actions
     :members:
     :show-inheritance:
     :synopsis: reusable action clients for testing mock components
 
 py_trees_ros_tutorials.mock.battery
------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: py_trees_ros_tutorials.mock.battery
     :members:
@@ -48,7 +31,7 @@ py_trees_ros_tutorials.mock.battery
     :synopsis: mock the state of a battery component
 
 py_trees_ros_tutorials.mock.dock
---------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: py_trees_ros_tutorials.mock.dock
     :members:
@@ -56,7 +39,7 @@ py_trees_ros_tutorials.mock.dock
     :synopsis: mock a docking controller
 
 py_trees_ros_tutorials.mock.launch
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: py_trees_ros_tutorials.mock.launch
     :members:
@@ -64,7 +47,7 @@ py_trees_ros_tutorials.mock.launch
     :synopsis: a python launcher for all mock robot processes
 
 py_trees_ros_tutorials.mock.led_strip
--------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: py_trees_ros_tutorials.mock.led_strip
     :members:
@@ -72,7 +55,7 @@ py_trees_ros_tutorials.mock.led_strip
     :synopsis: mock a led strip notification server
 
 py_trees_ros_tutorials.mock.move_base
--------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: py_trees_ros_tutorials.mock.move_base
     :members:
@@ -80,7 +63,7 @@ py_trees_ros_tutorials.mock.move_base
     :synopsis: mock the ROS navistack move base
 
 py_trees_ros_tutorials.mock.rotate
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: py_trees_ros_tutorials.mock.rotate
     :members:
@@ -88,7 +71,7 @@ py_trees_ros_tutorials.mock.rotate
     :synopsis: mock a very simple rotation action server
 
 py_trees_ros_tutorials.mock.safety_sensors
-------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: py_trees_ros_tutorials.mock.safety_sensors
     :members:
