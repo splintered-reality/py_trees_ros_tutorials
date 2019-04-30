@@ -8,7 +8,7 @@
 # Documentation
 ##############################################################################
 """
-Launch a qt dashboard for the tutorials.
+A qt dashboard for interactions with the mock robot
 """
 ##############################################################################
 # Imports

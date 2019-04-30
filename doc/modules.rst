@@ -31,6 +31,14 @@ py_trees_ros_tutorials.mock.battery
     :show-inheritance:
     :synopsis: mock the state of a battery component
 
+py_trees_ros_tutorials.mock.dock
+--------------------------------
+
+.. automodule:: py_trees_ros_tutorials.mock.dock
+    :members:
+    :show-inheritance:
+    :synopsis: mock a docking controller
+
 py_trees_ros_tutorials.mock.launch
 ----------------------------------
 
@@ -70,3 +78,4 @@ py_trees_ros_tutorials.mock.safety_sensors
     :members:
     :show-inheritance:
     :synopsis: mock a safety sensor pipeline, requires context switching
+

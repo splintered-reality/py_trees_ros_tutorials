@@ -36,7 +36,7 @@ class Battery(object):
     Node Name:
         * **battery**
 
-    ROS Publishers:
+    Publishers:
         * **~state** (:class:`sensor_msgs.msg.BatteryState`)
 
           * full battery state information
@@ -147,6 +147,9 @@ class Battery(object):
         self.publishers.state.publish(msg=self.battery)
 
     def shutdown(self):
+        """
+        Cleanup ROS components.
+        """
         self.node.destroy_node()
 
 

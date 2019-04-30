@@ -165,6 +165,8 @@ MOCK_MODULES = [
     'action_msgs', 'action_msgs.msg',
     'geometry_msgs', 'geometry_msgs.msg',
     'launch', 'launch_ros', 'launch_ros.actions',
+    # https://github.com/splintered-reality/py_trees_ros_tutorials/issues/18#issuecomment-487982404
+    # 'PyQt5', 'PyQt5.QtCore', 'PyQt5.QtWidgets',
     'py_trees_ros', 'py_trees_ros.exceptions', 'py_trees_ros.mock',
     'py_trees_ros.mock.actions',
     'py_trees_ros_interfaces', 'py_trees_ros_interfaces.action',
@@ -178,12 +180,10 @@ MOCK_MODULES = [
     'std_msgs', 'std_msgs.msg',
     'unique_identifier_msgs', 'unique_identifier_msgs.msg'
 ]
-# sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = unittest.mock.Mock()
 
-# This would be nice if it worked, but it doesn't handle submodules well
-# autodoc_mock_imports = MOCK_MODULES
+# Has some caveats, see
+#    https://github.com/splintered-reality/py_trees_ros_tutorials/issues/18#issuecomment-487975890
+autodoc_mock_imports = MOCK_MODULES
 
 ##############################################################################
 # Default Sphinx

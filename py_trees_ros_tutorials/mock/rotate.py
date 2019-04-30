@@ -24,8 +24,6 @@ import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
 import sys
 
-from . import actions
-
 ##############################################################################
 # Class
 ##############################################################################
@@ -35,10 +33,18 @@ class Rotate(py_trees_ros.mock.actions.GenericServer):
     """
     Simple server that controls a full rotation of the robot.
 
+    Node Name:
+        * **rotation_controller**
+
+    Action Servers:
+        * **/rotate** (:class:`py_trees_ros_interfaces.action.Dock`)
+
+          * motion primitives - rotation server
+
     Args:
-        rotation_rate (:obj:`float`): rate of rotation )rad/s)
+        rotation_rate (:obj:`float`): rate of rotation (rad/s)
     """
-    def __init__(self, rotation_rate=1.57):
+    def __init__(self, rotation_rate: float=1.57):
         super().__init__(node_name="rotation_controller",
                          action_name="rotate",
                          action_type=py_trees_actions.Rotate,
@@ -48,7 +54,10 @@ class Rotate(py_trees_ros.mock.actions.GenericServer):
 
     def generate_feedback_message(self):
         """
-        Create some appropriate feedback.
+        Create a feedback message that populates the percent completed.
+
+        Returns:
+            :class:`py_trees_actions.Rotate_Feedback`: the populated feedback message
         """
         # TODO: send some feedback message
         msg = py_trees_actions.Rotate_Feedback()  # Rotate.Feedback() works, but the indexer can't find it
@@ -59,9 +68,9 @@ class Rotate(py_trees_ros.mock.actions.GenericServer):
 
 def main():
     """
-    Entry point for the mock batttery node.
+    Entry point for the mock rotation controller node.
     """
-    parser = argparse.ArgumentParser(description='Mock a docking controller')
+    parser = argparse.ArgumentParser(description='Mock a rotation controller')
     command_line_args = rclpy.utilities.remove_ros_args(args=sys.argv)[1:]
     parser.parse_args(command_line_args)
     rclpy.init()  # picks up sys.argv automagically internally

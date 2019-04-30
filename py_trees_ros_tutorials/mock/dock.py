@@ -23,8 +23,6 @@ import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
 import sys
 
-from . import actions
-
 ##############################################################################
 # Class
 ##############################################################################
@@ -32,9 +30,21 @@ from . import actions
 
 class Dock(py_trees_ros.mock.actions.GenericServer):
     """
-    Simple server that docks if the goal is true, undocks otherwise.
+    Simple action server that docks/undocks depending on the instructions
+    in the goal requests.
+
+    Node Name:
+        * **docking_controller**
+
+    Action Servers:
+        * **/dock** (:class:`py_trees_ros_interfaces.action.Dock`)
+
+          * docking/undocking control
+
+    Args:
+        duration: mocked duration of a successful docking/undocking action
     """
-    def __init__(self, duration=2.0):
+    def __init__(self, duration: float=2.0):
         super().__init__(
             node_name="docking_controller",
             action_name="dock",
@@ -45,16 +55,22 @@ class Dock(py_trees_ros.mock.actions.GenericServer):
         )
 
     def goal_received_callback(self, goal):
+        """
+        Set the title of the action depending on whether a docking
+        or undocking action was requestions ('Dock'/'UnDock')
+        """
         if goal.dock:
             self.title = "Dock"
         else:
             self.title = "UnDock"
 
-    def generate_feedback_message(self):
+    def generate_feedback_message(self) -> py_trees_actions.Dock_Feedback:
         """
-        Create some appropriate feedback.
+        Create a feedback message that populates the percent completed.
+
+        Returns:
+            :class:`py_trees_actions.Dock_Feedback`: the populated feedback message
         """
-        # TODO: send some feedback message
         msg = py_trees_actions.Dock_Feedback(
             percentage_completed=self.percent_completed
         )
@@ -63,7 +79,7 @@ class Dock(py_trees_ros.mock.actions.GenericServer):
 
 def main():
     """
-    Entry point for the mock batttery node.
+    Entry point for the mocked docking controller.
     """
     parser = argparse.ArgumentParser(description='Mock a docking controller')
     command_line_args = rclpy.utilities.remove_ros_args(args=sys.argv)[1:]

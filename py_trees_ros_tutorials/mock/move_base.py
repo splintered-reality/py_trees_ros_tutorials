@@ -24,8 +24,6 @@ import py_trees_ros_interfaces.action as py_trees_actions
 import rclpy
 import sys
 
-from . import actions
-
 ##############################################################################
 # Class
 ##############################################################################
@@ -33,10 +31,18 @@ from . import actions
 
 class MoveBase(py_trees_ros.mock.actions.GenericServer):
     """
-    Simulates a move base style interface
+    Simulates a move base style interface.
+
+    Node Name:
+        * **move_base_controller**
+
+    Action Servers:
+        * **/move_base** (:class:`py_trees_ros_interfaces.action.MoveBase`)
+
+          * point to point move base action
 
     Args:
-        duration (:obj:`int`): time for a goal to complete (seconds)
+        duration: mocked duration of a successful action
     """
     def __init__(self, duration=None):
         super().__init__(
@@ -49,9 +55,12 @@ class MoveBase(py_trees_ros.mock.actions.GenericServer):
         self.pose = geometry_msgs.PoseStamped()
         self.pose.pose.position = geometry_msgs.Point(x=0.0, y=0.0, z=0.0)
 
-    def generate_feedback_message(self):
+    def generate_feedback_message(self) -> py_trees_actions.MoveBase_Feedback:
         """
-        Increment the odometry and pose towards the goal.
+        Do a fake pose incremenet and populate the feedback message.
+
+        Returns:
+            :class:`py_trees_actions.MoveBase_Feedback`: the populated feedback message
         """
         # actually doesn't go to the goal right now...
         # but we could take the feedback from the action
@@ -65,7 +74,7 @@ class MoveBase(py_trees_ros.mock.actions.GenericServer):
 
 def main():
     """
-    Entry point for the mock batttery node.
+    Entry point for the mock move base node.
     """
     parser = argparse.ArgumentParser(description='Mock a docking controller')
     command_line_args = rclpy.utilities.remove_ros_args(args=sys.argv)[1:]
