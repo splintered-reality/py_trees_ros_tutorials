@@ -9,7 +9,7 @@
 ##############################################################################
 
 """
-Mocks a battery provider.
+Mock the state of a battery component.
 """
 
 
@@ -31,27 +31,29 @@ import sys
 
 class Battery(object):
     """
-    Mocks the processed battery state for a robot (/battery/sensor_state)
-    as well as a possible charging source (/battery/charging_source).
+    Mocks the processed battery state for a robot (/battery/sensor_state).
+
+    Node Name:
+        * **battery**
 
     ROS Publishers:
         * **~state** (:class:`sensor_msgs.msg.BatteryState`)
 
           * full battery state information
 
-    Dynamic Reconfigure:
+    Dynamic Parameters:
         * **~charging_percentage** (:obj:`float`)
 
-          * one-step setting of the current battery percentage
+          * one-shot setter of the current battery percentage
         * **~charging** (:obj:`bool`)
 
-          * whether it is currently charging or not
+          * charging or discharging
         * **~charging_increment** (:obj:`float`)
 
-          * how fast it charges/discharges
+          * the current charging/discharging increment
 
-    On startup it is in a DISCHARGING state. Use the ``dashboard`` to dynamically
-    reconfigure the parameters.
+    On startup it is in a DISCHARGING state and updates every 200ms.
+    Use the ``dashboard`` to dynamically reconfigure parameters.
     """
     def __init__(self):
         # node
@@ -91,7 +93,7 @@ class Battery(object):
 
     def spin(self):
         """
-        Spin around, updating battery state and publishing the result.
+        Create a timer for the periodic update and spin.
         """
         # TODO: with rate and spin_once, once rate is implemented in rclpy
         unused_timer = self.node.create_timer(
@@ -106,7 +108,7 @@ class Battery(object):
 
     def update_and_publish(self):
         """
-        Update and publish.
+        Timer callback that processes the battery state update and publishes.
         """
         # parameters
         charging = self.node.get_parameter("charging").value
@@ -152,7 +154,7 @@ def main():
     """
     Entry point for the mock batttery node.
     """
-    parser = argparse.ArgumentParser(description='Mock a battery/charging source')
+    parser = argparse.ArgumentParser(description='Mock the state of a battery component')
     command_line_args = rclpy.utilities.remove_ros_args(args=sys.argv)[1:]
     parser.parse_args(command_line_args)
     rclpy.init()  # picks up sys.argv automagically internally
