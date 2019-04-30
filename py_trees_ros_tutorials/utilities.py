@@ -33,8 +33,8 @@ def generate_ros_launch_service(
     standalone launchers can be executed via ros2 run.
 
     Args:
-        launch_descriptions (:obj:`list` of :class:`~launch.LaunchDescription`): launch descriptions to include
-        bool (:obj:`bool): enable debugging on the launch service
+        launch_descriptions: launch descriptions to include
+        bool: enable debugging on the launch service
 
     Returns:
         :class:`launch.LaunchService`: service to execute

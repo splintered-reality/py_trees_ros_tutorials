@@ -7,8 +7,7 @@
 ##############################################################################
 
 """
-Version number provided separately here so there is easy access for the module,
-setup.py and sphinx.
+Version number accessible to users of the package.
 """
 
 ##############################################################################

@@ -9,6 +9,22 @@ py_trees_ros_tutorials
 .. automodule:: py_trees_ros_tutorials
    :synopsis: tutorials for py_trees in ros
 
+py_trees_ros_tutorials.utilities
+--------------------------------
+
+.. automodule:: py_trees_ros_tutorials.utilities
+    :members:
+    :show-inheritance:
+    :synopsis: utilities for the tutorials and launchers
+
+py_trees_ros_tutorials.version
+------------------------------
+
+.. automodule:: py_trees_ros_tutorials.version
+    :members:
+    :show-inheritance:
+    :synopsis: package version number for users of the package
+
 py_trees_ros_tutorials.mock
 ---------------------------
 
@@ -78,4 +94,3 @@ py_trees_ros_tutorials.mock.safety_sensors
     :members:
     :show-inheritance:
     :synopsis: mock a safety sensor pipeline, requires context switching
-
