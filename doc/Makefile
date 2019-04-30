@@ -8,7 +8,7 @@ all:
 	@echo "    clean: clean out the html directory"
 
 docs:
-	sphinx-build -v -b html . html
+	sphinx-build -vv -b html . html
 
 clean:
 	rm -rf html

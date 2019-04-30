@@ -23,6 +23,8 @@ import py_trees_ros_interfaces.action as py_trees_actions  # noqa
 import rclpy.action
 import sys
 
+from typing import Any, Callable
+
 ##############################################################################
 # Action Client
 ##############################################################################
@@ -33,18 +35,16 @@ class GenericClient(object):
     Generic action client that can be used to test the mock action servers.
 
     Args:
-        node_name (:obj:`str`): name of the action server (e.g. move_base)
-        action_name (:obj:`str`): name of the action server (e.g. move_base)
-        action_type (:obj:`any`): type of the action server (e.g. move_base_msgs.msg.MoveBaseAction
-        generate_feedback_message(:obj:`func`): format the feedback message
-
-    Use the ``dashboard`` to dynamically reconfigure the parameters.
+        node_name: name to use when creating the node for this process
+        action_name: the action namespace under which topics and services exist (e.g. move_base)
+        action_type: the action type (e.g. move_base_msgs.msg.MoveBaseAction)
+        generate_feedback_message: format the feedback message
     """
     def __init__(self,
-                 node_name,
-                 action_name,
-                 action_type,
-                 generate_feedback_message=None
+                 node_name: str,
+                 action_name: str,
+                 action_type: Any,
+                 generate_feedback_message: Callable[[Any], str]=None
                  ):
         self.action_type = action_type
         self.action_name = action_name
@@ -78,6 +78,14 @@ class GenericClient(object):
         self._get_result_future = None
 
     def setup(self):
+        """
+        Middleware communications setup. This uses a hard coded default
+        of 2.0 seconds to wait for discovery of the action server. If it
+        should fail, it raises a timed out error.
+
+        Raises:
+            :class:`py_trees_ros.exceptions.TimedOutError`
+        """
         self.node.get_logger().info(
             'waiting for server [{}]'.format(
                 self.action_name
@@ -93,11 +101,19 @@ class GenericClient(object):
         else:
             self.node.get_logger().info("...connected")
 
-    def feedback_callback(self, msg):
+    def feedback_callback(self, msg: Any):
+        """
+        Prints the feedback on the node's logger.
+
+        Args:
+            msg: the feedback message, particular to the action type definition
+        """
         self.node.get_logger().info('feedback: {0}'.format(self.generate_feedback_message(msg)))
 
     def send_cancel_request(self):
-
+        """
+        Start the cancel request, chain it to :func:`cancel_response_callback`.
+        """
         self.node.get_logger().info('Cancelling goal')
 
         if self._goal_handle is not None:
@@ -106,20 +122,27 @@ class GenericClient(object):
 
         self._timer.cancel()
 
-    def cancel_response_callback(self, future):
+    def cancel_response_callback(self, future: rclpy.task.Future):
+        """
+        Cancel response callback
+
+        Args:
+            future: details returning from the server about the cancel request
+        """
         cancel_response = future.result()
         if len(cancel_response.goals_canceling) > 0:
             self.node.get_logger().info('Goal successfully cancelled')
         else:
             self.node.get_logger().info('Goal failed to cancel')
 
-    def send_goal(self):
+    def send_goal(self) -> rclpy.task.Future:
         """
         Send the goal and get a future back, but don't do any
-        spinning here to await the future result.
+        spinning here to await the future result. Chain it to
+        :func:`goal_response_callback`.
 
         Returns:
-            :class:`rclpy.task.Future`
+            rclpy.task.Future: the future awaits...
         """
         self.node.get_logger().info('sending goal...')
         self._send_goal_future = self.action_client.send_goal_async(
@@ -133,9 +156,12 @@ class GenericClient(object):
         self._send_goal_future.add_done_callback(self.goal_response_callback)
         return self._send_goal_future
 
-    def goal_response_callback(self, future):
+    def goal_response_callback(self, future: rclpy.task.Future):
         """
         Handle goal response, proceed to listen for the result if accepted.
+
+        Args:
+            future: details returning from the server about the goal request
         """
         self._goal_handle = future.result()
         if not self._goal_handle.accepted:
@@ -146,9 +172,12 @@ class GenericClient(object):
         self._get_result_future = self._goal_handle.get_result_async()
         self._get_result_future.add_done_callback(self.get_result_callback)
 
-    def get_result_callback(self, future):
+    def get_result_callback(self, future: rclpy.task.Future):
         """
-        Handle result.
+        Finally, at the end of the pipeline, what was the result!?
+
+        Args:
+            future: details returning from the server about the goal result
         """
         message = future.result().message
         status = future.result().action_status
@@ -161,12 +190,12 @@ class GenericClient(object):
         else:
             self.node.get_logger().info('Goal failed with status: {0}'.format(status_string))
 
-    def spin(self, cancel=False):
+    def spin(self, cancel: bool=False):
         """
         Common spin method for clients.
 
         Args:
-            cancel (:obj:`bool`): send a cancel request shortly after sending the goal request
+            cancel: send a cancel request shortly after sending the goal request
         """
         self.send_goal()
         if cancel:
@@ -174,6 +203,9 @@ class GenericClient(object):
         rclpy.spin(self.node)
 
     def shutdown(self):
+        """
+        Shutdown, cleanup.
+        """
         self.action_client.destroy()
         self.node.destroy_node()
 
@@ -195,19 +227,10 @@ def command_line_argument_parser():
     return parser.parse_args(sys.argv[1:])
 
 
-def generic_client(client_class):
-    rclpy.init(args=None)
-    args = command_line_argument_parser()
-    action_client = client_class()
-    try:
-        action_client.setup()
-        action_client.spin(cancel=args.cancel)
-    except (py_trees_ros.exceptions.TimedOutError, KeyboardInterrupt):
-        pass
-    action_client.shutdown()
-
-
 class DockClient(GenericClient):
+    """
+    A mock docking controller client.
+    """
     def __init__(self):
         super().__init__(
             node_name="docking_client",
@@ -218,10 +241,25 @@ class DockClient(GenericClient):
 
 
 def dock_client():
-    generic_client(DockClient)
+    """
+    Spin up a docking client and manage it from init to shutdown.
+    Some customisation possible via the command line arguments.
+    """
+    rclpy.init(args=None)
+    args = command_line_argument_parser()
+    action_client = DockClient()
+    try:
+        action_client.setup()
+        action_client.spin(cancel=args.cancel)
+    except (py_trees_ros.exceptions.TimedOutError, KeyboardInterrupt):
+        pass
+    action_client.shutdown()
 
 
 class RotateClient(GenericClient):
+    """
+    A mock rotation controller client.
+    """
     def __init__(self):
         super().__init__(
             node_name="rotate_client",
@@ -231,6 +269,9 @@ class RotateClient(GenericClient):
 
 
 def rotate_client(args=None):
+    """
+    Spin up a rotation client and manage it from init to shutdown.
+    """
     rclpy.init(args=args)
     action_client = RotateClient()
     try:
@@ -241,6 +282,9 @@ def rotate_client(args=None):
 
 
 class MoveBaseClient(GenericClient):
+    """
+    A mock move base client.
+    """
     def __init__(self):
         super().__init__(
             node_name="move_base_client",
@@ -251,6 +295,9 @@ class MoveBaseClient(GenericClient):
 
 
 def move_base_client(args=None):
+    """
+    Spin up a move base client and manage it from init to shutdown.
+    """
     rclpy.init(args=args)
     args = command_line_argument_parser()
     action_client = MoveBaseClient()

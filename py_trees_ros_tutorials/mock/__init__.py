@@ -7,7 +7,7 @@
 ##############################################################################
 
 """
-This package contains mock nodes for ROS py_trees simulations.
+A mocked robot for use in the tutorials.
 """
 ##############################################################################
 # Imports

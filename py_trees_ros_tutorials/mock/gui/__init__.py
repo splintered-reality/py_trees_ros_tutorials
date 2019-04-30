@@ -7,7 +7,7 @@
 ##############################################################################
 
 """
-Generated gui modules for the mock robot.
+Generated qt modules for the mock robot dashboard.
 """
 ##############################################################################
 # Imports

@@ -37,12 +37,15 @@ class LEDStrip(object):
     """
     Emulates command/display of an led strip so that it flashes various colours.
 
-    ROS Publishers:
+    Node Name:
+        * **led_strip**
+
+    Publishers:
         * **~display** (:class:`std_msgs.msg.String`)
 
           * colourised string display of the current led strip state
 
-    ROS Subscribers:
+    Subscribers:
         * **~command** (:class:`std_msgs.msg.String`)
 
           * send it a colour to express, it will flash this for the next 3 seconds
@@ -69,13 +72,15 @@ class LEDStrip(object):
         self.lock = threading.Lock()
         self.flashing_timer = None
 
-    def get_display_string(self, width, label="Foo"):
-        """Get a string used to display the current state of the base leds
+    def _get_display_string(self, width: int, label: str="Foo") -> str:
+        """
+        Display the current state of the led strip as a formatted
+        string.
 
-        :param width: The width of the pattern
-        :param label: if set, display this in the centre of the pattern rather
-            than the pattern name
-
+        Args:
+            width: the width of the pattern
+            label: display this in the centre of the pattern rather
+                than the pattern name
         """
         # top and bottom of print repeats the pattern as many times as possible
         # in the space specified
@@ -102,11 +107,17 @@ class LEDStrip(object):
 
         return '\n' + top_bottom + '\n' + left + label.replace('_', ' ') + right + '\n' + top_bottom
 
-    def generate_led_text(self, colour):
+    def generate_led_text(self, colour: bool) -> str:
+        """
+        Generate a formatted string representation of the  the current state of the led strip.
+
+        Args:
+            colour: use shell escape sequences for colour, matching the specified text colour label
+        """
         if not colour:
             return ""
         else:
-            text = self.get_display_string(self._pattern_width, label=colour)
+            text = self._get_display_string(self._pattern_width, label=colour)
 
             # map colour names in message to console colour escape sequences
             console_colour_map = {
@@ -122,7 +133,14 @@ class LEDStrip(object):
             coloured_text = console_colour_map[colour] + console.blink + text + console.reset
             return coloured_text
 
-    def command_callback(self, msg):
+    def command_callback(self, msg: std_msgs.String):
+        """
+        If the requested state is different from the existing state, update and
+        restart a periodic timer to affect the flashing effect.
+
+        Args:
+            msg (:class:`std_msgs.msg.String`): incoming command message
+        """
         with self.lock:
             text = self.generate_led_text(msg.data)
             # don't bother publishing if nothing changed.
@@ -145,15 +163,26 @@ class LEDStrip(object):
                 )
             )
 
-    def cancel_flashing(self, last_uuid):
+    def cancel_flashing(self, this_uuid: uuid.UUID):
+        """
+        If the notification identified by the given uuid is still relevant (i.e.
+        new command requests haven't come in) then publish an update with an
+        empty display message.
+
+        Args:
+            this_uuid: the uuid of the notification to cancel
+        """
         with self.lock:
-            if self.last_uuid == last_uuid:
+            if self.last_uuid == this_uuid:
                 # We're still relevant, publish and make us irrelevant
                 self.display_publisher.publish(std_msgs.String(data=""))
                 self.last_text = ""
                 self.last_uuid = uuid.uuid4()
 
     def spin(self):
+        """
+        Spin, and finally shutdown ROS components.
+        """
         try:
             rclpy.spin(self.node)
         except KeyboardInterrupt:

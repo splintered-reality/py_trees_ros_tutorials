@@ -24,8 +24,13 @@ import py_trees_ros_tutorials.utilities as utilities
 ##############################################################################
 
 
-def generate_launch_description():
-    """Launch the mock robot."""
+def generate_launch_description() -> launch.LaunchDescription:
+    """
+    Launch the mock robot (i.e. launch all mocked components).
+
+    Returns:
+        :class:`launch.LaunchDescription`
+    """
 
     launch_description = launch.LaunchDescription()
 
@@ -51,8 +56,8 @@ def generate_launch_description():
 ##############################################################################
 
 
-def main():
-    """A rosrunnable launch."""
+def main() -> int:
+    """Entry point for launching the mocked robot"""
     launch_descriptions = []
     launch_descriptions.append(generate_launch_description())
     launch_service = utilities.generate_ros_launch_service(

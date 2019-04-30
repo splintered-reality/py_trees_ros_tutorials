@@ -7,7 +7,7 @@
 ##############################################################################
 
 """
-Modules supporting the mock robot and tutorials for py_trees on ROS2.
+A mock robot and tutorials for py_trees on ROS2.
 """
 
 ##############################################################################
