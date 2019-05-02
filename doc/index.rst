@@ -13,6 +13,7 @@ Behaviour trees for ros in python.
    :caption: Guide
 
    about
+   tutorials
    terminology
 
 .. toctree::
