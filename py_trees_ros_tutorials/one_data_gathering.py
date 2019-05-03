@@ -65,10 +65,13 @@ Running
 
     # Launch the tutorial
     $ ros2 run py_trees_ros_tutorials tutorial-one-data-gathering
-    # In a different shell, check the battery updates on the blackboard
+    # In a different shell, introspect the entire blackboard
     $ py-trees-blackboard-watcher
+    # Or selectively get the battery percentage
+    $ py-trees-blackboard-watcher --list-variables
+    $ py-trees-blackboard-watcher battery/percentage
 
-.. image:: images/tutorial-one-data-gathering-blackboard.gif
+.. image:: images/tutorial-one-data-gathering.gif
 """
 
 ##############################################################################
