@@ -1,4 +1,4 @@
-.. _py-trees-ros-tutorials-section:
+.. _tutorials-section:
 
 Tutorials
 =========
