@@ -87,6 +87,7 @@ import py_trees.console as console
 import rclpy
 import sys
 
+from . import behaviours
 from . import mock
 from . import utilities
 
@@ -107,7 +108,7 @@ def generate_tree_launch_description():
         launch_ros.actions.Node(
             package='py_trees_ros_tutorials',
             # node_name="one", # ha, it's a multi-node process
-            node_executable="tree-data-gathering",
+            node_executable="tree-battery-check",
             output='screen',
             # workaround to print to stdout till https://github.com/ros2/launch/issues/188
             # but...this fails too - https://github.com/ros2/launch/issues/203
@@ -137,14 +138,15 @@ def launch_main():
 
 def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     """
-    Create a basic tree and start a 'Topics2BB' work sequence that
-    will become responsible for data gathering behaviours.
+    Create a basic tree with a battery to blackboard writer and a
+    battery check that flashes the LEDs on the mock robot if the
+    battery level goes low.
 
     Returns:
         the root of the tree
     """
     root = py_trees.composites.Parallel(
-        name="Tutorial One",
+        name="Tutorial Two",
         policy=py_trees.common.ParallelPolicy.SuccessOnAll(
             synchronise=False
         )
@@ -156,15 +158,34 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         topic_name="/battery/state",
         threshold=30.0
     )
-    priorities = py_trees.composites.Selector("Tasks")
+    tasks = py_trees.composites.Selector("Tasks")
+    battery_emergency = py_trees.composites.Parallel(
+        name="Battery Emergency",
+        policy=py_trees.common.ParallelPolicy.SuccessOnAll(
+            synchronise=False
+        )
+    )
+    is_battery_low = py_trees.blackboard.CheckBlackboardVariable(
+        name="Battery Low?",
+        variable_name='battery_low_warning',
+        expected_value=True
+    )
+    flash_notification = py_trees.composites.Sequence(name="Flash Notification")
+    mirror_is_battery_low = py_trees.behaviours.Mirror(
+        name="Battery Low?",
+        mirrored=is_battery_low
+    )
+    flash_led_strip = behaviours.FlashLedStrip(
+        name="FlashLEDs",
+        colour="red")
     idle = py_trees.behaviours.Running(name="Idle")
-    flipper = py_trees.behaviours.Periodic(name="Flip Eggs", n=2)
 
     root.add_child(topics2bb)
     topics2bb.add_child(battery2bb)
-    root.add_child(priorities)
-    priorities.add_child(flipper)
-    priorities.add_child(idle)
+    root.add_child(tasks)
+    tasks.add_children([battery_emergency, idle])
+    battery_emergency.add_children([is_battery_low, flash_notification])
+    flash_notification.add_children([mirror_is_battery_low, flash_led_strip])
     return root
 
 

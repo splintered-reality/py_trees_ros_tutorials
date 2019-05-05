@@ -159,7 +159,7 @@ class LEDStrip(object):
                 timer_period_sec=self.duration_sec,
                 callback=functools.partial(
                     self.cancel_flashing,
-                    last_uuid=self.last_uuid
+                    this_uuid=self.last_uuid
                 )
             )
 

@@ -106,8 +106,10 @@ setup(
              'mock-robot = py_trees_ros_tutorials.mock.launch:main',
              # Tutorial Nodes
              'tree-data-gathering = py_trees_ros_tutorials.one_data_gathering:tutorial_main',
+             'tree-battery-check = py_trees_ros_tutorials.two_battery_check:tutorial_main',
              # Tutorial Launchers (directly runnable)
              'tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:launch_main',
+             'tutorial-two-battery-check = py_trees_ros_tutorials.two_battery_check:launch_main',
              # Other
              'testies = py_trees_ros_tutorials.testies:main',
              'launch-testies = py_trees_ros_tutorials.launch_testies:main',

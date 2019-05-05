@@ -14,6 +14,7 @@ Behaviour trees for ros in python.
 
    about
    tutorials
+   faq
    terminology
 
 .. toctree::
