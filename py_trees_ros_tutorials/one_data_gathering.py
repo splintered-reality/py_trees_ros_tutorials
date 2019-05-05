@@ -96,7 +96,9 @@ from . import utilities
 
 
 def generate_tree_launch_description():
-    """Launch the tutorial"""
+    """
+    The tutorial's launch description, sans the mocked robot.
+    """
     python_unbuffered_environment = os.environ.copy()
     python_unbuffered_environment['PYTHONUNBUFFERED'] = '1'
 
@@ -116,7 +118,9 @@ def generate_tree_launch_description():
 
 
 def launch_main():
-    """A rosrunnable launch."""
+    """
+    A rosrunnable launch for the tutorial.
+    """
     launch_descriptions = []
     launch_descriptions.append(mock.launch.generate_launch_description())
     launch_descriptions.append(generate_tree_launch_description())
