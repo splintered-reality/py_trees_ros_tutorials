@@ -3,6 +3,23 @@ Terminology
 
 .. glossary::
 
+   block
+   blocking
+      A behaviour is sometimes referred to as a 'blocking' behaviour. Technically, the execution
+      of a behaviour should be non-blocking (i.e. the tick part), however when it's progress from
+      'RUNNING' to 'FAILURE/SUCCESS' takes more than one tick, we say that the behaviour itself
+      is blocking. In short, `blocking == RUNNING`.
+
+   data gathering
+      Caching events, notifications, or incoming data arriving asynchronously on the blackboard.
+      This is a fairly common practice for behaviour trees which exist inside a complex system.
+      In the ROS world, it is most likely you will catch data coming in on subscribers in this way.
+
+      In most cases, data gathering is done at the front end of your tree under a parallel
+      directly alongside your priority work selector.
+
+      .. seealso:: :ref:`tutorial-one`
+
    mock
    mocking
       A very useful paradigm to accelerate development and testing of your behaviour trees

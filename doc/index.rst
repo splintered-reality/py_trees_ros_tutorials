@@ -12,6 +12,8 @@ Behaviour trees for ros in python.
    :maxdepth: 1
    :caption: Guide
 
+   about
+   tutorials
    terminology
 
 .. toctree::

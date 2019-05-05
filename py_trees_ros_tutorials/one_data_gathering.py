@@ -30,12 +30,16 @@ and be processed before any decision making behaviours elsewhere in the tree.
 Tree
 ^^^^
 
+.. code-block:: bash
+
+   $ py-trees-render py_trees_ros_tutorials.one_data_gathering.tutorial_create_root
+
 .. graphviz:: dot/tutorial-one-data-gathering.dot
 
 .. literalinclude:: ../py_trees_ros_tutorials/one_data_gathering.py
    :language: python
    :linenos:
-   :lines: 95-117
+   :lines: 131-161
    :caption: py_trees_ros_tutorials/one_data_gathering.py#tutorial_create_root
 
 Along with the data gathering side, you'll also notice the dummy branch for
@@ -48,12 +52,6 @@ Behaviours
 
 The tree makes use of the :class:`py_trees_ros.battery.ToBlackboard` behaviour.
 
-.. literalinclude:: ../py_trees_ros/battery.py
-   :language: python
-   :linenos:
-   :lines: 29-79
-   :caption: py_trees_ros/battery.py
-
 This behaviour will cause the entire tree will tick over with
 :attr:`~py_trees.common.Status.SUCCESS` so long as there is data incoming.
 If there is no data incoming, it will simply
@@ -65,11 +63,15 @@ Running
 
 .. code-block:: bash
 
+    # Launch the tutorial
     $ ros2 run py_trees_ros_tutorials tutorial-one-data-gathering
+    # In a different shell, introspect the entire blackboard
+    $ py-trees-blackboard-watcher
+    # Or selectively get the battery percentage
+    $ py-trees-blackboard-watcher --list-variables
+    $ py-trees-blackboard-watcher battery/percentage
 
-Battery updates on the blackboard:
-
-.. image:: images/tutorial-one-blackboard.gif
+.. image:: images/tutorial-one-data-gathering.gif
 """
 
 ##############################################################################
@@ -138,7 +140,7 @@ def tutorial_create_root():
         :class:`~py_trees.behaviour.Behaviour`: the root of the tree
     """
     root = py_trees.composites.Parallel(
-        name="Tutorial",
+        name="Tutorial One",
         policy=py_trees.common.ParallelPolicy.SuccessOnAll(
             synchronise=False
         )
