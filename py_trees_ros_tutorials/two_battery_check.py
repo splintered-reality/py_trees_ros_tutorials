@@ -12,51 +12,52 @@
 About
 ^^^^^
 
-In this, the first of the tutorials, we start out with a behaviour that
-collects battery data from a subscriber and stores the result on the
-blackboard for other behaviours to utilise.
-
-Data gathering up front via subscribers is a useful convention for
-a number of reasons:
-
-* Freeze incoming data for remaining behaviours in the tree tick so that decision making is consistent across the entire tree
-* Avoid redundantly invoking multiple subscribers to the same topic when not necessary
-* Python access to the blackboard is easier than ROS middleware handling
-
-Typically data gatherers will be assembled underneath a parallel at or near
-the very root of the tree so they may always trigger their update() method
-and be processed before any decision making behaviours elsewhere in the tree.
+Here we add the first decision. What to do if the battery is low? For this,
+we’ll get the mocked robot to flash a notification over it’s led strip.
 
 Tree
 ^^^^
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.one_data_gathering.tutorial_create_root
+   $ py-trees-render py_trees_ros_tutorials.two_battery_check.tutorial_create_root
 
-.. graphviz:: dot/tutorial-one-data-gathering.dot
+.. graphviz:: dot/tutorial-two-battery-check.dot
 
-.. literalinclude:: ../py_trees_ros_tutorials/one_data_gathering.py
+.. literalinclude:: ../py_trees_ros_tutorials/two_battery_check.py
    :language: python
    :linenos:
-   :lines: 115-145
-   :caption: one_data_gathering.py#tutorial_create_root
+   :lines: 102-145
+   :caption: two_battery_check.py#tutorial_create_root
 
-Along with the data gathering side, you'll also notice the dummy branch for
-priority jobs (complete with idle behaviour that is always
-:attr:`~py_trees.common.Status.RUNNING`). This configuration is typical
-of the :term:`data gathering` pattern.
+Here we’ve added a high priority branch for dealing with a low battery
+that causes the hardware strip to flash. Note the use of the eternal guard
+idiom that instantiates a subtree that handles the common pattern of putting
+a continuously checked guard alongside a task sequence - this ensures
+the led strip is continuously flashed and immediately interrupted as soon
+as one of low battery check fails.
 
 Behaviours
 ^^^^^^^^^^
 
-The tree makes use of the :class:`py_trees_ros.battery.ToBlackboard` behaviour.
+This tree makes use of the :class:`py_trees_ros_tutorials.behaviours.FlashLedStrip` behaviour.
 
-This behaviour will cause the entire tree will tick over with
-:attr:`~py_trees.common.Status.SUCCESS` so long as there is data incoming.
-If there is no data incoming, it will simply
-:term:`block` and prevent the rest of the tree from acting.
+.. literalinclude:: ../py_trees_ros_tutorials/behaviours.py
+   :language: python
+   :linenos:
+   :lines: 27-108
+   :caption: behaviours.py#FlashLedStrip
 
+This is a typical ROS behaviour that accepts a ROS node on setup. This delayed style is
+preferred since it allows simple construction of the behaviour, in a tree, sans all of the
+ROS plumbing - useful when rendering dot graphs of the tree without having a ROS runtime
+around.
+
+The rest of the behaviour too, is fairly conventional:
+
+* ROS plumbing (i.e. the publisher) instantiated in setup()
+* Flashing notifications published in update()
+* The reset notification published when the behaviour is terminated
 
 Running
 ^^^^^^^
@@ -64,14 +65,12 @@ Running
 .. code-block:: bash
 
     # Launch the tutorial
-    $ ros2 run py_trees_ros_tutorials tutorial-one-data-gathering
-    # In a different shell, introspect the entire blackboard
-    $ py-trees-blackboard-watcher
-    # Or selectively get the battery percentage
-    $ py-trees-blackboard-watcher --list-variables
-    $ py-trees-blackboard-watcher battery/percentage
+    $ ros2 run py_trees_ros_tutorials tutorial-two-battery-check
 
-.. image:: images/tutorial-one-data-gathering.gif
+Then play with the battery slider in the qt dashboard to trigger the decision
+branching in the tree.
+
+.. image:: images/tutorial-two-battery-check.png
 """
 
 ##############################################################################
@@ -84,6 +83,7 @@ import py_trees.console as console
 import rclpy
 import sys
 
+from . import behaviours
 from . import mock
 from . import utilities
 
@@ -98,9 +98,7 @@ def launch_main():
     """
     launch_descriptions = []
     launch_descriptions.append(mock.launch.generate_launch_description())
-    launch_descriptions.append(
-        utilities.generate_tree_launch_description("tree-data-gathering")
-    )
+    launch_descriptions.append(utilities.generate_tree_launch_description("tree-battery-check"))
     launch_service = utilities.generate_ros_launch_service(
         launch_descriptions=launch_descriptions,
         debug=False
@@ -114,14 +112,15 @@ def launch_main():
 
 def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     """
-    Create a basic tree and start a 'Topics2BB' work sequence that
-    will become responsible for data gathering behaviours.
+    Create a basic tree with a battery to blackboard writer and a
+    battery check that flashes the LEDs on the mock robot if the
+    battery level goes low.
 
     Returns:
         the root of the tree
     """
     root = py_trees.composites.Parallel(
-        name="Tutorial One",
+        name="Tutorial Two",
         policy=py_trees.common.ParallelPolicy.SuccessOnAll(
             synchronise=False
         )
@@ -133,15 +132,27 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         topic_name="/battery/state",
         threshold=30.0
     )
-    priorities = py_trees.composites.Selector("Tasks")
+    tasks = py_trees.composites.Selector("Tasks")
+    is_battery_low = py_trees.blackboard.CheckBlackboardVariable(
+        name="Battery Low?",
+        variable_name='battery_low_warning',
+        expected_value=True
+    )
+    flash_led_strip = behaviours.FlashLedStrip(
+        name="FlashLEDs",
+        colour="red"
+    )
+    battery_emergency = py_trees.idioms.eternal_guard(
+        name="Battery Emergency",
+        guards=[is_battery_low],
+        tasks=[flash_led_strip]
+    )
     idle = py_trees.behaviours.Running(name="Idle")
-    flipper = py_trees.behaviours.Periodic(name="Flip Eggs", n=2)
 
     root.add_child(topics2bb)
     topics2bb.add_child(battery2bb)
-    root.add_child(priorities)
-    priorities.add_child(flipper)
-    priorities.add_child(idle)
+    root.add_child(tasks)
+    tasks.add_children([battery_emergency, idle])
     return root
 
 

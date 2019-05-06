@@ -9,11 +9,19 @@ py_trees_ros_tutorials
 .. automodule:: py_trees_ros_tutorials
    :synopsis: tutorials for py_trees in ros
 
+py_trees_ros_tutorials.behaviours
+---------------------------------
+
+.. automodule:: py_trees_ros_tutorials.behaviours
+    :members:
+    :show-inheritance:
+    :synopsis: behaviours for the tutorials
+
 py_trees_ros_tutorials.mock
 ---------------------------
 
 .. automodule:: py_trees_ros_tutorials.mock
-   :synopsis: utilities and components for mocking a robot
+    :synopsis: utilities and components for mocking a robot
 
 py_trees_ros_tutorials.mock.actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
