@@ -1,7 +1,7 @@
 .. _faq-section-label:
 
-Frequently Asked Questions
-==========================
+FAQ
+===
 
 ROS related frequently asked questions.
 

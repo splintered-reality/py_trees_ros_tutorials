@@ -7,8 +7,9 @@ all:
 	@echo "    docs: build the sphinx documentation in ./html"
 	@echo "    clean: clean out the html directory"
 
+# use -vv for more verbosity
 docs:
-	sphinx-build -vv -b html . html
+	sphinx-build -v -b html . html
 
 clean:
 	rm -rf html
