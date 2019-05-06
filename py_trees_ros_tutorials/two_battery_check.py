@@ -96,35 +96,13 @@ from . import utilities
 ##############################################################################
 
 
-def generate_tree_launch_description():
-    """
-    The tutorial's launch description, sans the mocked robot.
-    """
-    python_unbuffered_environment = os.environ.copy()
-    python_unbuffered_environment['PYTHONUNBUFFERED'] = '1'
-
-    launch_description = launch.LaunchDescription()
-    launch_description.add_action(
-        launch_ros.actions.Node(
-            package='py_trees_ros_tutorials',
-            # node_name="one", # ha, it's a multi-node process
-            node_executable="tree-battery-check",
-            output='screen',
-            # workaround to print to stdout till https://github.com/ros2/launch/issues/188
-            # but...this fails too - https://github.com/ros2/launch/issues/203
-            # env=python_unbuffered_environment
-        )
-    )
-    return launch_description
-
-
 def launch_main():
     """
     A rosrunnable launch for the tutorial.
     """
     launch_descriptions = []
     launch_descriptions.append(mock.launch.generate_launch_description())
-    launch_descriptions.append(generate_tree_launch_description())
+    launch_descriptions.append(utilities.generate_tree_launch_description("tree-battery-check"))
     launch_service = utilities.generate_ros_launch_service(
         launch_descriptions=launch_descriptions,
         debug=False
