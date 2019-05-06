@@ -159,33 +159,26 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         threshold=30.0
     )
     tasks = py_trees.composites.Selector("Tasks")
-    battery_emergency = py_trees.composites.Parallel(
-        name="Battery Emergency",
-        policy=py_trees.common.ParallelPolicy.SuccessOnAll(
-            synchronise=False
-        )
-    )
     is_battery_low = py_trees.blackboard.CheckBlackboardVariable(
         name="Battery Low?",
         variable_name='battery_low_warning',
         expected_value=True
     )
-    flash_notification = py_trees.composites.Sequence(name="Flash Notification")
-    mirror_is_battery_low = py_trees.behaviours.Mirror(
-        name="Battery Low?",
-        mirrored=is_battery_low
-    )
     flash_led_strip = behaviours.FlashLedStrip(
         name="FlashLEDs",
-        colour="red")
+        colour="red"
+    )
+    battery_emergency = py_trees.idioms.eternal_guard(
+        name="Battery Emergency",
+        guards=[is_battery_low],
+        tasks=[flash_led_strip]
+    )
     idle = py_trees.behaviours.Running(name="Idle")
 
     root.add_child(topics2bb)
     topics2bb.add_child(battery2bb)
     root.add_child(tasks)
     tasks.add_children([battery_emergency, idle])
-    battery_emergency.add_children([is_battery_low, flash_notification])
-    flash_notification.add_children([mirror_is_battery_low, flash_led_strip])
     return root
 
 
