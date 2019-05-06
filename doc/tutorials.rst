@@ -35,3 +35,8 @@ Tutorial 1 - Data Gathering
 .. automodule:: py_trees_ros_tutorials.one_data_gathering
     :synopsis: data gathering with the battery to blackboard behaviour
 
+Tutorial 2 - Battery Check
+--------------------------
+
+.. automodule:: py_trees_ros_tutorials.two_battery_check
+    :synopsis: adding a low battery check, with LED notification to the tree

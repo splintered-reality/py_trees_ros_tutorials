@@ -39,8 +39,8 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/one_data_gathering.py
    :language: python
    :linenos:
-   :lines: 138-168
-   :caption: py_trees_ros_tutorials/one_data_gathering.py#tutorial_create_root
+   :lines: 115-145
+   :caption: one_data_gathering.py#tutorial_create_root
 
 Along with the data gathering side, you'll also notice the dummy branch for
 priority jobs (complete with idle behaviour that is always
@@ -78,9 +78,6 @@ Running
 # Imports
 ##############################################################################
 
-import launch
-import launch_ros.actions
-import os
 import py_trees
 import py_trees_ros.trees
 import py_trees.console as console

@@ -12,51 +12,52 @@
 About
 ^^^^^
 
-In this, the first of the tutorials, we start out with a behaviour that
-collects battery data from a subscriber and stores the result on the
-blackboard for other behaviours to utilise.
-
-Data gathering up front via subscribers is a useful convention for
-a number of reasons:
-
-* Freeze incoming data for remaining behaviours in the tree tick so that decision making is consistent across the entire tree
-* Avoid redundantly invoking multiple subscribers to the same topic when not necessary
-* Python access to the blackboard is easier than ROS middleware handling
-
-Typically data gatherers will be assembled underneath a parallel at or near
-the very root of the tree so they may always trigger their update() method
-and be processed before any decision making behaviours elsewhere in the tree.
+Here we add the first decision. What to do if the battery is low? For this,
+we’ll get the mocked robot to flash a notification over it’s led strip.
 
 Tree
 ^^^^
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.one_data_gathering.tutorial_create_root
+   $ py-trees-render py_trees_ros_tutorials.two_battery_check.tutorial_create_root
 
-.. graphviz:: dot/tutorial-one-data-gathering.dot
+.. graphviz:: dot/tutorial-two-battery-check.dot
 
-.. literalinclude:: ../py_trees_ros_tutorials/one_data_gathering.py
+.. literalinclude:: ../py_trees_ros_tutorials/two_battery_check.py
    :language: python
    :linenos:
-   :lines: 138-168
-   :caption: py_trees_ros_tutorials/one_data_gathering.py#tutorial_create_root
+   :lines: 102-145
+   :caption: two_battery_check.py#tutorial_create_root
 
-Along with the data gathering side, you'll also notice the dummy branch for
-priority jobs (complete with idle behaviour that is always
-:attr:`~py_trees.common.Status.RUNNING`). This configuration is typical
-of the :term:`data gathering` pattern.
+Here we’ve added a high priority branch for dealing with a low battery
+that causes the hardware strip to flash. Note the use of the eternal guard
+idiom that instantiates a subtree that handles the common pattern of putting
+a continuously checked guard alongside a task sequence - this ensures
+the led strip is continuously flashed and immediately interrupted as soon
+as one of low battery check fails.
 
 Behaviours
 ^^^^^^^^^^
 
-The tree makes use of the :class:`py_trees_ros.battery.ToBlackboard` behaviour.
+This tree makes use of the :class:`py_trees_ros_tutorials.behaviours.FlashLedStrip` behaviour.
 
-This behaviour will cause the entire tree will tick over with
-:attr:`~py_trees.common.Status.SUCCESS` so long as there is data incoming.
-If there is no data incoming, it will simply
-:term:`block` and prevent the rest of the tree from acting.
+.. literalinclude:: ../py_trees_ros_tutorials/behaviours.py
+   :language: python
+   :linenos:
+   :lines: 27-108
+   :caption: behaviours.py#FlashLedStrip
 
+This is a typical ROS behaviour that accepts a ROS node on setup. This delayed style is
+preferred since it allows simple construction of the behaviour, in a tree, sans all of the
+ROS plumbing - useful when rendering dot graphs of the tree without having a ROS runtime
+around.
+
+The rest of the behaviour too, is fairly conventional:
+
+* ROS plumbing (i.e. the publisher) instantiated in setup()
+* Flashing notifications published in update()
+* The reset notification published when the behaviour is terminated
 
 Running
 ^^^^^^^
@@ -64,23 +65,18 @@ Running
 .. code-block:: bash
 
     # Launch the tutorial
-    $ ros2 run py_trees_ros_tutorials tutorial-one-data-gathering
-    # In a different shell, introspect the entire blackboard
-    $ py-trees-blackboard-watcher
-    # Or selectively get the battery percentage
-    $ py-trees-blackboard-watcher --list-variables
-    $ py-trees-blackboard-watcher battery/percentage
+    $ ros2 run py_trees_ros_tutorials tutorial-two-battery-check
 
-.. image:: images/tutorial-one-data-gathering.gif
+Then play with the battery slider in the qt dashboard to trigger the decision
+branching in the tree.
+
+.. image:: images/tutorial-two-battery-check.png
 """
 
 ##############################################################################
 # Imports
 ##############################################################################
 
-import launch
-import launch_ros.actions
-import os
 import py_trees
 import py_trees_ros.trees
 import py_trees.console as console
