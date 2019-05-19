@@ -62,8 +62,6 @@ via the the :ref:`py-trees-blackboard-watcher` command line utility.
 Running
 ^^^^^^^
 
-Launch the tutorial:
-
 .. code-block:: bash
 
     # Launch the tutorial
@@ -83,3 +81,54 @@ In another shell:
     $ py-trees-blackboard-watcher battery/percentage
 
 .. image:: images/tutorial-three-introspect-the-blackboard.gif
+
+.. _tutorial-four:
+
+Tutorial 4 - Introspecting the Tree
+-----------------------------------
+
+About
+^^^^^
+
+Again, this is a repeat of :ref:`tutorial-two`. In addition to services and
+topics for the blackboard, the
+:class:`py_trees_ros.trees.BehaviourTree` class provides services and topics
+for introspection of the tree state itself as well as a command line utility,
+:ref:`py-trees-tree-watcher`, to interact with these services and topics. 
+
+.. note:
+
+    Snapshots of the tree state published on the *~/snapshots* topic and
+    only when there has been a change in the status of one of the behaviours
+    in the tree, i.e. the tree state. 
+
+.. note:
+
+    The tip of the tree, i.e. the behaviour which redirects the decision
+    making flow of the tree back to the root, is highlighted in bold.
+
+Running
+^^^^^^^
+
+Start the tutorial:
+
+.. code-block:: bash
+
+    # Launch the tutorial
+    $ ros2 run py_trees_ros_tutorials tutorial-four-introspect-the-tree
+
+In another shell:
+
+.. code-block:: bash
+
+    # stream the tree state, with statistics 
+    $ py-trees-tree-watcher
+    # print the tree state, sans statistics, just once
+    $ py-trees-tree-watcher --snapshot
+    # serialise to a dot graph (.dot/.png/.svg) and view in xdot if available
+    $ py-trees-tree-watcher --dot-graph
+    # not necessary here, but if there are multiple trees to choose from
+    $ py-trees-tree-watcher --namespace=/tree
+
+.. image:: images/tutorial-four-introspect-the-tree.gif
+
