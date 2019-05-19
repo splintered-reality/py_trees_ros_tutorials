@@ -9,16 +9,10 @@ Battery2BB [label=Battery2BB, shape=ellipse, style=filled, fillcolor=gray, fonts
 Topics2BB -> Battery2BB;
 Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
 "Tutorial Two" -> Tasks;
-"Battery Emergency" [label="Battery Emergency\n--SuccessOnAll(-)--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
-Tasks -> "Battery Emergency";
-"Battery Low?" [label="Battery Low?", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-"Battery Emergency" -> "Battery Low?";
-"Guarded Tasks" [label="Guarded Tasks", shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
-"Battery Emergency" -> "Guarded Tasks";
-"Mirrored\nBattery Low?" [label="Mirrored\nBattery Low?", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-"Guarded Tasks" -> "Mirrored\nBattery Low?";
+"Battery Is Low" [label="Battery Is Low", shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
+Tasks -> "Battery Is Low";
 FlashLEDs [label=FlashLEDs, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-"Guarded Tasks" -> FlashLEDs;
+"Battery Is Low" -> FlashLEDs;
 Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
 Tasks -> Idle;
 }

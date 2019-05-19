@@ -23,19 +23,21 @@ Tree
    $ py-trees-render py_trees_ros_tutorials.two_battery_check.tutorial_create_root
 
 .. graphviz:: dot/tutorial-two-battery-check.dot
+   :align: center
 
 .. literalinclude:: ../py_trees_ros_tutorials/two_battery_check.py
    :language: python
    :linenos:
-   :lines: 102-145
+   :lines: 115-158
    :caption: two_battery_check.py#tutorial_create_root
 
 Here we’ve added a high priority branch for dealing with a low battery
-that causes the hardware strip to flash. Note the use of the eternal guard
-idiom that instantiates a subtree that handles the common pattern of putting
-a continuously checked guard alongside a task sequence - this ensures
-the led strip is continuously flashed and immediately interrupted as soon
-as one of low battery check fails.
+that causes the hardware strip to flash. The :class:`py_trees.decorators.EternalGuard`
+enables a continuous check of the battery reading and subsequent termination of
+the flashing strip as soon as the battery level has recovered sufficiently.
+We could have equivalently made use of the :class:`py_trees.idioms.eternal_guard` idiom,
+which yields a more verbose, but explicit tree and would also allow direct use of
+the :class:`py_trees.blackboard.CheckBlackboardVariable` class as the conditional check.
 
 Behaviours
 ^^^^^^^^^^
@@ -133,19 +135,19 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         threshold=30.0
     )
     tasks = py_trees.composites.Selector("Tasks")
-    is_battery_low = py_trees.blackboard.CheckBlackboardVariable(
-        name="Battery Low?",
-        variable_name='battery_low_warning',
-        expected_value=True
-    )
     flash_led_strip = behaviours.FlashLedStrip(
         name="FlashLEDs",
         colour="red"
     )
-    battery_emergency = py_trees.idioms.eternal_guard(
-        name="Battery Emergency",
-        guards=[is_battery_low],
-        tasks=[flash_led_strip]
+
+    def check_battery_low_on_blackboard():
+        blackboard = py_trees.blackboard.Blackboard()
+        return blackboard.battery_low_warning
+
+    battery_emergency = py_trees.decorators.EternalGuard(
+        name="Battery Is Low",
+        condition=check_battery_low_on_blackboard,
+        child=flash_led_strip
     )
     idle = py_trees.behaviours.Running(name="Idle")
 
