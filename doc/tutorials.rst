@@ -132,3 +132,11 @@ In another shell:
 
 .. image:: images/tutorial-four-introspect-the-tree.gif
 
+.. _tutorial-five:
+
+Tutorial 5 - Action Clients
+---------------------------
+
+.. automodule:: py_trees_ros_tutorials.five_action_clients
+    :synopsis: prioritised work, action_clients and preemptions
+
