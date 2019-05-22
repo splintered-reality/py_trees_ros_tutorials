@@ -17,9 +17,9 @@ behaviours to perform some actual work - rotate 360 degrees in place to
 scan a room whilst simultaneously notifying the user (via flashing led strip)
 of it's actions. The task is triggered from the qt dashboard.
 
-The rotation is performed with a ROS action. Actions are almost the defacto
-means of interfacing with the control systems of
-ROS robots. Here we introduces the :class:`py_trees_ros.actions.ActionClient`
+The rotation is performed with a ROS action which are almost the defacto
+means of interfacing with the control systems of ROS robots.
+Here we introduce the :class:`py_trees_ros.actions.ActionClient`
 behaviour - a simple means of sequentially interacting with an action server such
 that a goal always executes to completion or is cancelled before another
 goal is sent (a client-side kind of preemption).
@@ -49,10 +49,20 @@ Tree
    :lines: 115-158
    :caption: five_action_clients.py#tutorial_create_root
 
+Data Gathering
+--------------
+
+.. graphviz:: dot/tutorial-five-data-gathering.dot
+
+The Scan2BB behaviour collects incoming requests from the qt dashboard and drops them
+onto the blackboard. This is your usual :class:`py_trees_ros.subscribers.EventToBlackboard`
+behaviour which will only register the result `True` on the blackboard if
+there was an incoming message between the last and the current tick.
+
 A few things to note here:
 
 * A :term:`data gathering` behaviour (Scan2BB) collects incoming requests from the qt dashboard
-* The scanning behaviour is a subtree inserted between battery low and idel behaviours.
+* The scanning task is a subtree inserted between battery low and idel behaviours.
 * Scan requests cause the scanning subtree to go live so long as the battery is not low
 * Scanning will be interrupted if the battery should go low
 
@@ -80,20 +90,20 @@ perspiring inordinately on tree design ramifications.
 
 .. note:
 
-    If you are looking for more complex logic, e.g. enabling interactions with
-    a manipulation action server with which you would like to leave preemptions
-    up to the server, then this will require either decomposing the separate parts
-    of this action client behaviour (separate send goal, from monitoring, from
-    cancelling) or a more intelligent behaviour that does all the things itself
-    (please send a PR if you have such a behaviour serving your purposes well).
+   If you are looking for more complex logic, e.g. enabling interactions with
+   a manipulation action server with which you would like to leave preemptions
+   up to the server, then this will require either decomposing the separate parts
+   of this action client behaviour (separate send goal, from monitoring, from
+   cancelling) or a more intelligent behaviour that does all the things itself
+   (please send a PR if you have such a behaviour serving your purposes well).
 
 Instantiatinog the action client, configured for rotations:
 
-.. literalinclude:: ../py_trees_ros/tutorials/five.py
+.. literalinclude:: ../py_trees_ros_tutorials/five_action_clients.py
    :language: python
    :linenos:
-   :lines: 158-163
-   :caption: py_trees_ros_tutorials/five_actino_clients.py#instantiation
+   :lines: 115-158
+   :caption: five_action_clients.py#instantiate
 
 Guards
 ------
@@ -109,13 +119,14 @@ branch.
 A Kind of Preemption
 --------------------
 
-.. graphviz:: dot/tutorial-five-preempt.dot
+.. graphviz:: dot/tutorial-five-action-clients.dot
 
 The second part of the tree enables a kind of pre-emption on the scanning action.
 If a new request comes in, it will trigger the secondary scan event check, invalidating
 whatever scanning action was currently running. This will clear the led command and
 cancel the rotate action. On the next tick, the scan event check will fail (it was
 consumed on the last tick) and the scanning will restart.
+
 .. note::
     This is not true pre-emption since it cancels the rotate action and restarts it. It is
     however, exactly the pattern that is required in many instances. For true pre-emption

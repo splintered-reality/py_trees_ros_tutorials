@@ -94,13 +94,13 @@ Again, this is a repeat of :ref:`tutorial-two`. In addition to services and
 topics for the blackboard, the
 :class:`py_trees_ros.trees.BehaviourTree` class provides services and topics
 for introspection of the tree state itself as well as a command line utility,
-:ref:`py-trees-tree-watcher`, to interact with these services and topics. 
+:ref:`py-trees-tree-watcher`, to interact with these services and topics.
 
 .. note:
 
     Snapshots of the tree state published on the *~/snapshots* topic and
     only when there has been a change in the status of one of the behaviours
-    in the tree, i.e. the tree state. 
+    in the tree, i.e. the tree state.
 
 .. note:
 
@@ -121,7 +121,7 @@ In another shell:
 
 .. code-block:: bash
 
-    # stream the tree state, with statistics 
+    # stream the tree state, with statistics
     $ py-trees-tree-watcher
     # print the tree state, sans statistics, just once
     $ py-trees-tree-watcher --snapshot
