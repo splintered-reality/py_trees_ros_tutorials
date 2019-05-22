@@ -1,0 +1,10 @@
+digraph pastafarianism {
+graph [fontname="times-roman"];
+node [fontname="times-roman"];
+edge [fontname="times-roman"];
+Scan [label=Scan, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+"Scan?" [label="Scan?", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scan -> "Scan?";
+"Preempt?" [label="Preempt?", shape=octagon, style=filled, fillcolor=gray20, fontsize=9, fontcolor=dodgerblue];
+Scan -> "Preempt?";
+}

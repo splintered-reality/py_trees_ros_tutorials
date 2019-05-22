@@ -53,28 +53,36 @@ Data Gathering
 --------------
 
 .. graphviz:: dot/tutorial-five-data-gathering.dot
+   :align: center
 
 The Scan2BB behaviour collects incoming requests from the qt dashboard and drops them
 onto the blackboard. This is your usual :class:`py_trees_ros.subscribers.EventToBlackboard`
 behaviour which will only register the result `True` on the blackboard if
 there was an incoming message between the last and the current tick.
 
-A few things to note here:
+The Scanning Branch
+-------------------
 
-* A :term:`data gathering` behaviour (Scan2BB) collects incoming requests from the qt dashboard
-* The scanning task is a subtree inserted between battery low and idel behaviours.
-* Scan requests cause the scanning subtree to go live so long as the battery is not low
-* Scanning will be interrupted if the battery should go low
+.. graphviz:: dot/tutorial-five-scan-branch.dot
+   :align: center
 
-More details on the action client and the nature of it's client side preemptions below.
+The entire scanning branch is protected by a :term:`guard` (the blackbox
+represents the lower part of the tree) which checks the blackboard to
+determine whether Scan2BB had recorded an incoming rqeuest.
+Once the scan event is received, this branch proceeds to work
+until it either finishes, or is pre-empted by the higher
+priority low battery branch.
 
-Action Client
--------------
+Action Clients
+--------------
 
-This tree makes use of the :class:`py_trees_ros.actions.ActionClient` behaviour.
-Key characteristics of this behaviour include:
+.. graphviz:: dot/tutorial-five-action-client.dot
+   :align: center
 
-* Goal details are supplied at construction time and cannot be changed thereafter
+This tree makes use of the :class:`py_trees_ros.actions.ActionClient`
+for the 'Rotate' behaviour.
+
+* Goal details are configured at construction and cannot be changed thereafter
 * New goals are sent on `initialise()`
 * Monitoring of feedback and result response occurs in `update()`
 * If the behaviour is interrupted, the goal will be cancelled in `terminate()`
@@ -88,58 +96,55 @@ These constraints however, are fine in most situations and result in a
 very simple behaviour that almost always does what you need without
 perspiring inordinately on tree design ramifications.
 
-.. note:
-
-   If you are looking for more complex logic, e.g. enabling interactions with
-   a manipulation action server with which you would like to leave preemptions
-   up to the server, then this will require either decomposing the separate parts
-   of this action client behaviour (separate send goal, from monitoring, from
-   cancelling) or a more intelligent behaviour that does all the things itself
-   (please send a PR if you have such a behaviour serving your purposes well).
-
 Instantiatinog the action client, configured for rotations:
 
 .. literalinclude:: ../py_trees_ros_tutorials/five_action_clients.py
    :language: python
    :linenos:
-   :lines: 115-158
+   :lines: 115-123
    :caption: five_action_clients.py#instantiate
 
-Guards
-------
-
-.. graphviz:: dot/tutorial-five-guard.dot
-
-The entire scan branch is protected by a :term:`guard` (note that the blackbox
-in the above diagram is exactly that, a black box representing the lower
-part of the tree). Once the scan event is received, this branch gets to work
-until it either finishes, or is pre-empted by the higher priority low battery
-branch.
+The notification behaviour (FlashLedStrip) runs in parallel with the
+action. Composing in this manner from the behaviour tree centralises
+design concepts (in this case, notifications) and decouples the need
+for the control subsystems to be aware each other and the application
+logic.
 
 A Kind of Preemption
 --------------------
 
-.. graphviz:: dot/tutorial-five-action-clients.dot
+.. graphviz:: dot/tutorial-five-preemption.dot
+   :align: center
 
-The second part of the tree enables a kind of pre-emption on the scanning action.
+The higher priority branch in the scanning action enables a kind of
+pre-emption on the scanning action from the client side.
 If a new request comes in, it will trigger the secondary scan event check, invalidating
 whatever scanning action was currently running. This will clear the led command and
 cancel the rotate action. On the next tick, the scan event check will fail (it was
 consumed on the last tick) and the scanning will restart.
 
+The decorator is used to signal farther up in the tree that the action
+is still running, even when being preempted.
+
 .. note::
-    This is not true pre-emption since it cancels the rotate action and restarts it. It is
-    however, exactly the pattern that is required in many instances. For true pre-emption
-    you could bundle both scan check and rotation action in the same behaviour or dynamically
-    insert action goals on the fly from the parent class.
+    This is not true pre-emption since it cancels the rotate action and
+    restarts it. It is however, exactly the pattern that is required in
+    many instances. If you are looking for more complex logic, e.g.
+    enabling interactions with a manipulation action server with which
+    you would like to leave preemptions up to the server, then this
+    will require either decomposing the separate parts of the action
+    client behaviour (i.e. separate send goal, monitoring and
+    cancelling) into separate behaviours or construct a more complex
+    behaviour that manages the entire process itself. PR's welcome!
 
 Handling Failure
 ----------------
 
-If the rotate action should fail, then the whole branch will also fail. Subsequently
-dropping the robot back to its idle state. A failure event could be generated by
-simply watching either the 'Scanning' parallel or the :meth:`~py_trees.trees.BehaviourTree.tip`
-of the tree and reacting to it's state change.
+If the rotate action should fail, then the whole branch will also fail,
+subsequently dropping the robot back to its idle state. A failure
+event could be generated by monitoring either the status of the 'Scanning'
+parallel or the :meth:`py_trees.trees.BehaviourTree.tip` of the
+tree and reacting to it's state change.
 
 Running
 ^^^^^^^
@@ -149,7 +154,7 @@ Running
     # Launch the tutorial
     $ ros2 run py_trees_ros_tutorials tutorial-five-action-clients
 
-Send a scan request(s) from the qt dashboard.
+Send scan request from the qt dashboard.
 
 .. image:: images/tutorial-five-action-clients.png
 """
