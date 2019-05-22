@@ -1,0 +1,12 @@
+digraph pastafarianism {
+graph [fontname="times-roman"];
+node [fontname="times-roman"];
+edge [fontname="times-roman"];
+"Preempt?" [label="Preempt?", shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
+Scanning [label="Scanning\n--SuccessOnOne--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
+"Preempt?" -> Scanning;
+Rotate [label=Rotate, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scanning -> Rotate;
+"Flash Blue" [label="Flash Blue", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scanning -> "Flash Blue";
+}

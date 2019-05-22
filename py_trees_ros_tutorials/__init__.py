@@ -20,6 +20,7 @@ from . import utilities
 
 from . import one_data_gathering
 from . import two_battery_check
+from . import five_action_clients
 
 ##############################################################################
 # Version
