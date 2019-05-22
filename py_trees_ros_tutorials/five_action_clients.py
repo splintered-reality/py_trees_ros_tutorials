@@ -46,7 +46,7 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/five_action_clients.py
    :language: python
    :linenos:
-   :lines: 115-158
+   :lines: 200-291
    :caption: five_action_clients.py#tutorial_create_root
 
 Data Gathering
@@ -101,7 +101,7 @@ Instantiatinog the action client, configured for rotations:
 .. literalinclude:: ../py_trees_ros_tutorials/five_action_clients.py
    :language: python
    :linenos:
-   :lines: 115-123
+   :lines: 263-269
    :caption: five_action_clients.py#instantiate
 
 The notification behaviour (FlashLedStrip) runs in parallel with the
