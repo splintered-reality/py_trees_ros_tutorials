@@ -89,7 +89,11 @@ class Backend(qt_core.QObject):
                 rcl_srvs.SetParameters,
                 '/battery/set_parameters'
             ),
-            'safety_sensors': self.node.create_client(
+            'get_safety_sensors': self.node.create_client(
+                rcl_srvs.GetParameters,
+                '/safety_sensors/get_parameters'
+            ),
+            'set_safety_sensors': self.node.create_client(
                 rcl_srvs.SetParameters,
                 '/safety_sensors/set_parameters'
             )
@@ -189,7 +193,7 @@ class Backend(qt_core.QObject):
         parameter.value.type = rcl_msgs.ParameterType.PARAMETER_BOOL
         parameter.value.bool_value = enabled
         request.parameters.append(parameter)
-        unused_future = self.parameter_clients['safety_sensors'].call_async(request)
+        unused_future = self.parameter_clients['set_safety_sensors'].call_async(request)
 
 
 ##############################################################################

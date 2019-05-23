@@ -17,6 +17,7 @@ Behaviours for the tutorials.
 import py_trees
 import py_trees.console as console
 import py_trees_ros
+import rcl_interfaces.srv as rcl_srvs
 import std_msgs.msg as std_msgs
 
 ##############################################################################
@@ -106,3 +107,87 @@ class FlashLedStrip(py_trees.behaviour.Behaviour):
         )
         self.publisher.publish(std_msgs.String(data=""))
         self.feedback_message = "cleared"
+
+
+class ScanContext(py_trees.behaviour.Behaviour):
+    """
+    <TODO>
+
+    Args:
+        name (:obj:`str`): name of the behaviour
+    """
+    def __init__(self, name):
+        super().__init__(name=name)
+
+        self.initialised = False
+        self._namespaces = ["safety_sensors",
+                            "rotate",
+                            ]
+        self._dynamic_reconfigure_clients = {}
+        for name in self._namespaces:
+            self._dynamic_reconfigure_clients[name] = None
+        self._dynamic_reconfigure_configurations = {}
+
+    def setup(self, timeout):
+        """
+        Try and connect to the dynamic reconfigure server on the various namespaces.
+        """
+        self.logger.debug("%s.setup()" % self.__class__.__name__)
+        self.parameter_clients = {
+            'get_safety_sensors': self.node.create_client(
+                rcl_srvs.GetParameters,
+                '/safety_sensors/get_parameters'
+            ),
+            'set_safety_sensors': self.node.create_client(
+                rcl_srvs.SetParameters,
+                '/safety_sensors/set_parameters'
+            )
+        }
+
+    def initialise(self):
+        """
+        Get various dyn reconf configurations and cache/set the new variables.
+        """
+        self.logger.debug("%s.initialise()" % self.__class__.__name__)
+
+        for name, client in self._dynamic_reconfigure_clients.iteritems():
+            self._dynamic_reconfigure_configurations[name] = client.get_configuration()
+        try:
+            self.safety_sensors_enable = self._dynamic_reconfigure_configurations["safety_sensors"]["enable"]
+            self._dynamic_reconfigure_clients["safety_sensors"].update_configuration({"enable": True})
+        except dynamic_reconfigure.DynamicReconfigureParameterException:
+            self.feedback_message = "failed to configure the 'enable' parameter [safety_sensors]"
+            self.initialised = False
+        try:
+            self.rotate_duration = self._dynamic_reconfigure_configurations["rotate"]["duration"]
+            self._dynamic_reconfigure_clients["rotate"].update_configuration({"duration": 8.0})
+        except dynamic_reconfigure.DynamicReconfigureParameterException:
+            self.feedback_message = "failed to configure the 'duration' parameter [rotate]"
+            self.initialised = False
+
+        self.initialised = True
+        self.feedback_message = "reconfigured the context for scanning"
+
+    def update(self):
+        self.logger.debug("%s.update()" % self.__class__.__name__)
+        if not self.initialised:
+            return py_trees.common.Status.FAILURE
+        # used under a parallel, never returns success
+        return py_trees.common.Status.RUNNING
+
+    def terminate(self, new_status):
+        """
+        Regardless of whether it succeeed or failed or is getting set to invalid we have to be absolutely
+        sure to reset the navi context.
+        """
+        self.logger.debug("%s.terminate(%s)" % (self.__class__.__name__, "%s->%s" % (self.status, new_status) if self.status != new_status else "%s" % new_status))
+        if self.initialised:
+            try:
+                self._dynamic_reconfigure_clients["safety_sensors"].update_configuration({"enable": self.safety_sensors_enable})
+            except dynamic_reconfigure.DynamicReconfigureParameterException:
+                self.feedback_message = "failed to reset the 'enable' parameter [safety_sensors]"
+            try:
+                self._dynamic_reconfigure_clients["rotate"].update_configuration({"duration": self.rotate_duration})
+            except dynamic_reconfigure.DynamicReconfigureParameterException:
+                self.feedback_message = "failed to reset the 'duration' parameter [rotate]"
+            self.initialised = False
