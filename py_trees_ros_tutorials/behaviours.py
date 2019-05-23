@@ -18,6 +18,7 @@ import py_trees
 import py_trees.console as console
 import py_trees_ros
 import rcl_interfaces.srv as rcl_srvs
+import rclpy
 import std_msgs.msg as std_msgs
 
 ##############################################################################
@@ -119,20 +120,29 @@ class ScanContext(py_trees.behaviour.Behaviour):
     def __init__(self, name):
         super().__init__(name=name)
 
-        self.initialised = False
-        self._namespaces = ["safety_sensors",
-                            "rotate",
-                            ]
-        self._dynamic_reconfigure_clients = {}
-        for name in self._namespaces:
-            self._dynamic_reconfigure_clients[name] = None
-        self._dynamic_reconfigure_configurations = {}
+        self.cached_context = None
 
-    def setup(self, timeout):
+    def setup(self, **kwargs):
         """
-        Try and connect to the dynamic reconfigure server on the various namespaces.
+        Setup the service clients for getting and setting the context (parameter services
+        for dynamic parameter configuration).
+
+        Args:
+            **kwargs (:obj:`dict`): look for the 'node' object being passed down from the tree
+
+        Raises:
+            :class:`KeyError`: if a ros2 node isn't passed under the key 'node' in kwargs
         """
         self.logger.debug("%s.setup()" % self.__class__.__name__)
+
+        # ros2 node
+        try:
+            self.node = kwargs['node']
+        except KeyError as e:
+            error_message = "didn't find 'node' in setup's kwargs [{}][{}]".format(self.qualified_name)
+            raise KeyError(error_message) from e  # 'direct cause' traceability
+
+        # parameter service clients
         self.parameter_clients = {
             'get_safety_sensors': self.node.create_client(
                 rcl_srvs.GetParameters,
@@ -143,34 +153,46 @@ class ScanContext(py_trees.behaviour.Behaviour):
                 '/safety_sensors/set_parameters'
             )
         }
+        # TODO: while not cli.wait_for_service(timeout_sec=1.0):
+        #     node.get_logger().info('service not available, waiting again...')
 
     def initialise(self):
         """
         Get various dyn reconf configurations and cache/set the new variables.
         """
         self.logger.debug("%s.initialise()" % self.__class__.__name__)
+        self.cached_context = None
 
-        for name, client in self._dynamic_reconfigure_clients.iteritems():
-            self._dynamic_reconfigure_configurations[name] = client.get_configuration()
-        try:
-            self.safety_sensors_enable = self._dynamic_reconfigure_configurations["safety_sensors"]["enable"]
-            self._dynamic_reconfigure_clients["safety_sensors"].update_configuration({"enable": True})
-        except dynamic_reconfigure.DynamicReconfigureParameterException:
-            self.feedback_message = "failed to configure the 'enable' parameter [safety_sensors]"
-            self.initialised = False
-        try:
-            self.rotate_duration = self._dynamic_reconfigure_configurations["rotate"]["duration"]
-            self._dynamic_reconfigure_clients["rotate"].update_configuration({"duration": 8.0})
-        except dynamic_reconfigure.DynamicReconfigureParameterException:
-            self.feedback_message = "failed to configure the 'duration' parameter [rotate]"
-            self.initialised = False
+        request = rcl_srvs.GetParameters.Request()
+        future = self.parameter_clients['get_safety_sensors'].call_async(request)
+        rclpy.spin_until_future_complete(self.node, future)
 
-        self.initialised = True
-        self.feedback_message = "reconfigured the context for scanning"
+        if future.result() is not None:
+            self.node.get_logger().info(
+                'Result of /safety_sensors/enabled: {}'.format(future.result().enabled)
+            )
+            self.feedback_message = "retrieved the safety sensors context"
+            self.cached_context = future.result().enabled
+        else:
+            self.feedback_message = "failed to retrieve the safety sensors context"
+            self.node.get_logger().error(self.feedback_message)
+            self.node.get_logger().info('Service call failed %r' % (future.exception(),))
+            return
+
+        request = rcl_srvs.SetParameters.Request()
+        request.enabled = True
+        future = self.parameter_clients['set_safety_sensors'].call_async(request)
+        rclpy.spin_until_future_complete(self.node, future)
+        if future.result() is not None:
+            self.feedback_message = "reconfigured the safety sensors context"
+        else:
+            self.feedback_message = "failed to reconfigure the safety sensors context"
+            self.node.get_logger().error(self.feedback_message)
+            self.node.get_logger().info('Service call failed %r' % (future.exception(),))
 
     def update(self):
         self.logger.debug("%s.update()" % self.__class__.__name__)
-        if not self.initialised:
+        if self.cached_context is None:
             return py_trees.common.Status.FAILURE
         # used under a parallel, never returns success
         return py_trees.common.Status.RUNNING
@@ -181,13 +203,13 @@ class ScanContext(py_trees.behaviour.Behaviour):
         sure to reset the navi context.
         """
         self.logger.debug("%s.terminate(%s)" % (self.__class__.__name__, "%s->%s" % (self.status, new_status) if self.status != new_status else "%s" % new_status))
-        if self.initialised:
-            try:
-                self._dynamic_reconfigure_clients["safety_sensors"].update_configuration({"enable": self.safety_sensors_enable})
-            except dynamic_reconfigure.DynamicReconfigureParameterException:
-                self.feedback_message = "failed to reset the 'enable' parameter [safety_sensors]"
-            try:
-                self._dynamic_reconfigure_clients["rotate"].update_configuration({"duration": self.rotate_duration})
-            except dynamic_reconfigure.DynamicReconfigureParameterException:
-                self.feedback_message = "failed to reset the 'duration' parameter [rotate]"
-            self.initialised = False
+#         if self.initialised:
+#             try:
+#                 self._dynamic_reconfigure_clients["safety_sensors"].update_configuration({"enable": self.safety_sensors_enable})
+#             except dynamic_reconfigure.DynamicReconfigureParameterException:
+#                 self.feedback_message = "failed to reset the 'enable' parameter [safety_sensors]"
+#             try:
+#                 self._dynamic_reconfigure_clients["rotate"].update_configuration({"duration": self.rotate_duration})
+#             except dynamic_reconfigure.DynamicReconfigureParameterException:
+#                 self.feedback_message = "failed to reset the 'duration' parameter [rotate]"
+#             self.initialised = False
