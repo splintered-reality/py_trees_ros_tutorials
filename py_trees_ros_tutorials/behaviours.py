@@ -164,9 +164,11 @@ class ScanContext(py_trees.behaviour.Behaviour):
         self.cached_context = None
 
         request = rcl_srvs.GetParameters.Request()
+        request.names.append("enabled")
         future = self.parameter_clients['get_safety_sensors'].call_async(request)
+        print("Future: %s" % future.__dict__)
         rclpy.spin_until_future_complete(self.node, future)
-
+        print("Retrieived")
         if future.result() is not None:
             self.node.get_logger().info(
                 'Result of /safety_sensors/enabled: {}'.format(future.result().enabled)
@@ -188,7 +190,7 @@ class ScanContext(py_trees.behaviour.Behaviour):
         else:
             self.feedback_message = "failed to reconfigure the safety sensors context"
             self.node.get_logger().error(self.feedback_message)
-            self.node.get_logger().info('Service call failed %r' % (future.exception(),))
+            self.node.get_logger().info('service call failed %r' % (future.exception(),))
 
     def update(self):
         self.logger.debug("%s.update()" % self.__class__.__name__)
@@ -203,6 +205,18 @@ class ScanContext(py_trees.behaviour.Behaviour):
         sure to reset the navi context.
         """
         self.logger.debug("%s.terminate(%s)" % (self.__class__.__name__, "%s->%s" % (self.status, new_status) if self.status != new_status else "%s" % new_status))
+        if self.cached_context is not None:
+            request = rcl_srvs.SetParameters.Request()
+            request.enabled = self.cached_context
+            future = self.parameter_clients['set_safety_sensors'].call_async(request)
+            rclpy.spin_until_future_complete(self.node, future)
+            if future.result() is not None:
+                self.feedback_message = "reset the safety sensors context"
+            else:
+                self.feedback_message = "failed to reset the safety sensors context"
+                self.node.get_logger().error(self.feedback_message)
+                self.node.get_logger().info('service call failed %r' % (future.exception(),))
+
 #         if self.initialised:
 #             try:
 #                 self._dynamic_reconfigure_clients["safety_sensors"].update_configuration({"enable": self.safety_sensors_enable})
