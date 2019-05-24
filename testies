@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import py_trees
+import py_trees_ros_tutorials
+import rclpy
+import rcl_interfaces.srv as rcl_srvs
+import time
+
+behaviour = py_trees_ros_tutorials.behaviours.ScanContext(
+    name="ContextSwitch"
+)
+
+rclpy.init()
+print("create node")
+node = rclpy.create_node("scan_context")
+
+# time.sleep(1.0)
+
+# print("Create client")
+# client = node.create_client(
+#     rcl_srvs.GetParameters,
+#     '/safety_sensors/get_parameters'
+# )
+# ready = client.wait_for_service(timeout_sec=3.0)
+# if not ready:
+#     raise RuntimeError('Wait for service timed out')
+#
+# print("Create request")
+# request = rcl_srvs.GetParameters.Request()
+# request.names.append("enabled")
+# future = client.call_async(request)
+# print("Future: %s" % future.__dict__)
+# rclpy.spin_until_future_complete(node, future)
+# print("Retrieived")
+# if future.result() is not None:
+#     node.get_logger().info(
+#         'Result of /safety_sensors/enabled: {}'.format(future.result().enabled)
+#     )
+#     feedback_message = "retrieved the safety sensors context"
+#     cached_context = future.result().enabled
+# else:
+#     feedback_message = "failed to retrieve the safety sensors context"
+#     node.get_logger().error(feedback_message)
+#     node.get_logger().info('Service call failed %r' % (future.exception(),))
+
+behaviour.setup(node=node)
+behaviour.initialise()
+print("Initialised")
+time.sleep(5.0)
+behaviour.terminate(new_status=py_trees.common.Status.INVALID)
+
+rclpy.shutdown()

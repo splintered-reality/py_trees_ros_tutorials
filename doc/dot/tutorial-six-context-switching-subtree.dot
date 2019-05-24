@@ -1,0 +1,12 @@
+digraph pastafarianism {
+graph [fontname="times-roman"];
+node [fontname="times-roman"];
+edge [fontname="times-roman"];
+Scanning [label="Scanning\n--SuccessOnOne--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
+"Context Switch" [label="Context Switch", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scanning -> "Context Switch";
+Rotate [label=Rotate, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scanning -> Rotate;
+"Flash Blue" [label="Flash Blue", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scanning -> "Flash Blue";
+}

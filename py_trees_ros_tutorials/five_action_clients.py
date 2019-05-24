@@ -154,7 +154,7 @@ Running
     # Launch the tutorial
     $ ros2 run py_trees_ros_tutorials tutorial-five-action-clients
 
-Send scan request from the qt dashboard.
+Send scan requests from the qt dashboard.
 
 .. image:: images/tutorial-five-action-clients.png
 """
