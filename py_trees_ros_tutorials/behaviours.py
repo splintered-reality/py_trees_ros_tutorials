@@ -15,8 +15,8 @@ Behaviours for the tutorials.
 ##############################################################################
 
 import py_trees
-import py_trees.console as console
 import py_trees_ros
+import rcl_interfaces.msg as rcl_msgs
 import rcl_interfaces.srv as rcl_srvs
 import rclpy
 import std_msgs.msg as std_msgs
@@ -153,8 +153,9 @@ class ScanContext(py_trees.behaviour.Behaviour):
                 '/safety_sensors/set_parameters'
             )
         }
-        # TODO: while not cli.wait_for_service(timeout_sec=1.0):
-        #     node.get_logger().info('service not available, waiting again...')
+        for name, client in self.parameter_clients.items():
+            if not client.wait_for_service(timeout_sec=3.0):
+                raise RuntimeError("client timed out waiting for server [{}]".format(name))
 
     def initialise(self):
         """
@@ -162,41 +163,26 @@ class ScanContext(py_trees.behaviour.Behaviour):
         """
         self.logger.debug("%s.initialise()" % self.__class__.__name__)
         self.cached_context = None
-
-        request = rcl_srvs.GetParameters.Request()
-        request.names.append("enabled")
-        future = self.parameter_clients['get_safety_sensors'].call_async(request)
-        print("Future: %s" % future.__dict__)
-        rclpy.spin_until_future_complete(self.node, future)
-        print("Retrieived")
-        if future.result() is not None:
-            self.node.get_logger().info(
-                'Result of /safety_sensors/enabled: {}'.format(future.result().enabled)
-            )
-            self.feedback_message = "retrieved the safety sensors context"
-            self.cached_context = future.result().enabled
-        else:
-            self.feedback_message = "failed to retrieve the safety sensors context"
-            self.node.get_logger().error(self.feedback_message)
-            self.node.get_logger().info('Service call failed %r' % (future.exception(),))
-            return
-
-        request = rcl_srvs.SetParameters.Request()
-        request.enabled = True
-        future = self.parameter_clients['set_safety_sensors'].call_async(request)
-        rclpy.spin_until_future_complete(self.node, future)
-        if future.result() is not None:
-            self.feedback_message = "reconfigured the safety sensors context"
-        else:
-            self.feedback_message = "failed to reconfigure the safety sensors context"
-            self.node.get_logger().error(self.feedback_message)
-            self.node.get_logger().info('service call failed %r' % (future.exception(),))
+        # kickstart get/set parameter chain
+        self.send_get_parameter_request()
 
     def update(self):
         self.logger.debug("%s.update()" % self.__class__.__name__)
+        all_done = False
+
+        # wait for get_parameter to return
         if self.cached_context is None:
-            return py_trees.common.Status.FAILURE
-        # used under a parallel, never returns success
+            if self.process_get_parameter_response():
+                self.send_set_parameter_request(value=True)
+            return py_trees.common.Status.RUNNING
+
+        # wait for set parameter to return
+        if not all_done:
+            if self.process_set_parameter_response():
+                all_done = True
+            return py_trees.common.Status.RUNNING
+
+        # just spin around, wait for an interrupt to trigger terminate
         return py_trees.common.Status.RUNNING
 
     def terminate(self, new_status):
@@ -205,25 +191,53 @@ class ScanContext(py_trees.behaviour.Behaviour):
         sure to reset the navi context.
         """
         self.logger.debug("%s.terminate(%s)" % (self.__class__.__name__, "%s->%s" % (self.status, new_status) if self.status != new_status else "%s" % new_status))
-        if self.cached_context is not None:
-            request = rcl_srvs.SetParameters.Request()
-            request.enabled = self.cached_context
-            future = self.parameter_clients['set_safety_sensors'].call_async(request)
-            rclpy.spin_until_future_complete(self.node, future)
-            if future.result() is not None:
-                self.feedback_message = "reset the safety sensors context"
-            else:
-                self.feedback_message = "failed to reset the safety sensors context"
-                self.node.get_logger().error(self.feedback_message)
-                self.node.get_logger().info('service call failed %r' % (future.exception(),))
+        if (
+            new_status == py_trees.common.Status.INVALID and
+            self.cached_context is not None
+           ):
+            self.send_set_parameter_request(value=self.cached_context)
+            # don't worry about the response, no chance to catch it anyway
 
-#         if self.initialised:
-#             try:
-#                 self._dynamic_reconfigure_clients["safety_sensors"].update_configuration({"enable": self.safety_sensors_enable})
-#             except dynamic_reconfigure.DynamicReconfigureParameterException:
-#                 self.feedback_message = "failed to reset the 'enable' parameter [safety_sensors]"
-#             try:
-#                 self._dynamic_reconfigure_clients["rotate"].update_configuration({"duration": self.rotate_duration})
-#             except dynamic_reconfigure.DynamicReconfigureParameterException:
-#                 self.feedback_message = "failed to reset the 'duration' parameter [rotate]"
-#             self.initialised = False
+    def send_get_parameter_request(self):
+        request = rcl_srvs.GetParameters.Request()  # noqa
+        request.names.append("enabled")
+        self.get_parameter_future = self.parameter_clients['get_safety_sensors'].call_async(request)
+
+    def process_get_parameter_response(self) -> bool:
+        if not self.get_parameter_future.done():
+            return False
+        if self.get_parameter_future.result() is None:
+            self.feedback_message = "failed to retrieve the safety sensors context"
+            self.node.get_logger().error(self.feedback_message)
+            # self.node.get_logger().info('Service call failed %r' % (future.exception(),))
+            raise RuntimeError(self.feedback_message)
+        if len(self.get_parameter_future.result().values) > 1:
+            self.feedback_message = "expected one parameter value, got multiple [{}]".format("/safety_sensors/enabled")
+            raise RuntimeError(self.feedback_message)
+        value = self.get_parameter_future.result().values[0]
+        if value.type != rcl_msgs.ParameterType.PARAMETER_BOOL:  # noqa
+            self.feedback_message = "expected parameter type bool, got [{}]{}]".format(value.type, "/safety_sensors/enabled")
+            self.node.get_logger().error(self.feedback_message)
+            raise RuntimeError(self.feedback_message)
+        self.cached_context = value.bool_value
+        return True
+
+    def send_set_parameter_request(self, value: bool):
+        request = rcl_srvs.SetParameters.Request()  # noqa
+        parameter = rcl_msgs.Parameter()
+        parameter.name = "enabled"
+        parameter.value.type = rcl_msgs.ParameterType.PARAMETER_BOOL  # noqa
+        parameter.value.bool_value = value
+        request.parameters.append(parameter)
+        self.set_parameter_future = self.parameter_clients['set_safety_sensors'].call_async(request)
+
+    def process_set_parameter_response(self) -> bool:
+        if not self.get_parameter_future.done():
+            return False
+        if self.set_parameter_future.result() is not None:
+            self.feedback_message = "reconfigured the safety sensors context"
+        else:
+            self.feedback_message = "failed to reconfigure the safety sensors context"
+            self.node.get_logger().error(self.feedback_message)
+            # self.node.get_logger().info('service call failed %r' % (future.exception(),))
+        return True

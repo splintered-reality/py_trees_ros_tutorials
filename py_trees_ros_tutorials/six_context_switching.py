@@ -30,16 +30,16 @@ Tree
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.five_action_clients.tutorial_create_root
+   $ py-trees-render py_trees_ros_tutorials.six_context_switching.tutorial_create_root
 
-.. graphviz:: dot/tutorial-five-action-clients.dot
+.. graphviz:: dot/tutorial-six-context-switching.dot
    :align: center
 
-.. literalinclude:: ../py_trees_ros_tutorials/five_action_clients.py
+.. literalinclude:: ../py_trees_ros_tutorials/six_context_switching.py
    :language: python
    :linenos:
    :lines: 200-291
-   :caption: five_action_clients.py#tutorial_create_root
+   :caption: six_context_switching.py#tutorial_create_root
 
 Running
 ^^^^^^^
@@ -80,7 +80,7 @@ def launch_main():
     """
     launch_descriptions = []
     launch_descriptions.append(mock.launch.generate_launch_description())
-    launch_descriptions.append(utilities.generate_tree_launch_description("tree-action-clients"))
+    launch_descriptions.append(utilities.generate_tree_launch_description("tree-context-switching"))
     launch_service = utilities.generate_ros_launch_service(
         launch_descriptions=launch_descriptions,
         debug=False
@@ -102,7 +102,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         the root of the tree
     """
     root = py_trees.composites.Parallel(
-        name="Tutorial Five",
+        name="Tutorial Six",
         policy=py_trees.common.ParallelPolicy.SuccessOnAll(
             synchronise=False
         )
