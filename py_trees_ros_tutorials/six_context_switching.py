@@ -16,13 +16,15 @@ This tutorial inserts a context switching behaviour to run in tandem with the
 scan rotation. A context switching behaviour will alter the runtime system
 in some way when it is entered (i.e. in :meth:`~py_trees.behaviour.Behaviour.initialise`)
 and reset the runtime system to it's original context
-on :meth:`~py_trees.behaviour.Behaviour.terminate`).
+on :meth:`~py_trees.behaviour.Behaviour.terminate`). Refer to :term:`context switch`
+for more detail.
 
-In this example it will reconfigure the rotation speed (slower) and enable
-a hypothetical safety sensor pipeline. As soon as the rotation action (running
-in parallel) is terminated, the context switch will also terminate and reset
-both configured rotation speed for future rotations and the sensor pipeline
-to their original states.
+In this example it will enable a hypothetical safety sensor pipeline, necessary
+necessary for dangerous but slow moving rotational maneuvres not required for
+normal modes of travel (suppose we have a large rectangular robot that is
+ordinarily blind to the sides - it may need to take advantage of noisy
+sonars to the sides or rotate forward facing sensing into position before
+engaging).
 
 
 Tree
@@ -38,8 +40,33 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/six_context_switching.py
    :language: python
    :linenos:
-   :lines: 200-291
+   :lines: 123-215
    :caption: six_context_switching.py#tutorial_create_root
+
+Behaviour
+---------
+
+The :class:`py_trees_ros_tutorials.behaviours.ScanContext` is the
+context switching behaviour constructed for this tutorial.
+
+* :meth:`~py_trees_ros_tutorials.behaviours.ScanContext.initialise()`: trigger a sequence service calls to cache and set the /safety_sensors/enabled parameter to True
+* :meth:`~py_trees_ros_tutorials.behaviours.ScanContext.update()`: complete the chain of service calls & maintain the context
+* :meth:`~py_trees_ros_tutorials.behaviours.ScanContext.terminate()`: reset the parameter to the cached value
+
+
+Context Switching
+-----------------
+
+.. graphviz:: dot/tutorial-six-context-switching-subtree.dot
+   :align: center
+
+On entry into the parallel, the :class:`~py_trees_ros_tutorials.behaviours.ScanContext`
+behaviour will cache and switch
+the safety sensors parameter. While in the parallel it will return with
+:data:`~py_trees.common.Status.RUNNING` indefinitely. When the rotation
+action succeeds or fails, it will terminate the parallel and subsequently
+the :class:`~py_trees_ros_tutorials.behaviours.ScanContext` will terminate,
+resetting the safety sensors parameter to it's original value.
 
 Running
 ^^^^^^^
@@ -48,8 +75,9 @@ Running
 
     # Launch the tutorial
     $ ros2 run py_trees_ros_tutorials tutorial-six-context-switching
-
-Send scan requests from the qt dashboard.
+    # In another shell, watch the parameter as a context switch occurs
+    $ watch -n 1 ros2 param get /safety_sensors enabled
+    # Trigger scan requests from the qt dashboard
 
 .. image:: images/tutorial-six-context-switching.png
 """

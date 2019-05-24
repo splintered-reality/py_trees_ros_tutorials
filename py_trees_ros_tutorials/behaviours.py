@@ -112,7 +112,11 @@ class FlashLedStrip(py_trees.behaviour.Behaviour):
 
 class ScanContext(py_trees.behaviour.Behaviour):
     """
-    <TODO>
+    Alludes to switching the context of the runtime system for a scanning
+    action. Technically, it reaches out to the mock robots safety sensor
+    dynamic parameter, switches it off in :meth:`initialise()` and maintains
+    that for the the duration of the context before returning it to
+    it's original value in :meth:`terminate()`.
 
     Args:
         name (:obj:`str`): name of the behaviour
@@ -124,8 +128,7 @@ class ScanContext(py_trees.behaviour.Behaviour):
 
     def setup(self, **kwargs):
         """
-        Setup the service clients for getting and setting the context (parameter services
-        for dynamic parameter configuration).
+        Setup the ros2 communications infrastructure.
 
         Args:
             **kwargs (:obj:`dict`): look for the 'node' object being passed down from the tree
@@ -159,51 +162,73 @@ class ScanContext(py_trees.behaviour.Behaviour):
 
     def initialise(self):
         """
-        Get various dyn reconf configurations and cache/set the new variables.
+        Reset the cached context and trigger the chain of get/set parameter
+        calls involved in changing the context.
+
+        .. note::
+
+           Completing the chain of service calls here
+           (with `rclpy.spin_until_future_complete(node, future)`)
+           is not possible if this behaviour is encapsulated inside, e.g.
+           a tree tick activated by a ros2 timer callback, since it is
+           already part of a scheduled job in a spinning node. It will
+           just deadlock.
+
+           Prefer instead to chain a sequence of events that will be
+           completed over a span of ticks instead of at best, blocking
+           here and at worst, falling into deadlock.
+
         """
         self.logger.debug("%s.initialise()" % self.__class__.__name__)
         self.cached_context = None
         # kickstart get/set parameter chain
-        self.send_get_parameter_request()
+        self._send_get_parameter_request()
 
-    def update(self):
+    def update(self) -> py_trees.common.Status:
+        """
+        Complete the chain of calls begun in :meth:`initialise()` and then
+        maintain the context (i.e. :class:`py_trees.behaviour.Behaviour` and
+        return :data:`~py_trees.common.Status.RUNNING`).
+        """
         self.logger.debug("%s.update()" % self.__class__.__name__)
         all_done = False
 
         # wait for get_parameter to return
         if self.cached_context is None:
-            if self.process_get_parameter_response():
-                self.send_set_parameter_request(value=True)
+            if self._process_get_parameter_response():
+                self._send_set_parameter_request(value=True)
             return py_trees.common.Status.RUNNING
 
         # wait for set parameter to return
         if not all_done:
-            if self.process_set_parameter_response():
+            if self._process_set_parameter_response():
                 all_done = True
             return py_trees.common.Status.RUNNING
 
         # just spin around, wait for an interrupt to trigger terminate
         return py_trees.common.Status.RUNNING
 
-    def terminate(self, new_status):
+    def terminate(self, new_status: py_trees.common.Status):
         """
-        Regardless of whether it succeeed or failed or is getting set to invalid we have to be absolutely
-        sure to reset the navi context.
+        Reset the parameters back to their original (cached) values.
+
+        Args:
+            new_status: the behaviour is transitioning to this new status
         """
         self.logger.debug("%s.terminate(%s)" % (self.__class__.__name__, "%s->%s" % (self.status, new_status) if self.status != new_status else "%s" % new_status))
         if (
             new_status == py_trees.common.Status.INVALID and
             self.cached_context is not None
            ):
-            self.send_set_parameter_request(value=self.cached_context)
+            self._send_set_parameter_request(value=self.cached_context)
             # don't worry about the response, no chance to catch it anyway
 
-    def send_get_parameter_request(self):
+    def _send_get_parameter_request(self):
         request = rcl_srvs.GetParameters.Request()  # noqa
         request.names.append("enabled")
         self.get_parameter_future = self.parameter_clients['get_safety_sensors'].call_async(request)
 
-    def process_get_parameter_response(self) -> bool:
+    def _process_get_parameter_response(self) -> bool:
         if not self.get_parameter_future.done():
             return False
         if self.get_parameter_future.result() is None:
@@ -222,7 +247,7 @@ class ScanContext(py_trees.behaviour.Behaviour):
         self.cached_context = value.bool_value
         return True
 
-    def send_set_parameter_request(self, value: bool):
+    def _send_set_parameter_request(self, value: bool):
         request = rcl_srvs.SetParameters.Request()  # noqa
         parameter = rcl_msgs.Parameter()
         parameter.name = "enabled"
@@ -231,7 +256,7 @@ class ScanContext(py_trees.behaviour.Behaviour):
         request.parameters.append(parameter)
         self.set_parameter_future = self.parameter_clients['set_safety_sensors'].call_async(request)
 
-    def process_set_parameter_response(self) -> bool:
+    def _process_set_parameter_response(self) -> bool:
         if not self.get_parameter_future.done():
             return False
         if self.set_parameter_future.result() is not None:

@@ -10,6 +10,23 @@ Terminology
       'RUNNING' to 'FAILURE/SUCCESS' takes more than one tick, we say that the behaviour itself
       is blocking. In short, `blocking == RUNNING`.
 
+   context switch
+      Very often a task or sequence of tasks will require a context switch of
+      the runtime system. For example, enabling additional sensing and
+      processing pipelines in order to navigate a staircase. The context switch is
+      typically the modification of a few dynamic parameters and/or service calls
+      to configure runtime nodes to behave in a different manner. The key
+      requirements for a context switch is to cache the original context,
+      hold the configuration throughout the context and then reset the context to
+      the cached state upon completion. This falls naturally into a behaviour's
+      :meth:`~py_trees.behaviour.Behaviour.initialise()`,
+      :meth:`~py_trees.behaviour.Behaviour.update()` and
+      :meth:`~py_trees.behaviour.Behaviour.terminate()` modalities. To ensure
+      it activates at the appropriate time, drop it into a parallel alongside
+      the activity that requires the context switch.
+
+      .. seealso:: :ref:`tutorial-six`
+
    data gathering
       Caching events, notifications, or incoming data arriving asynchronously on the blackboard.
       This is a fairly common practice for behaviour trees which exist inside a complex system.

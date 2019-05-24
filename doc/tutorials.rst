@@ -140,3 +140,10 @@ Tutorial 5 - Action Clients
 .. automodule:: py_trees_ros_tutorials.five_action_clients
     :synopsis: prioritised work, action_clients and preemptions
 
+.. _tutorial-six:
+
+Tutorial 6 - Context Switching
+------------------------------
+
+.. automodule:: py_trees_ros_tutorials.six_context_switching
+    :synopsis: switching the context while scanning
