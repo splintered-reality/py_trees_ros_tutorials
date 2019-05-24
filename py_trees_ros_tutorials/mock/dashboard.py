@@ -39,6 +39,7 @@ from . import gui
 class Backend(qt_core.QObject):
 
     led_colour_changed = qt_core.pyqtSignal(str, name="ledColourChanged")
+    safety_sensors_enabled_changed = qt_core.pyqtSignal(bool, name="safetySensorsEnabledChanged")
     battery_percentage_changed = qt_core.pyqtSignal(float, name="batteryPercentageChanged")
     battery_charging_status_changed = qt_core.pyqtSignal(float, name="batteryChargingStatusChanged")
 
@@ -50,6 +51,7 @@ class Backend(qt_core.QObject):
 
         self.shutdown_requested = False
         self.last_battery_charging_status = None
+        self.last_safety_sensors_enabled_status = None
 
         not_latched = False  # latched = True
         self.publishers = py_trees_ros.utilities.Publishers(
@@ -109,8 +111,37 @@ class Backend(qt_core.QObject):
                 else:
                     self.node.get_logger().info("service '/{}/set_parameters' unavailable, waiting...".format(name))
         while rclpy.ok() and not self.shutdown_requested:
+            self.fetch_safety_sensors_parameters()
             rclpy.spin_once(self.node, timeout_sec=0.1)
         self.node.destroy_node()
+
+    def fetch_safety_sensors_parameters(self):
+        """
+        Spin through get parameter service calls and update the dashboard.
+
+        Raises:
+            RuntimeError: if the service calls fail
+        """
+        request = rcl_srvs.GetParameters.Request()  # noqa
+        request.names.append("enabled")
+        future = self.parameter_clients['get_safety_sensors'].call_async(request)
+        rclpy.spin_until_future_complete(self.node, future)
+        if future.result() is None:
+            self.feedback_message = "failed to retrieve the safety sensors context"
+            self.node.get_logger().error(self.feedback_message)
+            # self.node.get_logger().info('Service call failed %r' % (future.exception(),))
+            raise RuntimeError(self.feedback_message)
+        if len(future.result().values) > 1:
+            self.feedback_message = "expected one parameter value, got multiple [{}]".format("/safety_sensors/enabled")
+            raise RuntimeError(self.feedback_message)
+        value = future.result().values[0]
+        if value.type != rcl_msgs.ParameterType.PARAMETER_BOOL:  # noqa
+            self.feedback_message = "expected parameter type bool, got [{}]{}]".format(value.type, "/safety_sensors/enabled")
+            self.node.get_logger().error(self.feedback_message)
+            raise RuntimeError(self.feedback_message)
+        if value.bool_value != self.last_safety_sensors_enabled_status:
+            self.last_safety_sensors_enabled_status = value.bool_value
+            self.safety_sensors_enabled_changed.emit(value.bool_value)
 
     def publish_button_message(self, publisher):
         publisher.publish(std_msgs.Empty())
@@ -220,6 +251,9 @@ def main():
     )
     backend.battery_charging_status_changed.connect(
         main_window.ui.configuration_group_box.set_charging_status
+    )
+    backend.safety_sensors_enabled_changed.connect(
+        main_window.ui.configuration_group_box.set_safety_sensors_enabled
     )
     main_window.ui.configuration_group_box.change_battery_percentage.connect(
         backend.update_battery_percentage

@@ -57,6 +57,9 @@ class ConfigurationGroupBox(qt_widgets.QGroupBox):
     def set_charging_status(self, charging_status):
         self.ui.battery_charging_check_box.setChecked(charging_status)
 
+    def set_safety_sensors_enabled(self, enabled_status: bool):
+        self.ui.safety_sensors_enabled_check_box.setChecked(enabled_status)
+
     def battery_percentage_slider_updated(self):
         percentage = self.ui.battery_percentage_slider.value()
         self.change_battery_percentage.emit(percentage)
