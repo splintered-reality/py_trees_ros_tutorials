@@ -3,6 +3,7 @@ encoding//doc/conf.py=utf-8
 encoding//doc/examples/five_action_client.py=utf-8
 encoding//doc/examples/five_preemption.py=utf-8
 encoding//doc/examples/five_scan_branch.py=utf-8
+encoding//doc/examples/seven_succeeding.py=utf-8
 encoding//doc/examples/six_context_switch.py=utf-8
 encoding//py_trees_ros_tutorials/five_action_clients.py=utf-8
 encoding//py_trees_ros_tutorials/launch_testies.py=utf-8

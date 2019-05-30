@@ -48,6 +48,13 @@ Tree
 Succeeding
 ----------
 
+.. graphviz:: dot/tutorial-seven-ere-we-go.dot
+   :align: center
+
+Assuming everything works perfectly, then the subtree will sequentially progress to completion
+through undocking, move out, rotate, move home and docking actions. However, nothing
+ever works perfectly, so ...
+
 Cancelling
 ----------
 
