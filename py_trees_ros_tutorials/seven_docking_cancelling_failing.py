@@ -7,26 +7,27 @@
 ##############################################################################
 # Documentation
 ##############################################################################
-from pygments.lexers import make
 
 """
 About
 ^^^^^
 
-This tutorial inserts a context switching behaviour to run in tandem with the
-scan rotation. A context switching behaviour will alter the runtime system
-in some way when it is entered (i.e. in :meth:`~py_trees.behaviour.Behaviour.initialise`)
-and reset the runtime system to it's original context
-on :meth:`~py_trees.behaviour.Behaviour.terminate`). Refer to :term:`context switch`
-for more detail.
+This tutorial adds additional complexity to the scanning application in order to
+introduce a few patterns typical of most applications - cancellations, recovery
+and result handling.
 
-In this example it will enable a hypothetical safety sensor pipeline, necessary
-necessary for dangerous but slow moving rotational maneuvres not required for
-normal modes of travel (suppose we have a large rectangular robot that is
-ordinarily blind to the sides - it may need to take advantage of noisy
-sonars to the sides or rotate forward facing sensing into position before
-engaging).
+Specifically, there is now an undocking-move combination pre-scanning and
+a move-docking combination post-scanning. When cancelling, the robot should
+recover it's initial state so it is ready to accept future requests. In this
+case, the robot must move home and dock, even when cancelled.
 
+Additionally, the application should report out on it's result upon completion.
+
+.. note::
+
+    Preemption has been dropped from the application for simplicity. It could
+    be reinserted, but care would be required to handle undocking and docking
+    appropriately.
 
 Tree
 ^^^^
@@ -44,30 +45,17 @@ Tree
    :lines: 123-215
    :caption: seven_docking_cancelling_failing.py#tutorial_create_root
 
-Behaviour
----------
+Succeeding
+----------
 
-The :class:`py_trees_ros_tutorials.behaviours.ScanContext` is the
-context switching behaviour constructed for this tutorial.
+Cancelling
+----------
 
-* :meth:`~py_trees_ros_tutorials.behaviours.ScanContext.initialise()`: trigger a sequence service calls to cache and set the /safety_sensors/enabled parameter to True
-* :meth:`~py_trees_ros_tutorials.behaviours.ScanContext.update()`: complete the chain of service calls & maintain the context
-* :meth:`~py_trees_ros_tutorials.behaviours.ScanContext.terminate()`: reset the parameter to the cached value
+Failing
+-------
 
-
-Context Switching
------------------
-
-.. graphviz:: dot/tutorial-seven-docking-cancelling-failing-subtree.dot
-   :align: center
-
-On entry into the parallel, the :class:`~py_trees_ros_tutorials.behaviours.ScanContext`
-behaviour will cache and switch
-the safety sensors parameter. While in the parallel it will return with
-:data:`~py_trees.common.Status.RUNNING` indefinitely. When the rotation
-action succeeds or fails, it will terminate the parallel and subsequently
-the :class:`~py_trees_ros_tutorials.behaviours.ScanContext` will terminate,
-resetting the safety sensors parameter to it's original value.
+Sending Results
+---------------
 
 Running
 ^^^^^^^
@@ -77,8 +65,7 @@ Running
     # Launch the tutorial
     $ ros2 run py_trees_ros_tutorials tutorial-seven-docking-cancelling-failing
     # In another shell, watch the parameter as a context switch occurs
-    $ watch -n 1 ros2 param get /safety_sensors enabled
-    # Trigger scan requests from the qt dashboard
+    # Trigger scan/cancel requests from the qt dashboard
 
 .. image:: images/tutorial-seven-docking-cancelling-failing.png
 """
