@@ -109,6 +109,7 @@ setup(
              'tree-battery-check = py_trees_ros_tutorials.two_battery_check:tutorial_main',
              'tree-action-clients = py_trees_ros_tutorials.five_action_clients:tutorial_main',
              'tree-context-switching = py_trees_ros_tutorials.six_context_switching:tutorial_main',
+             'tree-docking-cancelling-failing = py_trees_ros_tutorials.seven_docking_cancelling_failing:tutorial_main',
              # Tutorial Launchers (directly runnable)
              'tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:launch_main',
              'tutorial-two-battery-check = py_trees_ros_tutorials.two_battery_check:launch_main',
@@ -116,6 +117,7 @@ setup(
              'tutorial-four-introspect-the-tree = py_trees_ros_tutorials.two_battery_check:launch_main',
              'tutorial-five-action-clients = py_trees_ros_tutorials.five_action_clients:launch_main',
              'tutorial-six-context-switching = py_trees_ros_tutorials.six_context_switching:launch_main',
+             'tutorial-seven-docking-cancelling-failing = py_trees_ros_tutorials.seven_docking_cancelling_failing:launch_main',
              # Other
              'testies = py_trees_ros_tutorials.testies:main',
              'launch-testies = py_trees_ros_tutorials.launch_testies:main',

@@ -147,3 +147,12 @@ Tutorial 6 - Context Switching
 
 .. automodule:: py_trees_ros_tutorials.six_context_switching
     :synopsis: switching the context while scanning
+
+.. _tutorial-seven
+
+Tutorial 7 - Docking, Cancelling, Failing
+-----------------------------------------
+
+.. automodule:: py_trees_ros_tutorials.seven_docking_cancelling_failing
+    :synopsis: docking, cancelling and failing
+    
