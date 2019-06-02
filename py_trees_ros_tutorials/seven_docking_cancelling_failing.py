@@ -52,17 +52,100 @@ Succeeding
    :align: center
 
 Assuming everything works perfectly, then the subtree will sequentially progress to completion
-through undocking, move out, rotate, move home and docking actions. However, nothing
-ever works perfectly, so ...
-
-Cancelling
-----------
+through undocking, move out, rotate, move home and docking actions as illustrated in the
+dot graph above. However, nothing ever works perfectly, so ...
 
 Failing
 -------
 
-Sending Results
----------------
+.. image:: images/tutorial-seven-failure_paths.svg
+   :align: center
+
+If any step of the 'Ere we Go' sequence fails the mock robot robot will simply stop, drop
+into the post-failure ('Die') subtree and commence post-failure actions. In this case
+this consists of both an alarm signal (flashing red) and communication of failure to
+the user (echoes to the screen, but could have been, for example, a middleware response
+to the user's application).
+
+These actions are merely post-failure notifications that would ostensibly result in
+manual (human assisted) recovery of the situation. To attempt an automated recovery,
+there are two options:
+
+   1. Global Recovery - use the blackboard as a means of transferring information about the
+      failure from the relevant behaviour (UnDock, Move Out, Move Home, Dock) to the
+      post-failure subtree. Introspect the data and determine the right course of action in
+      the post-failure subtree.
+
+   2. Local Recovery - use a selector with each of the individual behaviours to immediately
+      generate a recovery subtree specifically adapted to the behaviour that failed. This
+      recovery subtree should also return :attr:`~py_trees.common.Status.FAILURE` so the
+      parent sequence also returns :attr:`~py_trees.common.Status.FAILURE`. The
+      'Die' subtree is then merely for common post-failure actions (e.g. notification and
+      response).
+
+The latter is technically preferable as the decision logic is entirely visible in the tree
+connections, but it does cause an explosion in the scale of the tree and it's maintenance.
+
+.. note::
+
+   It is interesting to observe that although the application is considered to have
+   failed, the 'Scan or Die' operation will return with :attr:`~py_trees.common.Status.SUCCESS`
+   after which post-failure actions will kick in.
+   Here, application failure is recorded in the 'Result2BB' behaviour which is later
+   transmitted back to the user in the final stages of the application.
+
+   Application failure is handled via the actions of behaviours,
+   not the state of the tree.
+
+.. tip::
+
+   Decision logic in the tree is for routing decision making,
+   not routing application failure/success, nor logical errors. Overloading
+   tree decision logic with more than one purpose will constrain your
+   application design to the point of non-usefulness.
+
+Cancelling
+----------
+
+In this tutorial, the application listens continuously for cancellation requests and
+will cancel the operation if it is currently between undocking and docking actions.
+
+.. note::
+
+   The approach demonstrated in this tutorial is simple, but sufficient as an example.
+   Interactions are only one-way - from the user to the application.
+   It neither prevents the user from requesting nor does it provide an informative
+   response if the request is invalid (i.e. if the application is not running or already
+   cancelling). It also falls short of caching and handling
+   cancel requests across the entire application.
+   These cases are easy to handle with additional logic in the tree - consider it
+   a homework exercise :)
+
+.. graphviz:: dot/tutorial-seven-cancel2bb.dot
+   :align: center
+
+Cancelling begins with catching incoming cancel requests:
+
+.. image:: images/tutorial-seven-cancelling.svg
+   :align: center
+
+Cancelling is a high priority subtree, but here we make sure that the post-cancelling
+workflow integrates with the non-cancelling workflow so that the robot returns to
+it's initial location and state.
+
+
+Results
+-------
+
+.. image:: images/tutorial-seven-result.svg
+   :align: center
+
+As noted earlier, it is typically important to keep application result logic
+separate from the decision tree logic. To do so, the blackboard is used to
+record the application result and an application result agnostic behaviour
+is used to communicate the result back to the user in the final stage of the
+application's lifecycle.
+
 
 Running
 ^^^^^^^

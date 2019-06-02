@@ -155,4 +155,3 @@ Tutorial 7 - Docking, Cancelling, Failing
 
 .. automodule:: py_trees_ros_tutorials.seven_docking_cancelling_failing
     :synopsis: docking, cancelling and failing
-    
