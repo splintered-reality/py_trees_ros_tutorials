@@ -1,0 +1,12 @@
+digraph pastafarianism {
+graph [fontname="times-roman"];
+node [fontname="times-roman"];
+edge [fontname="times-roman"];
+Topics2BB [label=Topics2BB, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+Scan2BB [label=Scan2BB, shape=ellipse, style=filled, fillcolor=gray20, fontsize=9, fontcolor=dodgerblue];
+Topics2BB -> Scan2BB;
+Cancel2BB [label=Cancel2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Topics2BB -> Cancel2BB;
+Battery2BB [label=Battery2BB, shape=ellipse, style=filled, fillcolor=gray20, fontsize=9, fontcolor=dodgerblue];
+Topics2BB -> Battery2BB;
+}

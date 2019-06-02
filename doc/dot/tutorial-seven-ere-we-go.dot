@@ -1,0 +1,32 @@
+digraph pastafarianism {
+graph [fontname="times-roman"];
+node [fontname="times-roman"];
+edge [fontname="times-roman"];
+"Ere we Go" [label="Ere we Go", shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+UnDock [label=UnDock, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Ere we Go" -> UnDock;
+"Scan or Be Cancelled" [label="Scan or Be Cancelled", shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
+"Ere we Go" -> "Scan or Be Cancelled";
+"Cancelling?" [label="Cancelling?", shape=box, style=filled, fillcolor=gray20, fontsize=9, fontcolor=dodgerblue];
+"Scan or Be Cancelled" -> "Cancelling?";
+"Move Out and Scan" [label="Move Out and Scan", shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+"Scan or Be Cancelled" -> "Move Out and Scan";
+"Move Out" [label="Move Out", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Move Out and Scan" -> "Move Out";
+Scanning [label="Scanning\n--SuccessOnOne--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
+"Move Out and Scan" -> Scanning;
+"Context Switch" [label="Context Switch", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scanning -> "Context Switch";
+Rotate [label=Rotate, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scanning -> Rotate;
+"Flash Blue" [label="Flash Blue", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scanning -> "Flash Blue";
+"Move Home" [label="Move Home", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Move Out and Scan" -> "Move Home";
+"Result2BB\n'succeeded'" [label="Result2BB\n'succeeded'", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Move Out and Scan" -> "Result2BB\n'succeeded'";
+Dock [label=Dock, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Ere we Go" -> Dock;
+Celebrate [label="Celebrate\n--SuccessOnOne--", shape=parallelogram, style=filled, fillcolor=gray20, fontsize=9, fontcolor=dodgerblue];
+"Ere we Go" -> Celebrate;
+}
