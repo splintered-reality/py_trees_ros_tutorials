@@ -169,7 +169,9 @@ import py_trees_ros.trees
 import py_trees.console as console
 import py_trees_ros_interfaces.action as py_trees_actions  # noqa
 import rclpy
+import std_msgs.msg as std_msgs
 import sys
+import typing
 
 from . import behaviours
 from . import mock
@@ -186,7 +188,11 @@ def launch_main():
     """
     launch_descriptions = []
     launch_descriptions.append(mock.launch.generate_launch_description())
-    launch_descriptions.append(utilities.generate_tree_launch_description("tree-docking-cancelling-failing"))
+    launch_descriptions.append(
+        utilities.generate_tree_launch_description(
+            "tree-dynamic-job-handling"
+        )
+    )
     launch_service = utilities.generate_ros_launch_service(
         launch_descriptions=launch_descriptions,
         debug=False
@@ -208,7 +214,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         the root of the tree
     """
     root = py_trees.composites.Parallel(
-        name="Tutorial Seven",
+        name="Tutorial Eight",
         policy=py_trees.common.ParallelPolicy.SuccessOnAll(
             synchronise=False
         )
@@ -246,7 +252,25 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         condition=check_battery_low_on_blackboard,
         child=flash_red
     )
-    # Worker Tasks
+    # Fallback task
+    idle = py_trees.behaviours.Running(name="Idle")
+
+    root.add_child(topics2bb)
+    topics2bb.add_children([scan2bb, cancel2bb, battery2bb])
+    root.add_child(tasks)
+    tasks.add_children([battery_emergency, idle])
+    return root
+
+
+def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
+    """
+    Create the job subtree based on the incoming goal specification.
+    Args:
+        goal (:class:`~std_msgs.msg.Empty`): incoming goal specification
+    Returns:
+       :class:`~py_trees.behaviour.Behaviour`: subtree root
+    """
+    # behaviours
     scan = py_trees.composites.Sequence(name="Scan")
     is_scan_requested = py_trees.blackboard.CheckBlackboardVariable(
         name="Scan?",
@@ -351,14 +375,6 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     send_result = py_trees.behaviours.meta.create_behaviour_from_function(send_result_to_screen)(
         name="Send Result"
     )
-
-    # Fallback task
-    idle = py_trees.behaviours.Running(name="Idle")
-
-    root.add_child(topics2bb)
-    topics2bb.add_children([scan2bb, cancel2bb, battery2bb])
-    root.add_child(tasks)
-    tasks.add_children([battery_emergency, scan, idle])
     scan.add_children([is_scan_requested, scan_or_die, send_result])
     scan_or_die.add_children([ere_we_go, die])
     die.add_children([failed_notification, result_failed_to_bb])
@@ -369,7 +385,109 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     move_out_and_scan.add_children([move_base, scanning, move_home_after_scan, result_succeeded_to_bb])
     scanning.add_children([scan_context_switch, scan_rotate, scan_flash_blue])
     celebrate.add_children([celebrate_flash_green, celebrate_pause])
-    return root
+    return scan
+
+
+class DynamicJobHandlingTree(py_trees_ros.trees.BehaviourTree):
+    """
+    Wraps the ROS behaviour tree manager in a class that manages loading
+    and unloading of jobs.
+    """
+
+    def __init__(self):
+        super().__init__(
+            root=tutorial_create_root(),
+            unicode_tree_debug=True
+        )
+        self.add_post_tick_handler(self.post_tick_handler)
+        self._report_publisher = None
+        self._job_subscriber = None
+
+    def setup(self, timeout: float):
+        """
+        Redirect the setup function"
+        Returns:
+            :obj:`bool`: whether it timed out trying to setup
+        """
+        super().setup(timeout=15)
+        self._report_publisher = self.node.create_publisher(std_msgs.String, "~/report")
+        self._job_subscriber = self.node.create_subscription(
+            msg_type=std_msgs.Empty,
+            topic="/dashboard/scan",
+            callback=self.receive_incoming_job
+        )
+
+    def receive_incoming_job(self, msg: std_msgs.Empty):
+        """
+        Incoming job callback.
+
+        Args:
+            msg: incoming goal message
+
+        Raises:
+            Exception: be ready to catch if any of the behaviours raise an exception
+        """
+        if self.busy():
+            self._node.get_logger().info("rejecting new job, last job is still active")
+        else:
+            scan_subtree = tutorial_create_scan_subtree()
+            try:
+                py_trees.trees.setup(
+                    root=scan_subtree,
+                    node=self.node
+                )
+            except Exception as e:
+                console.logerror(console.red + "failed to setup the scan subtree, aborting [{}]".format(str(e)) + console.reset)
+                sys.exit(1)
+            self.insert_subtree(scan_subtree, self.priorities.id, 1)
+            self.node.get_logger().info("inserted job subtree")
+
+    def post_tick_handler(self, tree):
+        """
+        Check if a job is running and if it has finished. If so, prune the job subtree from the tree.
+        Additionally, make a status report upon introspection of the tree.
+        Args:
+            tree (:class:`~py_trees.trees.BehaviourTree`): tree to investigate/manipulate.
+        """
+        # executing
+        if self.busy():
+            job = self.priorities.children[-2]
+            # finished
+            if job.status == py_trees.common.Status.SUCCESS or job.status == py_trees.common.Status.FAILURE:
+                self.node.get_logger().info("{0}: finished [{1}]".format(job.name, job.status))
+                self._report_publisher.publish(
+                    std_msgs.String(data=self.blackboard_exchange.blackboard.scan_result)
+                )
+                tree.prune_subtree(job.id)
+            else:  # still executing
+                self._report_publisher.publish(
+                    std_msgs.String(data="executing")
+                )
+        elif tree.tip().has_parent_with_name("Battery Emergency"):
+            self._report_publisher.publish(std_msgs.String(data="battery"))
+        else:
+            self._report_publisher.publish(std_msgs.String(data="idle"))
+
+    def busy(self):
+        """
+        Check if a job subtree exists and is running. Only one job is permitted at
+        a time, so it is sufficient to just check that the priority task selector
+        is of length three (note: there is always emergency and idle tasks
+        alongside the active job). When the job is not active, it is
+        pruned from the tree, leaving just two prioritised tasks (emergency and idle).
+
+        Returns:
+            :obj:`bool`: whether it is busy with a job subtree or not
+        """
+        return len(self.priorities.children) == 3
+
+    @property
+    def priorities(self) -> py_trees.composites.Selector:
+        """
+        Returns the composite (:class:`~py_trees.composites.Selector`) that is
+        home to the prioritised list of tasks.
+        """
+        return self.root.children[-1]
 
 
 def tutorial_main():
@@ -377,11 +495,7 @@ def tutorial_main():
     Entry point for the demo script.
     """
     rclpy.init(args=None)
-    root = tutorial_create_root()
-    tree = py_trees_ros.trees.BehaviourTree(
-        root=root,
-        unicode_tree_debug=True
-    )
+    tree = DynamicJobHandlingTree()
     try:
         tree.setup(timeout=15)
     except Exception as e:
