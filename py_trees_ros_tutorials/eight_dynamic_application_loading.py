@@ -30,7 +30,7 @@ mode of operation for robots due to similar resource contention arguments) and t
 conventional use of roslaunch files to bringup a core and later bootstrap / tear
 down application level processes on demand.
 
-This tutorial demonstrates the use of a wrapper around the tree manager class to handle:
+This tutorial uses a wrapper class around :class:`py_trees_ros.trees.BehaviourTree` to handle:
 
 1. Construction of the core tree
 2. A job (application) request callback
@@ -48,8 +48,8 @@ This tutorial demonstrates the use of a wrapper around the tree manager class to
     to be the decision making engine for the robot, it is the best snapshot of the
     robot's current activity). You're only limited by your imagination!
 
-Core Tree
-^^^^^^^^^
+Core Tree (Dot Graph)
+^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
@@ -57,9 +57,10 @@ Core Tree
 
 .. graphviz:: dot/tutorial-eight-core-tree.dot
    :align: center
+   :caption: py_trees_ros_tutorials.eight_dynamic_application_loading.tutorial_create_root
 
-Application Subtree
-^^^^^^^^^^^^^^^^^^^
+Application Subtree (Dot Graph)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
@@ -67,117 +68,57 @@ Application Subtree
 
 .. graphviz:: dot/tutorial-eight-application-subtree.dot
    :align: center
+   :caption: py_trees_ros_tutorials.eight_dynamic_application_loading.tutorial_create_scan_subtree
 
-
-
+Dynamic Application Tree (Class)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 123-215
-   :caption: eight_dynamic_application_loading.py#tutorial_create_root
+   :lines: 360-364
+   :caption: DynamicApplicationTree
 
-Succeeding
-----------
+.. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
+   :language: python
+   :linenos:
+   :lines: 366-377
+   :caption: Init - Create the Root Tree
 
-.. graphviz:: dot/tutorial-seven-ere-we-go.dot
-   :align: center
+.. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
+   :language: python
+   :linenos:
+   :lines: 379-397
+   :caption: Setup - Application Subscribers & Services
 
-Assuming everything works perfectly, then the subtree will sequentially progress to completion
-through undocking, move out, rotate, move home and docking actions as illustrated in the
-dot graph above. However, nothing ever works perfectly, so ...
+.. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
+   :language: python
+   :linenos:
+   :lines: 399-422
+   :caption: Requests - Inserting Application Subtrees
 
-Failing
--------
+.. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
+   :language: python
+   :linenos:
+   :lines: 445-458
+   :caption: Post-Execution - Pruning Application Subtrees
 
-.. image:: images/tutorial-seven-failure_paths.svg
-   :align: center
-
-If any step of the 'Ere we Go' sequence fails the mock robot robot will simply stop, drop
-into the post-failure ('Die') subtree and commence post-failure actions. In this case
-this consists of both an alarm signal (flashing red) and communication of failure to
-the user (echoes to the screen, but could have been, for example, a middleware response
-to the user's application).
-
-These actions are merely post-failure notifications that would ostensibly result in
-manual (human assisted) recovery of the situation. To attempt an automated recovery,
-there are two options:
-
-   1. Global Recovery - use the blackboard as a means of transferring information about the
-      failure from the relevant behaviour (UnDock, Move Out, Move Home, Dock) to the
-      post-failure subtree. Introspect the data and determine the right course of action in
-      the post-failure subtree.
-
-   2. Local Recovery - use a selector with each of the individual behaviours to immediately
-      generate a recovery subtree specifically adapted to the behaviour that failed. This
-      recovery subtree should also return :attr:`~py_trees.common.Status.FAILURE` so the
-      parent sequence also returns :attr:`~py_trees.common.Status.FAILURE`. The
-      'Die' subtree is then merely for common post-failure actions (e.g. notification and
-      response).
-
-The latter is technically preferable as the decision logic is entirely visible in the tree
-connections, but it does cause an explosion in the scale of the tree and it's maintenance.
+.. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
+   :language: python
+   :linenos:
+   :lines: 424-443
+   :caption: Status Reports
 
 .. note::
 
-   It is interesting to observe that although the application is considered to have
-   failed, the 'Scan or Die' operation will return with :attr:`~py_trees.common.Status.SUCCESS`
-   after which post-failure actions will kick in.
-   Here, application failure is recorded in the 'Result2BB' behaviour which is later
-   transmitted back to the user in the final stages of the application.
-
-   Application failure is handled via the actions of behaviours,
-   not the state of the tree.
-
-.. tip::
-
-   Decision logic in the tree is for routing decision making,
-   not routing application failure/success, nor logical errors. Overloading
-   tree decision logic with more than one purpose will constrain your
-   application design to the point of non-usefulness.
-
-Cancelling
-----------
-
-In this tutorial, the application listens continuously for cancellation requests and
-will cancel the operation if it is currently between undocking and docking actions.
-
-.. note::
-
-   The approach demonstrated in this tutorial is simple, but sufficient as an example.
-   Interactions are only one-way - from the user to the application.
-   It neither prevents the user from requesting nor does it provide an informative
-   response if the request is invalid (i.e. if the application is not running or already
-   cancelling). It also falls short of caching and handling
-   cancel requests across the entire application.
-   These cases are easy to handle with additional logic in the tree - consider it
-   a homework exercise :)
-
-.. graphviz:: dot/tutorial-seven-cancel2bb.dot
-   :align: center
-
-Cancelling begins with catching incoming cancel requests:
-
-.. image:: images/tutorial-seven-cancelling.svg
-   :align: center
-
-Cancelling is a high priority subtree, but here we make sure that the post-cancelling
-workflow integrates with the non-cancelling workflow so that the robot returns to
-it's initial location and state.
-
-
-Results
--------
-
-.. image:: images/tutorial-seven-result.svg
-   :align: center
-
-As noted earlier, it is typically important to keep application result logic
-separate from the decision tree logic. To do so, the blackboard is used to
-record the application result and an application result agnostic behaviour
-is used to communicate the result back to the user in the final stage of the
-application's lifecycle.
-
+   In the code above, there is a conspicuous absence of thread locks. This is
+   possible due to the use of ROS2's single threaded executors to handle service and
+   subscriber callbacks along with the tree's tick tock that operates from within
+   ROS2 timer callbacks. If using a behaviour tree, as is exemplified here,
+   to handle robot application logic, you should never need to go beyond single
+   threaded execution and thus avoid the complexity and bugs that come along with
+   having to handle concurrency (this is a considerable improvement on the situation
+   for ROS1).
 
 Running
 ^^^^^^^
@@ -185,11 +126,12 @@ Running
 .. code-block:: bash
 
     # Launch the tutorial
-    $ ros2 run py_trees_ros_tutorials tutorial-seven-docking-cancelling-failing
-    # In another shell, watch the parameter as a context switch occurs
+    $ ros2 run py_trees_ros_tutorials tutorial-eight-dynamic-application-loading
+    # In another shell, catch the tree snapshots
+    $ py-trees-tree-watcher --stream
     # Trigger scan/cancel requests from the qt dashboard
 
-.. image:: images/tutorial-seven-docking-cancelling-failing.png
+.. image:: images/tutorial-eight-dynamic-application-loading.png
 """
 
 ##############################################################################
@@ -304,11 +246,6 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
     """
     # behaviours
     scan = py_trees.composites.Sequence(name="Scan")
-    is_scan_requested = py_trees.blackboard.CheckBlackboardVariable(
-        name="Scan?",
-        variable_name='event_scan_button',
-        expected_value=True
-    )
     scan_or_die = py_trees.composites.Selector(name="Scan or Die")
     die = py_trees.composites.Sequence(name="Die")
     failed_notification = py_trees.composites.Parallel(
@@ -407,7 +344,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
     send_result = py_trees.behaviours.meta.create_behaviour_from_function(send_result_to_screen)(
         name="Send Result"
     )
-    scan.add_children([is_scan_requested, scan_or_die, send_result])
+    scan.add_children([scan_or_die, send_result])
     scan_or_die.add_children([ere_we_go, die])
     die.add_children([failed_notification, result_failed_to_bb])
     failed_notification.add_children([failed_flash_green, failed_pause])
@@ -420,27 +357,34 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
     return scan
 
 
-class DynamicJobHandlingTree(py_trees_ros.trees.BehaviourTree):
+class DynamicApplicationTree(py_trees_ros.trees.BehaviourTree):
     """
     Wraps the ROS behaviour tree manager in a class that manages loading
     and unloading of jobs.
     """
 
     def __init__(self):
+        """
+        Create the core tree and add post tick handlers for post-execution
+        management of the tree.
+        """
         super().__init__(
             root=tutorial_create_root(),
             unicode_tree_debug=True
         )
         self.add_post_tick_handler(
-            self.prune_application_subtree_if_done)
+            self.prune_application_subtree_if_done
+        )
 
     def setup(self, timeout: float):
         """
-        Redirect the setup function"
-        Returns:
-            :obj:`bool`: whether it timed out trying to setup
+        Setup the tree and connect additional application management / status
+        report subscribers and services.
+
+        Args:
+            timeout: time (s) to wait (use common.Duration.INFINITE to block indefinitely)
         """
-        super().setup(timeout=15)
+        super().setup(timeout=timeout)
         self._report_service = self.node.create_service(
             srv_type=py_trees_srvs.StatusReport,
             srv_name="~/report",
@@ -540,7 +484,7 @@ def tutorial_main():
     Entry point for the demo script.
     """
     rclpy.init(args=None)
-    tree = DynamicJobHandlingTree()
+    tree = DynamicApplicationTree()
     try:
         tree.setup(timeout=15)
     except Exception as e:

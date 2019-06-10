@@ -3,8 +3,6 @@ graph [fontname="times-roman"];
 node [fontname="times-roman"];
 edge [fontname="times-roman"];
 Scan [label=Scan, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
-"Scan?" [label="Scan?", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-Scan -> "Scan?";
 "Scan or Die" [label="Scan or Die", shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
 Scan -> "Scan or Die";
 "Ere we Go" [label="Ere we Go", shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];

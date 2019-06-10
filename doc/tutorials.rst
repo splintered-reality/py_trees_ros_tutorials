@@ -155,3 +155,14 @@ Tutorial 7 - Docking, Cancelling, Failing
 
 .. automodule:: py_trees_ros_tutorials.seven_docking_cancelling_failing
     :synopsis: docking, cancelling and failing
+
+Tutorial 8 - Dynamic Application Loading
+----------------------------------------
+
+.. automodule:: py_trees_ros_tutorials.eight_dynamic_application_loading
+    :synopsis: dynamically inserting/pruning application subtrees
+
+Tutorial 9 - Bagging Trees
+--------------------------
+
+Coming soon...
