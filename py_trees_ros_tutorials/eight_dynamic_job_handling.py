@@ -168,10 +168,10 @@ import py_trees
 import py_trees_ros.trees
 import py_trees.console as console
 import py_trees_ros_interfaces.action as py_trees_actions  # noqa
+import py_trees_ros_interfaces.srv as py_trees_srvs  # noqa
 import rclpy
 import std_msgs.msg as std_msgs
 import sys
-import typing
 
 from . import behaviours
 from . import mock
@@ -399,9 +399,8 @@ class DynamicJobHandlingTree(py_trees_ros.trees.BehaviourTree):
             root=tutorial_create_root(),
             unicode_tree_debug=True
         )
-        self.add_post_tick_handler(self.post_tick_handler)
-        self._report_publisher = None
-        self._job_subscriber = None
+        self.add_post_tick_handler(
+            self.prune_application_subtree_if_done)
 
     def setup(self, timeout: float):
         """
@@ -410,7 +409,11 @@ class DynamicJobHandlingTree(py_trees_ros.trees.BehaviourTree):
             :obj:`bool`: whether it timed out trying to setup
         """
         super().setup(timeout=15)
-        self._report_publisher = self.node.create_publisher(std_msgs.String, "~/report")
+        self._report_service = self.node.create_service(
+            srv_type=py_trees_srvs.StatusReport,
+            srv_name="~/report",
+            callback=self.deliver_status_report
+        )
         self._job_subscriber = self.node.create_subscription(
             msg_type=std_msgs.Empty,
             topic="/dashboard/scan",
@@ -442,7 +445,28 @@ class DynamicJobHandlingTree(py_trees_ros.trees.BehaviourTree):
             self.insert_subtree(scan_subtree, self.priorities.id, 1)
             self.node.get_logger().info("inserted job subtree")
 
-    def post_tick_handler(self, tree):
+    def deliver_status_report(
+            self,
+            unused_request: py_trees_srvs.StatusReport.Request,
+            response: py_trees_srvs.StatusReport.Response
+         ):
+        """
+        Prepare a status report for an external service client.
+
+        Args:
+            unused_request: empty request message
+        """
+        # last result value or none
+        last_result = self.blackboard_exchange.blackboard.get(name="scan_result")
+        if self.busy():
+            response.report = "executing"
+        elif self.root.tip().has_parent_with_name("Battery Emergency"):
+            response.report = "battery [last result: {}]".format(last_result)
+        else:
+            response.report = "idle [last result: {}]".format(last_result)
+        return response
+
+    def prune_application_subtree_if_done(self, tree):
         """
         Check if a job is running and if it has finished. If so, prune the job subtree from the tree.
         Additionally, make a status report upon introspection of the tree.
@@ -455,18 +479,7 @@ class DynamicJobHandlingTree(py_trees_ros.trees.BehaviourTree):
             # finished
             if job.status == py_trees.common.Status.SUCCESS or job.status == py_trees.common.Status.FAILURE:
                 self.node.get_logger().info("{0}: finished [{1}]".format(job.name, job.status))
-                self._report_publisher.publish(
-                    std_msgs.String(data=self.blackboard_exchange.blackboard.scan_result)
-                )
                 tree.prune_subtree(job.id)
-            else:  # still executing
-                self._report_publisher.publish(
-                    std_msgs.String(data="executing")
-                )
-        elif tree.tip().has_parent_with_name("Battery Emergency"):
-            self._report_publisher.publish(std_msgs.String(data="battery"))
-        else:
-            self._report_publisher.publish(std_msgs.String(data="idle"))
 
     def busy(self):
         """
