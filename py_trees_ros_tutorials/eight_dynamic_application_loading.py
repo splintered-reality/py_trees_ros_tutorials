@@ -12,38 +12,70 @@
 About
 ^^^^^
 
-This tutorial adds additional complexity to the scanning application in order to
-introduce a few patterns typical of most applications - cancellations, recovery
-and result handling.
+The previous tutorial enables execution of a specific job upon
+request. You will inevitably grow the functionality of the robot beyond this
+and a very common use case for the trees is to switch the context of the robot
+between 'applications' - calibration, tests, demos, scheduled tasks from
+a fleet server, etc.
 
-Specifically, there is now an undocking-move combination pre-scanning and
-a move-docking combination post-scanning. When cancelling, the robot should
-recover it's initial state so it is ready to accept future requests. In this
-case, the robot must move home and dock, even when cancelled.
+While these contexts could be entirely managed by the tree simultaneously,
+the exclusivity of the applications lends itself far more easily to the following
+paradigm:
 
-Additionally, the application should report out on it's result upon completion.
+1. Construct a tree on bringup for ticking over basic functionality while idling
+2. Dynamically insert/prune application subtrees on demand, rejecting requests when already busy
+
+This mirrors both the way smart phones operate (which also happens to be a reasonable
+mode of operation for robots due to similar resource contention arguments) and the
+conventional use of roslaunch files to bringup a core and later bootstrap / tear
+down application level processes on demand.
+
+This tutorial demonstrates the use of a wrapper around the tree manager class to handle:
+
+1. Construction of the core tree
+2. A job (application) request callback
+3. Insertion of the application subtree in the request callback (if not busy)
+4. Pruning of the application subtree in a post-tick handler (if finished)
+5. A status report service for external clients of the tree
 
 .. note::
 
-    Preemption has been dropped from the application for simplicity. It could
-    be reinserted, but care would be required to handle undocking and docking
-    appropriately.
+    Only the basics are demonstrated here, but you could imagine extensions
+    to this class that would make it truly useful in an application driven robotics
+    system - abstractions so application modules need not be known in advance,
+    application subtrees delivered as python code, more
+    detailed tree introspection in status reports (given it's responsibility
+    to be the decision making engine for the robot, it is the best snapshot of the
+    robot's current activity). You're only limited by your imagination!
 
-Tree
-^^^^
+Core Tree
+^^^^^^^^^
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.seven_docking_cancelling_failing.tutorial_create_root
+   $ py-trees-render py_trees_ros_tutorials.eight_dynamic_application_loading.tutorial_create_root
 
-.. graphviz:: dot/tutorial-seven-docking-cancelling-failing.dot
+.. graphviz:: dot/tutorial-eight-core-tree.dot
    :align: center
 
-.. literalinclude:: ../py_trees_ros_tutorials/seven_docking_cancelling_failing.py
+Application Subtree
+^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   $ py-trees-render py_trees_ros_tutorials.eight_dynamic_application_loading.tutorial_create_scan_subtree
+
+.. graphviz:: dot/tutorial-eight-application-subtree.dot
+   :align: center
+
+
+
+
+.. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
    :lines: 123-215
-   :caption: seven_docking_cancelling_failing.py#tutorial_create_root
+   :caption: eight_dynamic_application_loading.py#tutorial_create_root
 
 Succeeding
 ----------
@@ -190,7 +222,7 @@ def launch_main():
     launch_descriptions.append(mock.launch.generate_launch_description())
     launch_descriptions.append(
         utilities.generate_tree_launch_description(
-            "tree-dynamic-job-handling"
+            "tree-dynamic-application-loading"
         )
     )
     launch_service = utilities.generate_ros_launch_service(
