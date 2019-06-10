@@ -9,7 +9,7 @@ Py Trees for ROS
 Behaviour trees for ros in python.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Guide
 
    about

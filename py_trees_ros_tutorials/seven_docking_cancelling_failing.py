@@ -42,7 +42,7 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/seven_docking_cancelling_failing.py
    :language: python
    :linenos:
-   :lines: 123-215
+   :lines: 201-372
    :caption: seven_docking_cancelling_failing.py#tutorial_create_root
 
 Succeeding
