@@ -21,68 +21,43 @@
   <build_depend>pyqt5-dev-tools</build_depend>
   <build_depend>qttools5-dev-tools</build_depend>
 
-  <!-- ach, autodoc is a beast, it shouldn't need these (there is a PR going in upstream for autodoc) -->
   <!--
-  <doc_depend>actionlib</doc_depend>
-  <doc_depend>actionlib_msgs</doc_depend>
-  <doc_depend>dynamic_reconfigure</doc_depend>
-  <doc_depend>geometry_msgs</doc_depend>
-  <doc_depend>move_base_msgs</doc_depend>
-  <doc_depend>nav_msgs</doc_depend>
-  <doc_depend>python-sphinx-argparse</doc_depend>
-  <doc_depend>python-sphinx-rtd-theme</doc_depend>
-  <doc_depend>python-catkin-pkg</doc_depend>
-  <doc_depend>python-rospkg</doc_depend>
-  <doc_depend>python3-pyqt5</doc_depend>
-  <doc_depend>py_trees</doc_depend>
-  <doc_depend>py_trees_interfaces</doc_depend>
-  <doc_depend>rosbag</doc_depend>
-  <doc_depend>rospy</doc_depend>
-  <doc_depend>sensor_msgs</doc_depend>
-  <doc_depend>std_msgs</doc_depend>
-  <doc_depend>unique_id</doc_depend>
-  <doc_depend>uuid_msgs</doc_depend>
+  <doc_depend>lots_of_things_if_we_stop_using_readthedocs</doc_depend>
   -->
 
-  <!-- mocking & simulation dependencies -->
-  <!--
-  <exec_depend>dynamic_reconfigure</exec_depend>
+  <!-- mock dependencies -->
+  <exec_depend>action_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>move_base_msgs</exec_depend>
-  <exec_depend>nav_msgs</exec_depend>
-  -->
-
-  <!-- core dependencies -->
   <exec_depend>py_trees</exec_depend>
   <exec_depend>py_trees_ros</exec_depend>
   <exec_depend>py_trees_ros_interfaces</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>python3-qt5-bindings</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>unique_identifier_msgs</exec_depend>
+
+  <!-- tree dependencies -->
+  <exec_depend>py_trees</exec_depend>
+  <exec_depend>py_trees_ros</exec_depend>
+  <exec_depend>py_trees_ros_interfaces</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
 
   <!-- launch dependencies -->
-  <exec_depend>python3-qt5-bindings</exec_depend>
+  <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
-  <exec_depend>rclpy</exec_depend>
   <exec_depend>ros2launch</exec_depend>
   <exec_depend>ros2param</exec_depend>
   <exec_depend>ros2run</exec_depend>
   <exec_depend>ros2service</exec_depend>
   <exec_depend>ros2topic</exec_depend>
-  <!--
-  <exec_depend>actionlib</exec_depend>
-  <exec_depend>actionlib_msgs</exec_depend>
-  <exec_depend>python-rospkg</exec_depend>
-  <exec_depend>rosbag</exec_depend>
-  -->
 
-  <!--
-  <test_depend>py_trees</test_depend>
-  <test_depend>geometry_msgs</test_depend>
-  <test_depend>rostest</test_depend>
-  <test_depend>rosunit</test_depend>
-  -->
+  <!-- test dependencies -->
+  <exec_depend>action_msgs</exec_depend>
+  <exec_depend>py_trees</exec_depend>
+  <exec_depend>rclpy</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>
