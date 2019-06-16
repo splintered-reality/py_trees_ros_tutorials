@@ -60,7 +60,7 @@ class MoveBase(py_trees_ros.mock.actions.GenericServer):
         Do a fake pose incremenet and populate the feedback message.
 
         Returns:
-            :class:`py_trees_actions.MoveBase_Feedback`: the populated feedback message
+            :class:`py_trees_actions.MoveBase.Feedback`: the populated feedback message
         """
         # actually doesn't go to the goal right now...
         # but we could take the feedback from the action

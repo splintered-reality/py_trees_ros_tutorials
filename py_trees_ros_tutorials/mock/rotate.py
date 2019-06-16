@@ -57,10 +57,10 @@ class Rotate(py_trees_ros.mock.actions.GenericServer):
         Create a feedback message that populates the percent completed.
 
         Returns:
-            :class:`py_trees_actions.Rotate_Feedback`: the populated feedback message
+            :class:`py_trees_actions.Rotate.Feedback`: the populated feedback message
         """
         # TODO: send some feedback message
-        msg = py_trees_actions.Rotate_Feedback()  # Rotate.Feedback() works, but the indexer can't find it
+        msg = py_trees_actions.Rotate.Feedback()  # Rotate.Feedback() works, but the indexer can't find it
         msg.percentage_completed = self.percent_completed
         msg.angle_rotated = 2*math.pi*self.percent_completed/100.0
         return msg

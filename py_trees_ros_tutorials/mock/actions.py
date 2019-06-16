@@ -275,8 +275,9 @@ def rotate_client(args=None):
     rclpy.init(args=args)
     action_client = RotateClient()
     try:
+        action_client.setup()
         action_client.spin()
-    except KeyboardInterrupt:
+    except (py_trees_ros.exceptions.TimedOutError, KeyboardInterrupt):
         pass
     action_client.shutdown()
 
@@ -290,7 +291,7 @@ class MoveBaseClient(GenericClient):
             node_name="move_base_client",
             action_name="move_base",
             action_type=py_trees_actions.MoveBase,
-            generate_feedback_message=lambda msg: "x={0:.2f}m".format(msg.base_position.pose.position.x),
+            generate_feedback_message=lambda msg: "x={0:.2f}m".format(msg.feedback.base_position.pose.position.x),
         )
 
 
@@ -302,6 +303,7 @@ def move_base_client(args=None):
     args = command_line_argument_parser()
     action_client = MoveBaseClient()
     try:
+        action_client.setup()
         action_client.spin(cancel=args.cancel)
     except KeyboardInterrupt:
         pass
