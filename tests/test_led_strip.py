@@ -11,14 +11,10 @@
 
 import py_trees
 import py_trees.console as console
-import py_trees_ros
 import py_trees_ros_tutorials
 import rclpy
-import rclpy.action
 import rclpy.executors
-import std_msgs.msg as std_msgs
 import unittest
-from _curses import flash
 
 ##############################################################################
 # Helpers
