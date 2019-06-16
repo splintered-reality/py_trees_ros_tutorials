@@ -179,8 +179,8 @@ class GenericClient(object):
         Args:
             future: details returning from the server about the goal result
         """
-        message = future.result().message
-        status = future.result().action_status
+        message = future.result().result.message
+        status = future.result().status
         status_string = self.status_strings[status]
 
         if status == action_msgs.GoalStatus.STATUS_SUCCEEDED:  # noqa
@@ -236,7 +236,7 @@ class DockClient(GenericClient):
             node_name="docking_client",
             action_name="dock",
             action_type=py_trees_actions.Dock,
-            generate_feedback_message=lambda msg: "{}".format(msg.percentage_completed)
+            generate_feedback_message=lambda msg: "{}".format(msg.feedback.percentage_completed)
         )
 
 
