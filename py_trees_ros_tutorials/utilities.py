@@ -72,13 +72,13 @@ def generate_ros_launch_service(
     print('')
     print(console.green + 'Introspection' + console.reset)
     print('')
-    print("Disabled temporarily while PYTHONUNBUFFERED is spammy...")
 
-    # triggered by having to set the entire env variable when adding a node action
-    # with PYTHONUNBUFFERED and subsequently printing the entire env variable in
-    # format_launch_description
-    # for launch_description in launch_descriptions:
-    #     print(launch.LaunchIntrospector().format_launch_description(launch_description))
+    # if using the PYTHONUNBUFFERED workaround
+    # print("Disabled temporarily while PYTHONUNBUFFERED is spammy...")
+
+    # if using the emulate_tty flag workaround
+    for launch_description in launch_descriptions:
+        print(launch.LaunchIntrospector().format_launch_description(launch_description))
 
     print('')
     print(console.green + 'Launch' + console.reset)

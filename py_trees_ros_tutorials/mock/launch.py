@@ -42,15 +42,18 @@ def generate_launch_description() -> launch.LaunchDescription:
                       'led_strip', 'move_base', 'rotation_controller',
                       'safety_sensors']:
         node_executable = "mock-{}".format(node_name.replace('_', '-'))
-        myenv = os.environ
-        myenv["PYTHONUNBUFFERED"] = "1"
+        # If using PYTHONUNBUFFERED, but kill the spammy introspection in the
+        # utilities module. Note, PYTHONUNBUFFERED loses colour since it
+        # doesn't emulate a tty terminal
+        # myenv = os.environ
+        # myenv["PYTHONUNBUFFERED"] = "1"
         launch_description.add_action(
             launch_ros.actions.Node(
                 package='py_trees_ros_tutorials',
                 node_name=node_name,
                 node_executable=node_executable,
                 output='screen',
-                env=myenv
+                # env=myenv
             )
         )
     return launch_description
