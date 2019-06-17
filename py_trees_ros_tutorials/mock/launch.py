@@ -17,6 +17,7 @@ Launch the mock robot.
 
 import launch
 import launch_ros.actions
+import os
 import py_trees_ros_tutorials.utilities as utilities
 
 ##############################################################################
@@ -41,12 +42,15 @@ def generate_launch_description() -> launch.LaunchDescription:
                       'led_strip', 'move_base', 'rotation_controller',
                       'safety_sensors']:
         node_executable = "mock-{}".format(node_name.replace('_', '-'))
+        myenv = os.environ
+        myenv["PYTHONUNBUFFERED"] = "1"
         launch_description.add_action(
             launch_ros.actions.Node(
                 package='py_trees_ros_tutorials',
                 node_name=node_name,
                 node_executable=node_executable,
-                output='screen'
+                output='screen',
+                env=myenv
             )
         )
     return launch_description

@@ -15,10 +15,11 @@ Utilities for the tutorials and launchers
 ##############################################################################
 
 import launch
+import launch.event_handlers
 import launch_ros
 import os
 import py_trees.console as console
-from typing import List
+from typing import cast, List
 
 ##############################################################################
 # Methods
@@ -71,20 +72,23 @@ def generate_ros_launch_service(
     print('')
     print(console.green + 'Introspection' + console.reset)
     print('')
+    print("Disabled temporarily while PYTHONUNBUFFERED is spammy...")
 
-    for launch_description in launch_descriptions:
-        print(launch.LaunchIntrospector().format_launch_description(launch_description))
+    # triggered by having to set the entire env variable when adding a node action
+    # with PYTHONUNBUFFERED and subsequently printing the entire env variable in
+    # format_launch_description
+    # for launch_description in launch_descriptions:
+    #     print(launch.LaunchIntrospector().format_launch_description(launch_description))
 
     print('')
     print(console.green + 'Launch' + console.reset)
     print('')
 
     launch_service = launch.LaunchService(debug=debug)
-    launch_service.include_launch_description(
-        launch_ros.get_default_launch_description(
-            prefix_output_with_name=False
-        )
-    )
+
+    # dashing no longer sets up IO in launch_ros.get_default_launch_description, set up ourselves?
+    # https://github.com/ros2/launch_ros/commit/8f1ed681973aad9b48ecc6712e54d2f66ee4dac3#diff-4d5a52a4561d974b6409483500ae6b78L133
+    launch_descriptions.insert(0, launch_ros.get_default_launch_description())
     for launch_description in launch_descriptions:
         launch_service.include_launch_description(launch_description)
 
