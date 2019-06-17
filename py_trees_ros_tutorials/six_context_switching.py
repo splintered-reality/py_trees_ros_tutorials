@@ -189,7 +189,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         action_type=py_trees_actions.Rotate,
         action_name="rotate",
         action_goal=py_trees_actions.Rotate.Goal(),
-        generate_feedback_message=lambda msg: "{:.2f}%%".format(msg.percentage_completed)
+        generate_feedback_message=lambda msg: "{:.2f}%%".format(msg.feedback.percentage_completed)
     )
     flash_blue = behaviours.FlashLedStrip(
         name="Flash Blue",
