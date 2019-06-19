@@ -409,7 +409,7 @@ class DynamicApplicationTree(py_trees_ros.trees.BehaviourTree):
             Exception: be ready to catch if any of the behaviours raise an exception
         """
         if self.busy():
-            self._node.get_logger().info("rejecting new job, last job is still active")
+            self.node.get_logger().warning("rejecting new job, last job is still active")
         else:
             scan_subtree = tutorial_create_scan_subtree()
             try:
