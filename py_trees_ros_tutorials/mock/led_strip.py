@@ -60,6 +60,7 @@ class LEDStrip(object):
             msg_type=std_msgs.String,
             topic='~/command',
             callback=self.command_callback,
+            qos_profile=rclpy.qos.qos_profile_system_default
             )
         self.display_publisher = self.node.create_publisher(
             msg_type=std_msgs.String,

@@ -64,14 +64,14 @@ class Dock(py_trees_ros.mock.actions.GenericServer):
         else:
             self.title = "UnDock"
 
-    def generate_feedback_message(self) -> py_trees_actions.Dock_Feedback:
+    def generate_feedback_message(self) -> py_trees_actions.Dock.Feedback:
         """
         Create a feedback message that populates the percent completed.
 
         Returns:
             :class:`py_trees_actions.Dock_Feedback`: the populated feedback message
         """
-        msg = py_trees_actions.Dock_Feedback(
+        msg = py_trees_actions.Dock.Feedback(
             percentage_completed=self.percent_completed
         )
         return msg

@@ -48,19 +48,19 @@ class SafetySensors(object):
         # node
         self.node = rclpy.create_node(
             "safety_sensors",
-            initial_parameters=[
+            parameter_overrides=[
                 rclpy.parameter.Parameter('enabled', rclpy.parameter.Parameter.Type.BOOL, False),
-            ]
+            ],
+            automatically_declare_parameters_from_overrides=True
         )
 
-    def spin(self):
+    def shutdown(self):
         """
-        Spin, and finally shutdown ROS components.
+        Cleanup ROS components.
         """
-        try:
-            rclpy.spin(self.node)
-        except KeyboardInterrupt:
-            pass
+        # currently complains with:
+        #  RuntimeWarning: Failed to fini publisher: rcl node implementation is invalid, at /tmp/binarydeb/ros-dashing-rcl-0.7.5/src/rcl/node.c:462
+        # Q: should rlcpy.shutdown() automagically handle descruction of nodes implicitly?
         self.node.destroy_node()
 
 
@@ -73,5 +73,9 @@ def main():
     parser.parse_args(command_line_args)
     rclpy.init()  # picks up sys.argv automagically internally
     safety_sensors = SafetySensors()
-    safety_sensors.spin()
+    try:
+        rclpy.spin(safety_sensors.node)
+    except KeyboardInterrupt:
+        pass
+    safety_sensors.shutdown()
     rclpy.shutdown()

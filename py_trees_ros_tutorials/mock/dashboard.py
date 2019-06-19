@@ -24,6 +24,7 @@ import sensor_msgs.msg as sensor_msgs
 import std_msgs.msg as std_msgs
 import sys
 import threading
+import time
 
 import PyQt5.QtCore as qt_core
 import PyQt5.QtWidgets as qt_widgets
@@ -111,26 +112,52 @@ class Backend(qt_core.QObject):
                 else:
                     self.node.get_logger().info("service '/{}/set_parameters' unavailable, waiting...".format(name))
         while rclpy.ok() and not self.shutdown_requested:
-            self.fetch_safety_sensors_parameters()
+            self.fetch_safety_sensors_parameters(timeout_sec=0.1)
             rclpy.spin_once(self.node, timeout_sec=0.1)
         self.node.destroy_node()
 
-    def fetch_safety_sensors_parameters(self):
+    def spin_until_future_complete(self, future: rclpy.task.Future, timeout_sec: float):
+        """
+        This replicates rclpy.executors.spin_until_future_complete until a bugfix for
+        the timeout calculation is accepted.
+
+        .. seealso: https://github.com/ros2/rclpy/pull/372
+
+        Args:
+            future: the future to block on
+            timeout_sec: time to block on futures
+        """
+        executor = rclpy.get_global_executor()
+        executor.add_node(self.node)
+        start = time.monotonic()
+        end = start + timeout_sec
+        timeout_left = timeout_sec
+        while executor._context.ok() and not future.done():
+            executor.spin_once(timeout_sec=timeout_left)
+            now = time.monotonic()
+            if now >= end:
+                break
+            timeout_left = end - now
+
+    def fetch_safety_sensors_parameters(self, timeout_sec: float):
         """
         Spin through get parameter service calls and update the dashboard.
 
+        Args:
+            timeout_sec: time to block on futures
         Raises:
             RuntimeError: if the service calls fail
         """
         request = rcl_srvs.GetParameters.Request()  # noqa
         request.names.append("enabled")
         future = self.parameter_clients['get_safety_sensors'].call_async(request)
-        rclpy.spin_until_future_complete(self.node, future)
+        # rclpy.spin_until_future_complete(self.node, future, timeout_sec=timeout_sec)
+        self.spin_until_future_complete(future=future, timeout_sec=timeout_sec)
+
         if future.result() is None:
-            self.feedback_message = "failed to retrieve the safety sensors context"
-            self.node.get_logger().error(self.feedback_message)
-            # self.node.get_logger().info('Service call failed %r' % (future.exception(),))
-            raise RuntimeError(self.feedback_message)
+            self.feedback_message = "failed to retrieve the safety sensors context [shutting down?]"
+            # self.node.get_logger().warning(self.feedback_message)
+            return
         if len(future.result().values) > 1:
             self.feedback_message = "expected one parameter value, got multiple [{}]".format("/safety_sensors/enabled")
             raise RuntimeError(self.feedback_message)
@@ -147,7 +174,7 @@ class Backend(qt_core.QObject):
         publisher.publish(std_msgs.Empty())
 
     def terminate_ros_spinner(self):
-        self.node.get_logger().info("shutdown requested")
+        self.node.get_logger().info("ros backend -> shutdown requested")
         self.shutdown_requested = True
 
     # TODO: shift to the ui
@@ -235,7 +262,7 @@ def main():
     # picks up sys.argv automagically internally
     rclpy.init()
     # enable handling of ctrl-c (from roslaunch as well)
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    # signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # the players
     app = qt_widgets.QApplication(sys.argv)
@@ -269,10 +296,12 @@ def main():
     )
 
     # sig interrupt handling
-    signal.signal(
-        signal.SIGINT,
-        lambda unused_signal, unused_frame: main_window.close()
-    )
+    def on_shutdown(unused_signal, unused_frame):
+        print("[dashboard] shutting down!")
+        main_window.close()
+        print("[dashboard] window closed")
+
+    signal.signal(signal.SIGINT, on_shutdown)
 
     # qt ... up
     ros_thread = threading.Thread(target=backend.spin)
@@ -283,7 +312,5 @@ def main():
     # shutdown
     backend.node.get_logger().info("joining")
     ros_thread.join()
-    backend.node.get_logger().info("joined")
     rclpy.shutdown()
-    backend.node.get_logger().info("rclpy shutdown")
     sys.exit(result)

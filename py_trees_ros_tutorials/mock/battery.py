@@ -58,12 +58,13 @@ class Battery(object):
     def __init__(self):
         # node
         self.node = rclpy.create_node(
-            "battery",
-            initial_parameters=[
+            node_name="battery",
+            parameter_overrides=[
                 rclpy.parameter.Parameter('charging_percentage', rclpy.parameter.Parameter.Type.DOUBLE, 100.0),
                 rclpy.parameter.Parameter('charging_increment', rclpy.parameter.Parameter.Type.DOUBLE, 0.1),
                 rclpy.parameter.Parameter('charging', rclpy.parameter.Parameter.Type.BOOL, False),
-            ]
+            ],
+            automatically_declare_parameters_from_overrides=True
         )
 
         # publishers
@@ -91,20 +92,10 @@ class Battery(object):
         self.battery.location = ""
         self.battery.serial_number = ""
 
-    def spin(self):
-        """
-        Create a timer for the periodic update and spin.
-        """
-        # TODO: with rate and spin_once, once rate is implemented in rclpy
-        unused_timer = self.node.create_timer(
+        self.timer = self.node.create_timer(
             timer_period_sec=0.2,
             callback=self.update_and_publish
         )
-        try:
-            rclpy.spin(self.node)
-        except KeyboardInterrupt:
-            pass
-        self.node.destroy_node()
 
     def update_and_publish(self):
         """
@@ -150,6 +141,9 @@ class Battery(object):
         """
         Cleanup ROS components.
         """
+        # currently complains with:
+        #  RuntimeWarning: Failed to fini publisher: rcl node implementation is invalid, at /tmp/binarydeb/ros-dashing-rcl-0.7.5/src/rcl/node.c:462
+        # Q: should rlcpy.shutdown() automagically handle descruction of nodes implicitly?
         self.node.destroy_node()
 
 
@@ -162,6 +156,9 @@ def main():
     parser.parse_args(command_line_args)
     rclpy.init()  # picks up sys.argv automagically internally
     battery = Battery()
-    battery.spin()
+    try:
+        rclpy.spin(battery.node)
+    except KeyboardInterrupt:
+        pass
     battery.shutdown()
     rclpy.shutdown()

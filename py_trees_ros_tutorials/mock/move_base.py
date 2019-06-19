@@ -55,19 +55,19 @@ class MoveBase(py_trees_ros.mock.actions.GenericServer):
         self.pose = geometry_msgs.PoseStamped()
         self.pose.pose.position = geometry_msgs.Point(x=0.0, y=0.0, z=0.0)
 
-    def generate_feedback_message(self) -> py_trees_actions.MoveBase_Feedback:
+    def generate_feedback_message(self) -> py_trees_actions.MoveBase.Feedback:
         """
         Do a fake pose incremenet and populate the feedback message.
 
         Returns:
-            :class:`py_trees_actions.MoveBase_Feedback`: the populated feedback message
+            :class:`py_trees_actions.MoveBase.Feedback`: the populated feedback message
         """
         # actually doesn't go to the goal right now...
         # but we could take the feedback from the action
         # and increment this to that proportion
         # self.odometry.pose.pose.position.x += 0.01
         self.pose.pose.position.x += 0.01
-        msg = py_trees_actions.MoveBase_Feedback()  # .Feedback() is more proper, but indexing can't find it
+        msg = py_trees_actions.MoveBase.Feedback()  # .Feedback() is more proper, but indexing can't find it
         msg.base_position = self.pose
         return msg
 

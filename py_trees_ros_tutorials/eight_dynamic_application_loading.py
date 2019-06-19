@@ -304,7 +304,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
         action_type=py_trees_actions.Rotate,
         action_name="rotate",
         action_goal=py_trees_actions.Rotate.Goal(),
-        generate_feedback_message=lambda msg: "{:.2f}%%".format(msg.percentage_completed)
+        generate_feedback_message=lambda msg: "{:.2f}%%".format(msg.feedback.percentage_completed)
     )
     scan_flash_blue = behaviours.FlashLedStrip(name="Flash Blue", colour="blue")
     move_home_after_scan = py_trees_ros.actions.ActionClient(
@@ -388,12 +388,14 @@ class DynamicApplicationTree(py_trees_ros.trees.BehaviourTree):
         self._report_service = self.node.create_service(
             srv_type=py_trees_srvs.StatusReport,
             srv_name="~/report",
-            callback=self.deliver_status_report
+            callback=self.deliver_status_report,
+            qos_profile=rclpy.qos.qos_profile_services_default
         )
         self._job_subscriber = self.node.create_subscription(
             msg_type=std_msgs.Empty,
             topic="/dashboard/scan",
-            callback=self.receive_incoming_job
+            callback=self.receive_incoming_job,
+            qos_profile=rclpy.qos.qos_profile_system_default
         )
 
     def receive_incoming_job(self, msg: std_msgs.Empty):
@@ -407,7 +409,7 @@ class DynamicApplicationTree(py_trees_ros.trees.BehaviourTree):
             Exception: be ready to catch if any of the behaviours raise an exception
         """
         if self.busy():
-            self._node.get_logger().info("rejecting new job, last job is still active")
+            self.node.get_logger().warning("rejecting new job, last job is still active")
         else:
             scan_subtree = tutorial_create_scan_subtree()
             try:
