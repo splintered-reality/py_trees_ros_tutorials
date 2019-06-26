@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 
 from distutils import log
 from setuptools import find_packages, setup
@@ -21,23 +22,29 @@ def redirect_install_dir(command_subclass):
     original_run = command_subclass.run
 
     def modified_run(self):
-        if self.prefix is not None:
-            # typical ros2 pathway
-            new_script_dir = os.path.join(self.prefix, 'lib', package_name)
-        else:
-            # TODO must be a more intelligent way of stitching this...
-            # Warning: script_dir is typically a 'bin' path, if ever someone sets it
-            # somewhere wildly different from the command line or
-            print("Script dir: %s" % self.script_dir)
-            new_script_dir = os.path.abspath(
-                os.path.join(
-                    self.script_dir, os.pardir, 'lib', package_name
-                )
+        try:
+            old_script_dir = self.script_dir  # develop
+        except AttributeError:
+            old_script_dir = self.install_scripts  # install
+        # TODO: A more intelligent way of stitching this together...
+        # Warning: script_dir is typically a 'bin' path alongside the
+        # lib path, if ever that is somewhere wildly different, this
+        # will break.
+        # Note: Consider making use of self.prefix, but in some cases
+        # that is mislading, e.g. points to /usr when actually
+        # everything goes to /usr/local
+        new_script_dir = os.path.abspath(
+            os.path.join(
+                old_script_dir, os.pardir, 'lib', package_name
             )
+        )
         log.info("redirecting scripts")
-        log.info("  from: {}".format(self.script_dir))
+        log.info("  from: {}".format(old_script_dir))
         log.info("    to: {}".format(new_script_dir))
-        self.script_dir = new_script_dir
+        try:
+            self.script_dir = new_script_dir  # develop
+        except AttributeError:
+            self.install_scripts = new_script_dir  # install
         original_run(self)
 
     command_subclass.run = modified_run
