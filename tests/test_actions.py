@@ -84,7 +84,9 @@ class TestActionServers(unittest.TestCase):
         assert_banner()
         assert_details("goal_future.result()", "!None", goal_future.result())
         self.assertTrue(goal_future.result() is not None)
-        print("goal_future.result().accepted.....True [{}]".format(goal_future.result().accepted))
+        print("goal_future.result().accepted.....True [{}]".format(
+            goal_future.result().accepted)
+        )
         self.assertTrue(goal_future.result().accepted)
         goal_handle = goal_future.result()
 
@@ -100,11 +102,11 @@ class TestActionServers(unittest.TestCase):
         assert_details("result_future.done()", "True", result_future.done())
         self.assertTrue(result_future.done())
         assert_details(
-            "result_future.result().action_status",
+            "result_future.result().status",
             "STATUS_SUCCEEDED",
-            client.status_strings[result_future.result().action_status]
+            client.status_strings[result_future.result().status]
         )
-        self.assertTrue(result_future.result().action_status ==
+        self.assertTrue(result_future.result().status ==
                         action_msgs.GoalStatus.STATUS_SUCCEEDED)  # noqa
         executor.shutdown()
         server.shutdown()
@@ -155,12 +157,16 @@ class TestActionServers(unittest.TestCase):
         assert_banner()
         assert_details("goal_future.result()", "!None", goal_future.result())
         self.assertTrue(goal_future.result() is not None)
-        print("goal_future.result().accepted.....True [{}]".format(goal_future.result().accepted))
+        print("goal_future.result().accepted.....True [{}]".format(
+            goal_future.result().accepted)
+        )
         self.assertTrue(goal_future.result().accepted)
         goal_handle = goal_future.result()
 
         # preempt with another goal
-        unused_next_goal_future = client.action_client.send_goal_async(client.action_type.Goal())
+        unused_next_goal_future = client.action_client.send_goal_async(
+            client.action_type.Goal()
+        )
 
         # Await preempted goal result future
         result_future = goal_handle.get_result_async()
@@ -174,11 +180,11 @@ class TestActionServers(unittest.TestCase):
         assert_details("result_future.done()", "True", result_future.done())
         self.assertTrue(result_future.done())
         assert_details(
-            "result_future.result().action_status",
+            "result_future.result().status",
             "STATUS_ABORTED",
-            client.status_strings[result_future.result().action_status]
+            client.status_strings[result_future.result().status]
         )
-        self.assertTrue(result_future.result().action_status ==
+        self.assertTrue(result_future.result().status ==
                         action_msgs.GoalStatus.STATUS_ABORTED)  # noqa
 
         # Somewhat uncertain how this shutdown works.
@@ -197,7 +203,7 @@ class TestActionServers(unittest.TestCase):
     def test_dock_preemption(self):
         self.generic_preemption_test(
             title="Dock Preemption",
-            server=mock.dock.Dock(duration=0.5),
+            server=mock.dock.Dock(duration=1.5),
             client=mock.actions.DockClient())
 
 ##############################################################################
@@ -227,7 +233,9 @@ class TestActionServers(unittest.TestCase):
         assert_banner()
         assert_details("goal_future.result()", "!None", goal_future.result())
         self.assertTrue(goal_future.result() is not None)
-        print("goal_future.result().accepted.....True [{}]".format(goal_future.result().accepted))
+        print("goal_future.result().accepted.....True [{}]".format(
+            goal_future.result().accepted)
+        )
         self.assertTrue(goal_future.result().accepted)
         goal_handle = goal_future.result()
 
@@ -246,11 +254,11 @@ class TestActionServers(unittest.TestCase):
         assert_details("result_future.done()", "True", result_future.done())
         self.assertTrue(result_future.done())
         assert_details(
-            "result_future.result().action_status",
+            "result_future.result().status",
             "STATUS_CANCELED",
-            client.status_strings[result_future.result().action_status]
+            client.status_strings[result_future.result().status]
         )
-        self.assertTrue(result_future.result().action_status ==
+        self.assertTrue(result_future.result().status ==
                         action_msgs.GoalStatus.STATUS_CANCELED)  # noqa
 
         executor.shutdown()
