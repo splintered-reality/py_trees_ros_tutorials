@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 
 from distutils import log
 from setuptools import find_packages, setup
@@ -67,7 +66,7 @@ setup(
         'install': OverrideInstall
     },
     name=package_name,
-    version='1.0.0',  # also update package.xml and version.py
+    version='1.0.1',  # also update package.xml and version.py
     packages=find_packages(exclude=['tests*', 'docs*', 'launch*']),
     data_files=[('share/' + package_name, ['package.xml'])],
     package_data={'py_trees_ros_tutorials': ['mock/gui/*']},
