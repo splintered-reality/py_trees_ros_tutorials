@@ -203,7 +203,7 @@ class TestActionServers(unittest.TestCase):
     def test_dock_preemption(self):
         self.generic_preemption_test(
             title="Dock Preemption",
-            server=mock.dock.Dock(duration=0.5),
+            server=mock.dock.Dock(duration=1.5),
             client=mock.actions.DockClient())
 
 ##############################################################################
