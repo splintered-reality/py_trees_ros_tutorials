@@ -40,9 +40,9 @@ def redirect_install_dir(command_subclass):
         log.info("redirecting scripts")
         log.info("  from: {}".format(old_script_dir))
         log.info("    to: {}".format(new_script_dir))
-        try:
+        if hasattr(self, "script_dir"):
             self.script_dir = new_script_dir  # develop
-        except AttributeError:
+        else:
             self.install_scripts = new_script_dir  # install
         original_run(self)
 
@@ -66,7 +66,7 @@ setup(
         'install': OverrideInstall
     },
     name=package_name,
-    version='1.0.1',  # also update package.xml and version.py
+    version='1.0.2',  # also update package.xml (version and website url) and version.py
     packages=find_packages(exclude=['tests*', 'docs*', 'launch*']),
     data_files=[('share/' + package_name, ['package.xml'])],
     package_data={'py_trees_ros_tutorials': ['mock/gui/*']},

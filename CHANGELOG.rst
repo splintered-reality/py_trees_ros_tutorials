@@ -6,6 +6,10 @@ Forthcoming
 -----------
 * ...
 
+1.0.2 (2019-06-27)
+------------------
+* [infra] script installation bugfix
+
 1.0.1 (2019-06-26)
 ------------------
 * [infra] various minor release bugfixes

@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>py_trees_ros_tutorials</name>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <description>
     ROS2 extensions and behaviours for py_trees.
   </description>
@@ -11,7 +11,7 @@
 
   <license>BSD</license>
 
-  <url type="website">http://ros.org/wiki/py_trees</url>
+  <url type="website">https://py-trees-ros-tutorials.readthedocs.io/en/release-1.0.x/</url>
   <url type="repository">https://github.com/splintered-treality/py_trees_ros_tutorials</url>
   <url type="bugtracker">https://github.com/splintered-treality/py_trees_ros_tutorials/issues</url>
 
