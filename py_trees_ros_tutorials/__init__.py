@@ -1,6 +1,6 @@
 #
 # License: BSD
-#   https://raw.github.com/splintered-reality/py_trees_ros_tutorials/license/LICENSE
+#   https://github.com/splintered-reality/py_trees_ros_tutorials/raw/devel/LICENSE
 #
 ##############################################################################
 # Documentation
