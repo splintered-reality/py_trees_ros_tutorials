@@ -75,7 +75,7 @@ setup(
     author='Daniel Stonier',
     maintainer='Daniel Stonier <d.stonier@gmail.com>',
     url='https://github.com/splintered-reality/py_trees_ros_tutorials',
-    keywords=['ROS', 'ROS2' 'behaviour-trees'],
+    keywords=['ROS', 'ROS2', 'behaviour-trees'],
     zip_safe=True,
     classifiers=[
         'Intended Audience :: Developers',
