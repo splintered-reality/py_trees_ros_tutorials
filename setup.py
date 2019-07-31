@@ -75,7 +75,7 @@ setup(
     author='Daniel Stonier',
     maintainer='Daniel Stonier <d.stonier@gmail.com>',
     url='https://github.com/splintered-reality/py_trees_ros_tutorials',
-    keywords=['ROS', 'ROS2' 'behaviour-trees'],
+    keywords=['ROS', 'ROS2', 'behaviour-trees'],
     zip_safe=True,
     classifiers=[
         'Intended Audience :: Developers',
@@ -95,40 +95,40 @@ setup(
     # test_suite="tests"
     # tests_require=['nose', 'pytest', 'flake8', 'yanc', 'nose-htmloutput']
     entry_points={
-         'console_scripts': [
-             # Mocks
-             'mock-battery = py_trees_ros_tutorials.mock.battery:main',
-             'mock-dashboard = py_trees_ros_tutorials.mock.dashboard:main',
-             'mock-docking-controller = py_trees_ros_tutorials.mock.dock:main',
-             'mock-led-strip = py_trees_ros_tutorials.mock.led_strip:main',
-             'mock-move-base = py_trees_ros_tutorials.mock.move_base:main',
-             'mock-rotation-controller = py_trees_ros_tutorials.mock.rotate:main',
-             'mock-safety-sensors = py_trees_ros_tutorials.mock.safety_sensors:main',
-             # Mock Tests
-             'mock-dock-client = py_trees_ros_tutorials.mock.actions:dock_client',
-             'mock-move-base-client = py_trees_ros_tutorials.mock.actions:move_base_client',
-             'mock-rotate-client = py_trees_ros_tutorials.mock.actions:rotate_client',
-             # Mock Launcher
-             'mock-robot = py_trees_ros_tutorials.mock.launch:main',
-             # Tutorial Nodes
-             'tree-data-gathering = py_trees_ros_tutorials.one_data_gathering:tutorial_main',
-             'tree-battery-check = py_trees_ros_tutorials.two_battery_check:tutorial_main',
-             'tree-action-clients = py_trees_ros_tutorials.five_action_clients:tutorial_main',
-             'tree-context-switching = py_trees_ros_tutorials.six_context_switching:tutorial_main',
-             'tree-docking-cancelling-failing = py_trees_ros_tutorials.seven_docking_cancelling_failing:tutorial_main',
-             'tree-dynamic-application-loading = py_trees_ros_tutorials.eight_dynamic_application_loading:tutorial_main',
-             # Tutorial Launchers (directly runnable)
-             'tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:launch_main',
-             'tutorial-two-battery-check = py_trees_ros_tutorials.two_battery_check:launch_main',
-             'tutorial-three-introspect-the-blackboard = py_trees_ros_tutorials.two_battery_check:launch_main',
-             'tutorial-four-introspect-the-tree = py_trees_ros_tutorials.two_battery_check:launch_main',
-             'tutorial-five-action-clients = py_trees_ros_tutorials.five_action_clients:launch_main',
-             'tutorial-six-context-switching = py_trees_ros_tutorials.six_context_switching:launch_main',
-             'tutorial-seven-docking-cancelling-failing = py_trees_ros_tutorials.seven_docking_cancelling_failing:launch_main',
-             'tutorial-eight-dynamic-application-loading = py_trees_ros_tutorials.eight_dynamic_application_loading:launch_main',
-             # Other
-             'testies = py_trees_ros_tutorials.testies:main',
-             'launch-testies = py_trees_ros_tutorials.launch_testies:main',
-         ],
-     },
+        'console_scripts': [
+            # Mocks
+            'mock-battery = py_trees_ros_tutorials.mock.battery:main',
+            'mock-dashboard = py_trees_ros_tutorials.mock.dashboard:main',
+            'mock-docking-controller = py_trees_ros_tutorials.mock.dock:main',
+            'mock-led-strip = py_trees_ros_tutorials.mock.led_strip:main',
+            'mock-move-base = py_trees_ros_tutorials.mock.move_base:main',
+            'mock-rotation-controller = py_trees_ros_tutorials.mock.rotate:main',
+            'mock-safety-sensors = py_trees_ros_tutorials.mock.safety_sensors:main',
+            # Mock Tests
+            'mock-dock-client = py_trees_ros_tutorials.mock.actions:dock_client',
+            'mock-move-base-client = py_trees_ros_tutorials.mock.actions:move_base_client',
+            'mock-rotate-client = py_trees_ros_tutorials.mock.actions:rotate_client',
+            # Mock Launcher
+            'mock-robot = py_trees_ros_tutorials.mock.launch:main',
+            # Tutorial Nodes
+            'tree-data-gathering = py_trees_ros_tutorials.one_data_gathering:tutorial_main',
+            'tree-battery-check = py_trees_ros_tutorials.two_battery_check:tutorial_main',
+            'tree-action-clients = py_trees_ros_tutorials.five_action_clients:tutorial_main',
+            'tree-context-switching = py_trees_ros_tutorials.six_context_switching:tutorial_main',
+            'tree-docking-cancelling-failing = py_trees_ros_tutorials.seven_docking_cancelling_failing:tutorial_main',
+            'tree-dynamic-application-loading = py_trees_ros_tutorials.eight_dynamic_application_loading:tutorial_main',
+            # Tutorial Launchers (directly runnable)
+            'tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:launch_main',
+            'tutorial-two-battery-check = py_trees_ros_tutorials.two_battery_check:launch_main',
+            'tutorial-three-introspect-the-blackboard = py_trees_ros_tutorials.two_battery_check:launch_main',
+            'tutorial-four-introspect-the-tree = py_trees_ros_tutorials.two_battery_check:launch_main',
+            'tutorial-five-action-clients = py_trees_ros_tutorials.five_action_clients:launch_main',
+            'tutorial-six-context-switching = py_trees_ros_tutorials.six_context_switching:launch_main',
+            'tutorial-seven-docking-cancelling-failing = py_trees_ros_tutorials.seven_docking_cancelling_failing:launch_main',
+            'tutorial-eight-dynamic-application-loading = py_trees_ros_tutorials.eight_dynamic_application_loading:launch_main',
+            # Other
+            'testies = py_trees_ros_tutorials.testies:main',
+            'launch-testies = py_trees_ros_tutorials.launch_testies:main',
+        ],
+    },
 )
