@@ -66,9 +66,13 @@ setup(
         'install': OverrideInstall
     },
     name=package_name,
-    version='1.0.2',  # also update package.xml (version and website url) and version.py
+    version='1.0.3',  # also update package.xml (version and website url) and version.py
     packages=find_packages(exclude=['tests*', 'docs*', 'launch*']),
-    data_files=[('share/' + package_name, ['package.xml'])],
+    data_files=[
+        ('share/' + package_name, ['package.xml']),
+        ('share/ament_index/resource_index/packages', [
+            'resources/py_trees_ros_tutorials']),
+    ],
     package_data={'py_trees_ros_tutorials': ['mock/gui/*']},
     install_requires=[],  # it's all lies (c.f. package.xml, but no use case for this yet)
     extras_require={},

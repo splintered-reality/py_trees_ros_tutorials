@@ -6,6 +6,10 @@ Forthcoming
 -----------
 * ...
 
+1.0.3 (2019-08-16)
+------------------
+* [infra] add ament_index file to be installed
+
 1.0.2 (2019-06-27)
 ------------------
 * [infra] script installation bugfix
