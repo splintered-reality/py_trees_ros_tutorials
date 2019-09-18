@@ -198,16 +198,19 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     scan2bb = py_trees_ros.subscribers.EventToBlackboard(
         name="Scan2BB",
         topic_name="/dashboard/scan",
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         variable_name="event_scan_button"
     )
     cancel2bb = py_trees_ros.subscribers.EventToBlackboard(
         name="Cancel2BB",
         topic_name="/dashboard/cancel",
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         variable_name="event_cancel_button"
     )
     battery2bb = py_trees_ros.battery.ToBlackboard(
         name="Battery2BB",
         topic_name="/battery/state",
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         threshold=30.0
     )
     tasks = py_trees.composites.Selector("Tasks")
@@ -264,7 +267,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
         name="UnDock",
         action_type=py_trees_actions.Dock,
         action_name="dock",
-        action_goal=py_trees_actions.Dock.Goal(dock=False),
+        action_goal=py_trees_actions.Dock.Goal(dock=False),  # noqa
         generate_feedback_message=lambda msg: "undocking"
     )
     scan_or_be_cancelled = py_trees.composites.Selector("Scan or Be Cancelled")
@@ -278,7 +281,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
         name="Move Home",
         action_type=py_trees_actions.MoveBase,
         action_name="move_base",
-        action_goal=py_trees_actions.MoveBase.Goal(),
+        action_goal=py_trees_actions.MoveBase.Goal(),  # noqa
         generate_feedback_message=lambda msg: "moving home"
     )
     result_cancelled_to_bb = py_trees.blackboard.SetBlackboardVariable(
@@ -291,7 +294,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
         name="Move Out",
         action_type=py_trees_actions.MoveBase,
         action_name="move_base",
-        action_goal=py_trees_actions.MoveBase.Goal(),
+        action_goal=py_trees_actions.MoveBase.Goal(),  # noqa
         generate_feedback_message=lambda msg: "moving out"
     )
     scanning = py_trees.composites.Parallel(
@@ -303,7 +306,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
         name="Rotate",
         action_type=py_trees_actions.Rotate,
         action_name="rotate",
-        action_goal=py_trees_actions.Rotate.Goal(),
+        action_goal=py_trees_actions.Rotate.Goal(),  # noqa
         generate_feedback_message=lambda msg: "{:.2f}%%".format(msg.feedback.percentage_completed)
     )
     scan_flash_blue = behaviours.FlashLedStrip(name="Flash Blue", colour="blue")
@@ -311,7 +314,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
         name="Move Home",
         action_type=py_trees_actions.MoveBase,
         action_name="move_base",
-        action_goal=py_trees_actions.MoveBase.Goal(),
+        action_goal=py_trees_actions.MoveBase.Goal(),  # noqa
         generate_feedback_message=lambda msg: "moving home"
     )
     result_succeeded_to_bb = py_trees.blackboard.SetBlackboardVariable(
@@ -329,7 +332,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
         name="Dock",
         action_type=py_trees_actions.Dock,
         action_name="dock",
-        action_goal=py_trees_actions.Dock.Goal(dock=True),
+        action_goal=py_trees_actions.Dock.Goal(dock=True),  # noqa
         generate_feedback_message=lambda msg: "docking"
     )
 
@@ -395,7 +398,7 @@ class DynamicApplicationTree(py_trees_ros.trees.BehaviourTree):
             msg_type=std_msgs.Empty,
             topic="/dashboard/scan",
             callback=self.receive_incoming_job,
-            qos_profile=rclpy.qos.qos_profile_system_default
+            qos_profile=py_trees_ros.utilities.qos_profile_unlatched()
         )
 
     def receive_incoming_job(self, msg: std_msgs.Empty):
@@ -425,8 +428,8 @@ class DynamicApplicationTree(py_trees_ros.trees.BehaviourTree):
 
     def deliver_status_report(
             self,
-            unused_request: py_trees_srvs.StatusReport.Request,
-            response: py_trees_srvs.StatusReport.Response
+            unused_request: py_trees_srvs.StatusReport.Request,  # noqa
+            response: py_trees_srvs.StatusReport.Response  # noqa
          ):
         """
         Prepare a status report for an external service client.

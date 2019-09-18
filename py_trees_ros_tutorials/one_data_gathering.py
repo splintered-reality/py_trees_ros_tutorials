@@ -131,6 +131,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     battery2bb = py_trees_ros.battery.ToBlackboard(
         name="Battery2BB",
         topic_name="/battery/state",
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         threshold=30.0
     )
     priorities = py_trees.composites.Selector("Tasks")
