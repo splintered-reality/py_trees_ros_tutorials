@@ -75,7 +75,7 @@ class FlashLedStrip(py_trees.behaviour.Behaviour):
         self.publisher = self.node.create_publisher(
             msg_type=std_msgs.String,
             topic=self.topic_name,
-            qos_profile=py_trees_ros.utilities.qos_profile_latched_topic()
+            qos_profile=py_trees_ros.utilities.qos_profile_latched()
         )
         self.feedback_message = "publisher created"
 

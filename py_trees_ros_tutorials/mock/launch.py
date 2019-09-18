@@ -17,7 +17,6 @@ Launch the mock robot.
 
 import launch
 import launch_ros.actions
-import os
 import py_trees_ros_tutorials.utilities as utilities
 
 ##############################################################################

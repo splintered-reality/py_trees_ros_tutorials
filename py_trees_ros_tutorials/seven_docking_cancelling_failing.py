@@ -218,16 +218,19 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     scan2bb = py_trees_ros.subscribers.EventToBlackboard(
         name="Scan2BB",
         topic_name="/dashboard/scan",
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         variable_name="event_scan_button"
     )
     cancel2bb = py_trees_ros.subscribers.EventToBlackboard(
         name="Cancel2BB",
         topic_name="/dashboard/cancel",
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         variable_name="event_cancel_button"
     )
     battery2bb = py_trees_ros.battery.ToBlackboard(
         name="Battery2BB",
         topic_name="/battery/state",
+        qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         threshold=30.0
     )
     tasks = py_trees.composites.Selector("Tasks")
