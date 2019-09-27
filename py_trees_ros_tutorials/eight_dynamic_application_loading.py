@@ -221,7 +221,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
 
     # Emergency Tasks
     def check_battery_low_on_blackboard():
-        blackboard = py_trees.blackboard.Blackboard()
+        blackboard = py_trees.blackboard.Blackboard(read={"battery_low_warning"})
         return blackboard.battery_low_warning
 
     battery_emergency = py_trees.decorators.EternalGuard(
@@ -257,7 +257,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
     )
     failed_flash_green = behaviours.FlashLedStrip(name="Flash Red", colour="red")
     failed_pause = py_trees.timers.Timer("Pause", duration=3.0)
-    result_failed_to_bb = py_trees.blackboard.SetBlackboardVariable(
+    result_failed_to_bb = py_trees.behaviours.SetBlackboardVariable(
         name="Result2BB\n'failed'",
         variable_name='scan_result',
         variable_value='failed'
@@ -272,7 +272,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
     )
     scan_or_be_cancelled = py_trees.composites.Selector("Scan or Be Cancelled")
     cancelling = py_trees.composites.Sequence("Cancelling?")
-    is_cancel_requested = py_trees.blackboard.CheckBlackboardVariable(
+    is_cancel_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Cancel?",
         variable_name='event_cancel_button',
         expected_value=True
@@ -284,7 +284,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
         action_goal=py_trees_actions.MoveBase.Goal(),  # noqa
         generate_feedback_message=lambda msg: "moving home"
     )
-    result_cancelled_to_bb = py_trees.blackboard.SetBlackboardVariable(
+    result_cancelled_to_bb = py_trees.behaviours.SetBlackboardVariable(
         name="Result2BB\n'cancelled'",
         variable_name='scan_result',
         variable_value='cancelled'
@@ -317,7 +317,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
         action_goal=py_trees_actions.MoveBase.Goal(),  # noqa
         generate_feedback_message=lambda msg: "moving home"
     )
-    result_succeeded_to_bb = py_trees.blackboard.SetBlackboardVariable(
+    result_succeeded_to_bb = py_trees.behaviours.SetBlackboardVariable(
         name="Result2BB\n'succeeded'",
         variable_name='scan_result',
         variable_value='succeeded'
@@ -337,7 +337,7 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
     )
 
     def send_result_to_screen(self):
-        blackboard = py_trees.blackboard.Blackboard()
+        blackboard = py_trees.blackboard.Blackboard(read={"scan_result"})
         print(console.green +
               "********** Result: {} **********".format(blackboard.scan_result) +
               console.reset
