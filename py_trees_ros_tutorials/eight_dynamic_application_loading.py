@@ -138,6 +138,7 @@ Running
 # Imports
 ##############################################################################
 
+import functools
 import py_trees
 import py_trees_ros.trees
 import py_trees.console as console
@@ -220,8 +221,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     )
 
     # Emergency Tasks
-    def check_battery_low_on_blackboard():
-        blackboard = py_trees.blackboard.Blackboard(read={"battery_low_warning"})
+    def check_battery_low_on_blackboard(blackboard: py_trees.blackboard.Blackboard) -> bool:
         return blackboard.battery_low_warning
 
     battery_emergency = py_trees.decorators.EternalGuard(
@@ -229,13 +229,14 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         condition=check_battery_low_on_blackboard,
         child=flash_red
     )
+
     # Fallback task
     idle = py_trees.behaviours.Running(name="Idle")
 
     root.add_child(topics2bb)
     topics2bb.add_children([scan2bb, cancel2bb, battery2bb])
     root.add_child(tasks)
-    tasks.add_children([battery_emergency, idle])
+    tasks.add_children([battery_emergency, tutorial_create_scan_subtree(), idle])
     return root
 
 
@@ -336,17 +337,21 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
         generate_feedback_message=lambda msg: "docking"
     )
 
-    def send_result_to_screen(self):
-        blackboard = py_trees.blackboard.Blackboard(read={"scan_result"})
-        print(console.green +
-              "********** Result: {} **********".format(blackboard.scan_result) +
-              console.reset
-              )
-        return py_trees.common.Status.SUCCESS
+    class SendResult(py_trees.behaviour.Behaviour):
 
-    send_result = py_trees.behaviours.meta.create_behaviour_from_function(send_result_to_screen)(
-        name="Send Result"
-    )
+        def __init__(self, name: str):
+            super().__init__(name="Send Result")
+            self.blackboard.register_key("scan_result", read=True)
+
+        def update(self):
+            print(console.green +
+                  "********** Result: {} **********".format(self.blackboard.scan_result) +
+                  console.reset
+                  )
+            return py_trees.common.Status.SUCCESS
+
+    send_result = SendResult(name="Send Result")
+
     scan.add_children([scan_or_die, send_result])
     scan_or_die.add_children([ere_we_go, die])
     die.add_children([failed_notification, result_failed_to_bb])
