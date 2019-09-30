@@ -227,6 +227,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     battery_emergency = py_trees.decorators.EternalGuard(
         name="Battery Low?",
         condition=check_battery_low_on_blackboard,
+        blackboard_keys={"battery_low_warning"},
         child=flash_red
     )
 
@@ -236,7 +237,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     root.add_child(topics2bb)
     topics2bb.add_children([scan2bb, cancel2bb, battery2bb])
     root.add_child(tasks)
-    tasks.add_children([battery_emergency, tutorial_create_scan_subtree(), idle])
+    tasks.add_children([battery_emergency, idle])
     return root
 
 
