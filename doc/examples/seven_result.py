@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     # Worker Tasks
     scan = py_trees.composites.Sequence(name="Scan")
-    is_scan_requested = py_trees.blackboard.CheckBlackboardVariable(
+    is_scan_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Scan?",
         variable_name='event_scan_button',
         expected_value=True
@@ -23,7 +23,7 @@ if __name__ == '__main__':
         policy=py_trees.common.ParallelPolicy.SuccessOnOne()
     )
     failed_notification.blackbox_level = py_trees.common.BlackBoxLevel.DETAIL
-    result_failed_to_bb = py_trees.blackboard.SetBlackboardVariable(
+    result_failed_to_bb = py_trees.behaviours.SetBlackboardVariable(
         name="Result2BB\n'failed'",
         variable_name='scan_result',
         variable_value='failed'
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     )
     scan_or_be_cancelled = py_trees.composites.Selector("Scan or Be Cancelled")
     cancelling = py_trees.composites.Sequence("Cancelling?")
-    is_cancel_requested = py_trees.blackboard.CheckBlackboardVariable(
+    is_cancel_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Cancel?",
         variable_name='event_cancel_button',
         expected_value=True
@@ -50,7 +50,7 @@ if __name__ == '__main__':
         action_goal=py_trees_actions.MoveBase.Goal(),
         generate_feedback_message=lambda msg: "moving home"
     )
-    result_cancelled_to_bb = py_trees.blackboard.SetBlackboardVariable(
+    result_cancelled_to_bb = py_trees.behaviours.SetBlackboardVariable(
         name="Result2BB\n'cancelled'",
         variable_name='scan_result',
         variable_value='cancelled'
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         action_goal=py_trees_actions.MoveBase.Goal(),
         generate_feedback_message=lambda msg: "moving home"
     )
-    result_succeeded_to_bb = py_trees.blackboard.SetBlackboardVariable(
+    result_succeeded_to_bb = py_trees.behaviours.SetBlackboardVariable(
         name="Result2BB\n'succeeded'",
         variable_name='scan_result',
         variable_value='succeeded'
@@ -93,17 +93,20 @@ if __name__ == '__main__':
         generate_feedback_message=lambda msg: "docking"
     )
 
-    def send_result_to_screen(self):
-        blackboard = py_trees.blackboard.Blackboard()
-        print(console.green +
-              "********** Result: {} **********".format(blackboard.scan_result) +
-              console.reset
-              )
-        return py_trees.common.Status.SUCCESS
+    class SendResult(py_trees.behaviour.Behaviour):
 
-    send_result = py_trees.behaviours.meta.create_behaviour_from_function(send_result_to_screen)(
-        name="Send Result"
-    )
+        def __init__(self, name: str):
+            super().__init__(name="Send Result")
+            self.blackboard.register_key("scan_result", read=True)
+
+        def update(self):
+            print(console.green +
+                  "********** Result: {} **********".format(self.blackboard.scan_result) +
+                  console.reset
+                  )
+            return py_trees.common.Status.SUCCESS
+
+    send_result = SendResult(name="Send Result")
 
     # Fallback task
 
