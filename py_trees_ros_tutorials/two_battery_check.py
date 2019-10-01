@@ -141,13 +141,13 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         colour="red"
     )
 
-    def check_battery_low_on_blackboard():
-        blackboard = py_trees.blackboard.Blackboard()
+    def check_battery_low_on_blackboard(blackboard: py_trees.blackboard.Blackboard) -> bool:
         return blackboard.battery_low_warning
 
     battery_emergency = py_trees.decorators.EternalGuard(
         name="Battery Low?",
         condition=check_battery_low_on_blackboard,
+        blackboard_keys={"battery_low_warning"},
         child=flash_led_strip
     )
     idle = py_trees.behaviours.Running(name="Idle")
