@@ -47,7 +47,6 @@ class TestActionServers(unittest.TestCase):
         console.banner("ROS Init")
         rclpy.init()
         cls.timeout = 3.0
-        cls.blackboard = py_trees.blackboard.Blackboard()
 
     @classmethod
     def tearDownClass(cls):

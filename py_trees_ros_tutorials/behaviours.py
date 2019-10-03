@@ -50,7 +50,7 @@ class FlashLedStrip(py_trees.behaviour.Behaviour):
             name: str,
             topic_name: str="/led_strip/command",
             colour: str="red"
-         ):
+    ):
         super(FlashLedStrip, self).__init__(name=name)
         self.topic_name = topic_name
         self.colour = colour

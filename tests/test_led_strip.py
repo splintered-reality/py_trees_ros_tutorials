@@ -45,7 +45,6 @@ class TestLEDStrip(unittest.TestCase):
         rclpy.init()
 
         cls.timeout = 3.0
-        cls.blackboard = py_trees.blackboard.Blackboard()
         cls.number_of_iterations = 40
 
     @classmethod

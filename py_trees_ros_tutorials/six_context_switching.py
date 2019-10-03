@@ -156,18 +156,18 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     )
 
     # Emergency Tasks
-    def check_battery_low_on_blackboard():
-        blackboard = py_trees.blackboard.Blackboard()
+    def check_battery_low_on_blackboard(blackboard: py_trees.blackboard.Blackboard) -> bool:
         return blackboard.battery_low_warning
 
     battery_emergency = py_trees.decorators.EternalGuard(
         name="Battery Low?",
         condition=check_battery_low_on_blackboard,
+        blackboard_keys={"battery_low_warning"},
         child=flash_red
     )
     # Worker Tasks
     scan = py_trees.composites.Sequence(name="Scan")
-    is_scan_requested = py_trees.blackboard.CheckBlackboardVariable(
+    is_scan_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Scan?",
         variable_name='event_scan_button',
         expected_value=True
@@ -175,7 +175,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     scan_preempt = py_trees.composites.Selector(name="Preempt?")
     is_scan_requested_two = py_trees.decorators.SuccessIsRunning(
         name="SuccessIsRunning",
-        child=py_trees.blackboard.CheckBlackboardVariable(
+        child=py_trees.behaviours.CheckBlackboardVariableValue(
             name="Scan?",
             variable_name='event_scan_button',
             expected_value=True
