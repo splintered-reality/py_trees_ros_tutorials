@@ -239,7 +239,7 @@ class TestActionServers(unittest.TestCase):
         goal_handle = goal_future.result()
 
         # cancel
-        self._timer = client.node.create_timer(0.2, client.send_cancel_request)
+        self._timer = client.node.create_timer(0.05, client.send_cancel_request)
 
         # Await preempted goal result future
         result_future = goal_handle.get_result_async()
