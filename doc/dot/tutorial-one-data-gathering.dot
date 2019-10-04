@@ -2,15 +2,33 @@ digraph pastafarianism {
 graph [fontname="times-roman"];
 node [fontname="times-roman"];
 edge [fontname="times-roman"];
-Tutorial [label="Tutorial\n--SuccessOnAll(-)--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
+"Tutorial One" [label="Tutorial One\n--SuccessOnAll(-)--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
 Topics2BB [label=Topics2BB, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
-Tutorial -> Topics2BB;
+"Tutorial One" -> Topics2BB;
 Battery2BB [label=Battery2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
 Topics2BB -> Battery2BB;
 Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
-Tutorial -> Tasks;
+"Tutorial One" -> Tasks;
 "Flip Eggs" [label="Flip Eggs", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
 Tasks -> "Flip Eggs";
 Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
 Tasks -> Idle;
+subgraph  {
+label=children_of_Tasks;
+rank=same;
+"Flip Eggs" [label="Flip Eggs", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+}
+
+subgraph  {
+label="children_of_Tutorial One";
+rank=same;
+Topics2BB [label=Topics2BB, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
+}
+
+battery [label="battery: sensor_msgs.msg.B...", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
+Battery2BB -> battery  [color=blue, constraint=True];
+battery_low_warning [label="battery_low_warning: False", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
+Battery2BB -> battery_low_warning  [color=blue, constraint=True];
 }

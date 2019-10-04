@@ -38,7 +38,7 @@ Tree
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.five_action_clients.tutorial_create_root
+   $ py-trees-render --with-blackboard-variables py_trees_ros_tutorials.five_action_clients.tutorial_create_root
 
 .. graphviz:: dot/tutorial-five-action-clients.dot
    :align: center

@@ -20,7 +20,7 @@ Tree
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.two_battery_check.tutorial_create_root
+   $ py-trees-render --with-blackboard-variables py_trees_ros_tutorials.two_battery_check.tutorial_create_root
 
 .. graphviz:: dot/tutorial-two-battery-check.dot
    :align: center
@@ -47,7 +47,7 @@ This tree makes use of the :class:`py_trees_ros_tutorials.behaviours.FlashLedStr
 .. literalinclude:: ../py_trees_ros_tutorials/behaviours.py
    :language: python
    :linenos:
-   :lines: 27-108
+   :lines: 29-110
    :caption: behaviours.py#FlashLedStrip
 
 This is a typical ROS behaviour that accepts a ROS node on setup. This delayed style is

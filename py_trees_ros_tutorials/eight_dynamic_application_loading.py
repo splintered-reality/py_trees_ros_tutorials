@@ -53,7 +53,7 @@ Core Tree (Dot Graph)
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.eight_dynamic_application_loading.tutorial_create_root
+   $ py-trees-render --with-blackboard-variables py_trees_ros_tutorials.eight_dynamic_application_loading.tutorial_create_root
 
 .. graphviz:: dot/tutorial-eight-core-tree.dot
    :align: center
@@ -64,7 +64,7 @@ Application Subtree (Dot Graph)
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.eight_dynamic_application_loading.tutorial_create_scan_subtree
+   $ py-trees-render --with-blackboard-variables py_trees_ros_tutorials.eight_dynamic_application_loading.tutorial_create_scan_subtree
 
 .. graphviz:: dot/tutorial-eight-application-subtree.dot
    :align: center
@@ -76,37 +76,37 @@ Dynamic Application Tree (Class)
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 360-364
+   :lines: 369-373
    :caption: DynamicApplicationTree
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 366-377
+   :lines: 375-386
    :caption: Init - Create the Root Tree
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 379-397
+   :lines: 388-408
    :caption: Setup - Application Subscribers & Services
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 399-422
+   :lines: 410-433
    :caption: Requests - Inserting Application Subtrees
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 445-458
+   :lines: 456-469
    :caption: Post-Execution - Pruning Application Subtrees
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 424-443
+   :lines: 435-454
    :caption: Status Reports
 
 .. note::
@@ -128,7 +128,7 @@ Running
     # Launch the tutorial
     $ ros2 run py_trees_ros_tutorials tutorial-eight-dynamic-application-loading
     # In another shell, catch the tree snapshots
-    $ py-trees-tree-watcher --stream
+    $ py-trees-tree-watcher -b
     # Trigger scan/cancel requests from the qt dashboard
 
 .. image:: images/tutorial-eight-dynamic-application-loading.png

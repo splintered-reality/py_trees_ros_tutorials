@@ -32,7 +32,7 @@ Tree
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.six_context_switching.tutorial_create_root
+   $ py-trees-render --with-blackboard-variables py_trees_ros_tutorials.six_context_switching.tutorial_create_root
 
 .. graphviz:: dot/tutorial-six-context-switching.dot
    :align: center
@@ -40,7 +40,7 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/six_context_switching.py
    :language: python
    :linenos:
-   :lines: 123-215
+   :lines: 123-216
    :caption: six_context_switching.py#tutorial_create_root
 
 Behaviour

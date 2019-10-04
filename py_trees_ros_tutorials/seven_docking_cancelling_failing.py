@@ -34,7 +34,7 @@ Tree
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.seven_docking_cancelling_failing.tutorial_create_root
+   $ py-trees-render --with-blackboard-variables py_trees_ros_tutorials.seven_docking_cancelling_failing.tutorial_create_root
 
 .. graphviz:: dot/tutorial-seven-docking-cancelling-failing.dot
    :align: center
@@ -42,7 +42,7 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/seven_docking_cancelling_failing.py
    :language: python
    :linenos:
-   :lines: 201-372
+   :lines: 201-377
    :caption: seven_docking_cancelling_failing.py#tutorial_create_root
 
 Succeeding

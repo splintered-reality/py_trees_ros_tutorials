@@ -32,14 +32,15 @@ Tree
 
 .. code-block:: bash
 
-   $ py-trees-render py_trees_ros_tutorials.one_data_gathering.tutorial_create_root
+   $ py-trees-render --with-blackboard-variables py_trees_ros_tutorials.one_data_gathering.tutorial_create_root
 
 .. graphviz:: dot/tutorial-one-data-gathering.dot
+   :align: center
 
 .. literalinclude:: ../py_trees_ros_tutorials/one_data_gathering.py
    :language: python
    :linenos:
-   :lines: 115-145
+   :lines: 116-146
    :caption: one_data_gathering.py#tutorial_create_root
 
 Along with the data gathering side, you'll also notice the dummy branch for
@@ -68,7 +69,7 @@ Running
     # In a different shell, introspect the entire blackboard
     $ py-trees-blackboard-watcher
     # Or selectively get the battery percentage
-    $ py-trees-blackboard-watcher --list-variables
+    $ py-trees-blackboard-watcher --list
     $ py-trees-blackboard-watcher battery/percentage
 
 .. image:: images/tutorial-one-data-gathering.gif

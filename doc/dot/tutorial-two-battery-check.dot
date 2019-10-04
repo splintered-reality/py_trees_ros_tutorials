@@ -9,10 +9,29 @@ Battery2BB [label=Battery2BB, shape=ellipse, style=filled, fillcolor=gray, fonts
 Topics2BB -> Battery2BB;
 Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
 "Tutorial Two" -> Tasks;
-"Battery Is Low" [label="Battery Is Low", shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
-Tasks -> "Battery Is Low";
+"Battery Low?" [label="Battery Low?", shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
+Tasks -> "Battery Low?";
 FlashLEDs [label=FlashLEDs, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-"Battery Is Low" -> FlashLEDs;
+"Battery Low?" -> FlashLEDs;
 Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
 Tasks -> Idle;
+subgraph  {
+label=children_of_Tasks;
+rank=same;
+"Battery Low?" [label="Battery Low?", shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
+Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+}
+
+subgraph  {
+label="children_of_Tutorial Two";
+rank=same;
+Topics2BB [label=Topics2BB, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
+}
+
+battery [label="battery: sensor_msgs.msg.B...", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
+Battery2BB -> battery  [color=blue, constraint=True];
+battery_low_warning [label="battery_low_warning: False", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
+battery_low_warning -> "Battery Low?"  [color=blue, constraint=False];
+Battery2BB -> battery_low_warning  [color=blue, constraint=True];
 }
