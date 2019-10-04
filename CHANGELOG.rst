@@ -6,6 +6,10 @@ Forthcoming
 -----------
 * ...
 
+1.0.5 (2019-10-04)
+------------------
+* [tests] shorten time to send cancel request to avoid accidental success too early
+
 1.0.4 (2019-10-03)
 ------------------
 * [tutorials] updated for new blackboard (with tracking) changes
