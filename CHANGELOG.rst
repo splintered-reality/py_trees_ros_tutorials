@@ -6,6 +6,10 @@ Forthcoming
 -----------
 * ...
 
+1.0.4 (2019-10-03)
+------------------
+* [tutorials] updated for new blackboard (with tracking) changes
+
 1.0.3 (2019-08-16)
 ------------------
 * [infra] add ament_index file to be installed
