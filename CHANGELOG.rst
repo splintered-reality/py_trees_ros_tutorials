@@ -4,6 +4,7 @@ Changelog
 
 Forthcoming
 -----------
+* [tests] moved from unittest to pytest
 * ...
 
 1.0.5 (2019-10-04)

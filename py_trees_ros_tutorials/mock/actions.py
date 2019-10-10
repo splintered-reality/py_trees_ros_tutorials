@@ -73,6 +73,7 @@ class GenericClient(object):
             action_type=self.action_type,
             action_name=self.action_name
         )
+        self._timer = None
         self._goal_handle = None
         self._send_goal_future = None
         self._get_result_future = None
@@ -120,7 +121,8 @@ class GenericClient(object):
             future = self._goal_handle.cancel_goal_async()
             future.add_done_callback(self.cancel_response_callback)
 
-        self._timer.cancel()
+        if self._timer is not None:
+            self._timer.cancel()
 
     def cancel_response_callback(self, future: rclpy.task.Future):
         """
