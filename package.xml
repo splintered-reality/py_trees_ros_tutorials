@@ -21,6 +21,8 @@
   <build_depend>pyqt5-dev-tools</build_depend>
   <build_depend>qttools5-dev-tools</build_depend>
 
+  <test_depend>python3-pytest</test_depend>
+
   <!--
   <doc_depend>lots_of_things_if_we_stop_using_readthedocs</doc_depend>
   -->
