@@ -40,17 +40,24 @@ def generate_tree_launch_description(runnable: str) -> launch.LaunchDescription:
     python_unbuffered_environment['PYTHONUNBUFFERED'] = '1'
 
     launch_description = launch.LaunchDescription()
-    launch_description.add_action(
-        launch_ros.actions.Node(
+    try:
+        runnable_node = launch_ros.actions.Node(
             package='py_trees_ros_tutorials',
             # node_name="one", # ha, it's a multi-node process
             node_executable=runnable,
             output='screen',
-            # workaround to print to stdout till https://github.com/ros2/launch/issues/188
-            # but...this fails too - https://github.com/ros2/launch/issues/203
-            # env=python_unbuffered_environment
+            emulate_tty=True,
         )
-    )
+    except TypeError:
+        runnable_node = launch_ros.actions.Node(
+            package='py_trees_ros_tutorials',
+            # node_name="one", # ha, it's a multi-node process
+            node_executable=runnable,
+            output='screen',
+            # no tty emulation available on dashing from the node api
+        )
+        
+    launch_description.add_action(runnable_node)
     return launch_description
 
 
