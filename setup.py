@@ -66,7 +66,7 @@ setup(
         'install': OverrideInstall
     },
     name=package_name,
-    version='1.0.5',  # also update package.xml (version and website url) and version.py
+    version='1.0.6',  # also update package.xml (version and website url) and version.py
     packages=find_packages(exclude=['tests*', 'docs*', 'launch*']),
     data_files=[
         ('share/' + package_name, ['package.xml']),
