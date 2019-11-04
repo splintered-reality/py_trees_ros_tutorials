@@ -347,7 +347,11 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
 
         def __init__(self, name: str):
             super().__init__(name="Send Result")
-            self.blackboard.register_key("scan_result", read=True)
+            self.blackboard = self.attach_blackboard_client(name=self.name)
+            self.blackboard.register_key(
+                key="scan_result",
+                access=py_trees.common.Access.READ
+            )
 
         def update(self):
             print(console.green +
