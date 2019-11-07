@@ -56,7 +56,7 @@ def generate_tree_launch_description(runnable: str) -> launch.LaunchDescription:
             output='screen',
             # no tty emulation available on dashing from the node api
         )
-        
+
     launch_description.add_action(runnable_node)
     return launch_description
 
@@ -64,7 +64,7 @@ def generate_tree_launch_description(runnable: str) -> launch.LaunchDescription:
 def generate_ros_launch_service(
         launch_descriptions: List[launch.LaunchDescription],
         debug: bool
-     ) -> launch.LaunchService:
+) -> launch.LaunchService:
     """
     Convenience method that Assembles a ros-style launch service so that
     standalone launchers can be executed via ros2 run.
