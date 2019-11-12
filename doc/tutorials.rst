@@ -76,13 +76,13 @@ In another shell:
     # watch with the recent activity log (activity stream)
     $ py-trees-blackboard-watcher --activity
     # watch variables associated with behaviours on the most recent tick's visited path
-    $ py-trees-blackboard-watcher --visited  
+    $ py-trees-blackboard-watcher --visited
     # list variables available to watch
     $ py-trees-blackboard-watcher --list
     # watch a simple variable (slide the battery level on the dashboard to trigger a change)
-    $ py-trees-blackboard-watcher battery_low_warning
+    $ py-trees-blackboard-watcher /battery_low_warning
     # watch a variable with nested attributes
-    $ py-trees-blackboard-watcher battery/percentage
+    $ py-trees-blackboard-watcher /battery.percentage
 
 .. image:: images/tutorial-three-introspect-the-blackboard.gif
 
@@ -125,7 +125,7 @@ In another shell:
 
 .. code-block:: bash
 
-    # stream the tree state on changes 
+    # stream the tree state on changes
     $ py-trees-tree-watcher
     # stream the tree state on changes with statistics
     $ py-trees-tree-watcher -s
