@@ -305,7 +305,7 @@ def tutorial_main():
     )
     try:
         tree.setup(timeout=15)
-    except Exception as e:
+    except py_trees_ros.exceptions.TimedOutError as e:
         console.logerror(console.red + "failed to setup the tree, aborting [{}]".format(str(e)) + console.reset)
         sys.exit(1)
 
