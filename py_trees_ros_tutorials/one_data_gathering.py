@@ -70,7 +70,7 @@ Running
     $ py-trees-blackboard-watcher
     # Or selectively get the battery percentage
     $ py-trees-blackboard-watcher --list
-    $ py-trees-blackboard-watcher battery/percentage
+    $ py-trees-blackboard-watcher /battery.percentage
 
 .. image:: images/tutorial-one-data-gathering.gif
 """
