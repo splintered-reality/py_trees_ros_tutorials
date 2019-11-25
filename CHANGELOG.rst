@@ -6,6 +6,7 @@ Forthcoming
 -----------
 * [launch] dashing/eloquent handling of emulate_tty
 * [tests] moved from unittest to pytest
+* [tutorials] catch and log appropriately when ctrl-c engaged in setup
 * [tutorials] catch the setup specific TimedOutError so other errors are easy to diagnose
 
 1.0.5 (2019-10-04)

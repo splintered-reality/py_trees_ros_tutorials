@@ -173,6 +173,14 @@ def tutorial_main():
         tree.setup(timeout=15)
     except py_trees_ros.exceptions.TimedOutError as e:
         console.logerror(console.red + "failed to setup the tree, aborting [{}]".format(str(e)) + console.reset)
+        tree.shutdown()
+        rclpy.shutdown()
+        sys.exit(1)
+    except KeyboardInterrupt:
+        # not a warning, nor error, usually a user-initiated shutdown
+        console.logerror("tree setup interrupted")
+        tree.shutdown()
+        rclpy.shutdown()
         sys.exit(1)
 
     tree.tick_tock(period_ms=1000.0)
