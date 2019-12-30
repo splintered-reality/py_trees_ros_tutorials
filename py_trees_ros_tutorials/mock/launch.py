@@ -41,25 +41,15 @@ def generate_launch_description() -> launch.LaunchDescription:
                       'led_strip', 'move_base', 'rotation_controller',
                       'safety_sensors']:
         node_executable = "mock-{}".format(node_name.replace('_', '-'))
-        try:
-            launch_description.add_action(
-                launch_ros.actions.Node(
-                    package='py_trees_ros_tutorials',
-                    node_name=node_name,
-                    node_executable=node_executable,
-                    output='screen',
-                    emulate_tty=True
-                )
+        launch_description.add_action(
+            launch_ros.actions.Node(
+                package='py_trees_ros_tutorials',
+                node_name=node_name,
+                node_executable=node_executable,
+                output='screen',
+                emulate_tty=True
             )
-        except TypeError:
-            launch_description.add_action(
-                launch_ros.actions.Node(
-                    package='py_trees_ros_tutorials',
-                    node_name=node_name,
-                    node_executable=node_executable,
-                    output='screen',
-                )
-            )
+        )
     return launch_description
 
 ##############################################################################

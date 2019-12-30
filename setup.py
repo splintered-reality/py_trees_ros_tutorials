@@ -69,7 +69,12 @@ setup(
     version='2.0.0',  # also update package.xml (version and website url) and version.py
     packages=find_packages(exclude=['tests*', 'docs*', 'launch*']),
     data_files=[
-        ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name,
+         [
+             'package.xml',
+             'launch/mock_robot_launch.py',
+         ]
+         ),
         ('share/ament_index/resource_index/packages', [
             'resources/py_trees_ros_tutorials']),
     ],
