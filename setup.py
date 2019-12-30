@@ -78,7 +78,8 @@ setup(
         'install': OverrideInstall
     },
     name=package_name,
-    version='2.0.0',  # also update package.xml (version and website url) and version.py
+    # also update package.xml (version and website url), version.py and conf.py
+    version='2.0.1',
     packages=find_packages(exclude=['tests*', 'docs*', 'launch*']),
     data_files=[
         ('share/' + package_name, ['package.xml']),

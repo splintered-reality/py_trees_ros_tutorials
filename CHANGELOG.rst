@@ -4,6 +4,11 @@ Changelog
 
 Forthcoming
 -----------
+* ...
+
+2.0.1 (2019-12-30)
+------------------
+* [launch] switch to ros2 launch (not ros2 run)
 * [launch] dashing/eloquent handling of emulate_tty
 * [tests] moved from unittest to pytest
 * [tutorials] catch and log appropriately when ctrl-c engaged in setup
