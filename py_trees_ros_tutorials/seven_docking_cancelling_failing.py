@@ -34,7 +34,7 @@ Tree
 
 .. code-block:: bash
 
-   $ py-trees-render --with-blackboard-variables py_trees_ros_tutorials.seven_docking_cancelling_failing.tutorial_create_root
+   $ py-trees-render -b py_trees_ros_tutorials.seven_docking_cancelling_failing.tutorial_create_root
 
 .. graphviz:: dot/tutorial-seven-docking-cancelling-failing.dot
    :align: center
@@ -153,7 +153,7 @@ Running
 .. code-block:: bash
 
     # Launch the tutorial
-    $ ros2 run py_trees_ros_tutorials tutorial-seven-docking-cancelling-failing
+    $ ros2 launch py_trees_ros_tutorials tutorial_seven_docking_cancelling_failing_launch.py
     # In another shell, watch the parameter as a context switch occurs
     # Trigger scan/cancel requests from the qt dashboard
 
@@ -181,18 +181,24 @@ from . import mock
 ##############################################################################
 
 
-def launch_main():
+def generate_launch_description():
     """
-    A rosrunnable launch for the tutorial.
+    Launcher for the tutorial.
+
+    Returns:
+        the launch description
     """
-    launch_descriptions = []
-    launch_descriptions.append(mock.launch.generate_launch_description())
-    launch_descriptions.append(utilities.generate_tree_launch_description("tree-docking-cancelling-failing"))
-    launch_service = utilities.generate_ros_launch_service(
-        launch_descriptions=launch_descriptions,
-        debug=False
+    return launch.LaunchDescription(
+        mock.launch.generate_launch_nodes() +
+        [
+            launch_ros.actions.Node(
+                package='py_trees_ros_tutorials',
+                node_executable="tree-docking-cancelling-failing",
+                output='screen',
+                emulate_tty=True,
+            )
+        ]
     )
-    return launch_service.run()
 
 ##############################################################################
 # Tutorial

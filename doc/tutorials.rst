@@ -171,7 +171,7 @@ Launch the tutorial:
 
     $ ros2 launch py_trees_ros_tutorials tutorial_four_introspect_the_tree_launch.py
 
-On a private snapshot stream:
+Using ``py-trees-tree-watcher`` on a private snapshot stream:
 
 .. code-block:: bash
 
@@ -190,7 +190,7 @@ On a private snapshot stream:
 
 .. image:: images/tutorial-four-introspect-the-tree.gif
 
-On the default snapshot stream (``~/snapshots``):
+Using ``py-trees-tree-watcher`` on the default snapshot stream (``~/snapshots``):
 
 .. code-block:: bash
 
