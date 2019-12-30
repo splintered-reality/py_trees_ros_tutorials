@@ -164,6 +164,8 @@ Running
 # Imports
 ##############################################################################
 
+import launch
+import launch_ros
 import py_trees
 import py_trees_ros.trees
 import py_trees.console as console
@@ -173,7 +175,6 @@ import sys
 
 from . import behaviours
 from . import mock
-from . import utilities
 
 ##############################################################################
 # Launcher

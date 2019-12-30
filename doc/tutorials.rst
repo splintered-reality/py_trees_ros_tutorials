@@ -76,7 +76,7 @@ launched on its own with:
 
 .. code-block:: bash
 
-    $ ros2 run py_trees_ros_tutorials mock-robot
+    $ ros2 launch py_trees_ros_tutorials mock_robot_launch.py
 
 .. _tutorial-one:
 
@@ -115,8 +115,7 @@ Running
 
 .. code-block:: bash
 
-    # Launch the tutorial
-    $ ros2 run py_trees_ros_tutorials tutorial-three-introspect-the-blackboard
+    $ ros2 launch py_trees_ros_tutorials tutorial_three_introspect_the_blackboard_launch.py
 
 In another shell:
 
@@ -153,9 +152,10 @@ for introspection of the tree state itself as well as a command line utility,
 
 .. note:
 
-    Snapshots of the tree state published on the *~/snapshots* topic and
-    only when there has been a change in the status of one of the behaviours
-    in the tree, i.e. the tree state.
+    The tree watcher by default requests a hidden stream to be configured and
+    opened for it's private use. On request, you can redirect the watcher to
+    an already open stream (for example, the default stream which would
+    typically be used for logging purposes).
 
 .. note:
 
@@ -165,14 +165,13 @@ for introspection of the tree state itself as well as a command line utility,
 Running
 ^^^^^^^
 
-Start the tutorial:
+Launch the tutorial:
 
 .. code-block:: bash
 
-    # Launch the tutorial
-    $ ros2 run py_trees_ros_tutorials tutorial-four-introspect-the-tree
+    $ ros2 launch py_trees_ros_tutorials tutorial_four_introspect_the_tree_launch.py
 
-In another shell:
+On a private snapshot stream:
 
 .. code-block:: bash
 
@@ -184,14 +183,36 @@ In another shell:
     $ py-trees-tree-watcher -a
     # stream the tree state on changes with visited blackboard variables
     $ py-trees-tree-watcher -b
-    # print the tree state, just once
-    $ py-trees-tree-watcher --snapshot
     # serialise to a dot graph (.dot/.png/.svg) and view in xdot if available
     $ py-trees-tree-watcher --dot-graph
     # not necessary here, but if there are multiple trees to choose from
-    $ py-trees-tree-watcher --namespace=/tree
+    $ py-trees-tree-watcher --namespace=/tree/snapshot_streams
 
 .. image:: images/tutorial-four-introspect-the-tree.gif
+
+On the default snapshot stream (``~/snapshots``):
+
+.. code-block:: bash
+
+    # enable the default snapshot stream
+    $ ros2 param set /tree default_snapshot_stream True
+    $ ros2 param set /tree default_snapshot_blackboard_data True
+    $ ros2 param set /tree default_snapshot_blackboard_activity True
+    # connect to the stream
+    $ py-trees-tree-watcher -a -s -b /tree/snapshots 
+
+Using `py_trees_ros_viewer`_ to configure and visualise the stream:
+
+.. code-block:: bash
+
+    # install
+    $ sudo apt install ros-<rosdistro>-py-trees-ros-viewer
+    # start the viewer
+    $ py-trees-tree-viewer
+
+.. image:: images/tutorial-four-py-trees-ros-viewer.png
+
+.. _py_trees_ros_viewer: https://github.com/splintered-reality/py_trees_ros_viewer
 
 .. _tutorial-five:
 

@@ -15,33 +15,29 @@ Launch the mock robot.
 # Imports
 ##############################################################################
 
+import typing
+
 import launch
 import launch_ros.actions
-import py_trees_ros_tutorials.utilities as utilities
 
 ##############################################################################
 # Helpers
 ##############################################################################
 
 
-def generate_launch_description() -> launch.LaunchDescription:
+def generate_launch_nodes() -> typing.List[launch_ros.actions.Node]:
     """
-    Launch the mock robot (i.e. launch all mocked components).
+    Generate an action node for launch.
 
     Returns:
-        :class:`launch.LaunchDescription`
+        a list of the mock robot ros nodes as actions for launch
     """
-
-    launch_description = launch.LaunchDescription()
-
-    ##########################################################################
-    # Mock Robot Nodes
-    ##########################################################################
+    launch_nodes = []
     for node_name in ['battery', 'dashboard', 'docking_controller',
                       'led_strip', 'move_base', 'rotation_controller',
                       'safety_sensors']:
         node_executable = "mock-{}".format(node_name.replace('_', '-'))
-        launch_description.add_action(
+        launch_nodes.append(
             launch_ros.actions.Node(
                 package='py_trees_ros_tutorials',
                 node_name=node_name,
@@ -50,19 +46,18 @@ def generate_launch_description() -> launch.LaunchDescription:
                 emulate_tty=True
             )
         )
-    return launch_description
-
-##############################################################################
-# Main
-##############################################################################
-
-
-def main() -> int:
-    """Entry point for launching the mocked robot"""
-    launch_descriptions = []
-    launch_descriptions.append(generate_launch_description())
-    launch_service = utilities.generate_ros_launch_service(
-        launch_descriptions=launch_descriptions,
-        debug=False
+    launch_nodes.append(
+        launch.actions.LogInfo(msg=["Bob the robot, at your service. Need a colander?"])
     )
-    return launch_service.run()
+    return launch_nodes
+
+
+def generate_launch_description() -> launch.LaunchDescription:
+    """
+    Launch the mock robot (i.e. launch all mocked components).
+
+    Returns:
+        the launch description
+    """
+
+    return launch.LaunchDescription(generate_launch_nodes())
