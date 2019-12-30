@@ -3,6 +3,54 @@
 Tutorials
 =========
 
+Before We Start
+---------------
+
+So, you would like your robot to actually do something non-trivial?
+
+**Trivial?** Ah, a sequence of timed actions - move forward 3s,
+rotate 90 degrees, move forward 3s, emit a greeting. This is open-loop
+and can be pre-programmed in a single script easily.
+Trivial. Shift gears!
+
+**Non-Trivial?** Hmm, you'd like to dynamically plan navigational
+routes (waypoints), choose between actions depending on whether
+blocking obstacles are sensed, interrupt the current action
+if the battery is low ... and this is just getting started.
+In short, *decision making* with *priority interrupts* and 
+*closed loops* with peripheral systems (e.g. via sensing,
+HMI devices, web services). Now you're talking!
+
+Most roboticists will start scripting, but
+quickly run into a complexity barrier. They'll often then reach for
+state machines which are great for control systems, but run into
+yet another complexity barrier attempting to handle priority interrupts
+and an exponentially increasing profusion of wires between states. Which
+brings you here, to behavour trees! Before we proceed though...
+
+**Where is the Robot?** Ostensibly you'll need one, at some point.
+More often than not though, it's not available or it's just
+not practical for rapid application development.
+Might be it's only partially assembled, or new
+features are being developed in parallel (deadlines!). On the other hand,
+it may be available, but you cannot get enough time-share on the robot or
+it is not yet stable, resulting in a stream of unrelated issues lower down
+in the robotic stack that impede application development. So you make
+the sensible decision of moving to simulation.
+
+**Simulation or Mocked Robots?** If you already have a robot simulation,
+it's a great place to start. In the long run though, the investment
+of time to build a mock robot layer should, in most cases, pay itself off
+with a faster development cycle. Why? Testing an application is mostly
+about provoking and testing the many permutations and combinations o 
+decision making. It's not about the 20 minutes of travel from point A to
+point B in the building. With a mocked robot layer, you can emulate
+that travel at ludicrous speed and provide easy handles for mocking the
+problems that can arise.
+
+So this is where the tutorials begin, with a very simple, mocked robot. They will
+then proceed to build up a behaviour tree application, one step at a time. 
+
 The Mock Robot
 --------------
 
@@ -16,16 +64,19 @@ encapsulates the following list of mocked components:
 * Rotation Action Server
 * Safety Sensors Pipeline
 
-The :term:`mock` robot could just as easily be replaced by a gazebo
-simulated robot or even real robot that implements exactly the same
-ROS API interface.
+.. note::
+
+   It should always be possible for the :term:`mock` robot to be replaced
+   by a gazebo simulated robot or the actual robot. Each
+   of these underlying systems must implement exactly the same
+   ROS API interface.
 
 The tutorials take care of launching the mock robot, but it can be also
 launched on its own with:
 
 .. code-block:: bash
 
-    $ ros2 run py_trees_ros_tutorials mock-robot
+    $ ros2 launch py_trees_ros_tutorials mock_robot_launch.py
 
 .. _tutorial-one:
 
@@ -64,8 +115,7 @@ Running
 
 .. code-block:: bash
 
-    # Launch the tutorial
-    $ ros2 run py_trees_ros_tutorials tutorial-three-introspect-the-blackboard
+    $ ros2 launch py_trees_ros_tutorials tutorial_three_introspect_the_blackboard_launch.py
 
 In another shell:
 
@@ -102,9 +152,10 @@ for introspection of the tree state itself as well as a command line utility,
 
 .. note:
 
-    Snapshots of the tree state published on the *~/snapshots* topic and
-    only when there has been a change in the status of one of the behaviours
-    in the tree, i.e. the tree state.
+    The tree watcher by default requests a hidden stream to be configured and
+    opened for it's private use. On request, you can redirect the watcher to
+    an already open stream (for example, the default stream which would
+    typically be used for logging purposes).
 
 .. note:
 
@@ -114,14 +165,13 @@ for introspection of the tree state itself as well as a command line utility,
 Running
 ^^^^^^^
 
-Start the tutorial:
+Launch the tutorial:
 
 .. code-block:: bash
 
-    # Launch the tutorial
-    $ ros2 run py_trees_ros_tutorials tutorial-four-introspect-the-tree
+    $ ros2 launch py_trees_ros_tutorials tutorial_four_introspect_the_tree_launch.py
 
-In another shell:
+Using ``py-trees-tree-watcher`` on a private snapshot stream:
 
 .. code-block:: bash
 
@@ -133,14 +183,36 @@ In another shell:
     $ py-trees-tree-watcher -a
     # stream the tree state on changes with visited blackboard variables
     $ py-trees-tree-watcher -b
-    # print the tree state, just once
-    $ py-trees-tree-watcher --snapshot
     # serialise to a dot graph (.dot/.png/.svg) and view in xdot if available
     $ py-trees-tree-watcher --dot-graph
     # not necessary here, but if there are multiple trees to choose from
-    $ py-trees-tree-watcher --namespace=/tree
+    $ py-trees-tree-watcher --namespace=/tree/snapshot_streams
 
 .. image:: images/tutorial-four-introspect-the-tree.gif
+
+Using ``py-trees-tree-watcher`` on the default snapshot stream (``~/snapshots``):
+
+.. code-block:: bash
+
+    # enable the default snapshot stream
+    $ ros2 param set /tree default_snapshot_stream True
+    $ ros2 param set /tree default_snapshot_blackboard_data True
+    $ ros2 param set /tree default_snapshot_blackboard_activity True
+    # connect to the stream
+    $ py-trees-tree-watcher -a -s -b /tree/snapshots 
+
+Using `py_trees_ros_viewer`_ to configure and visualise the stream:
+
+.. code-block:: bash
+
+    # install
+    $ sudo apt install ros-<rosdistro>-py-trees-ros-viewer
+    # start the viewer
+    $ py-trees-tree-viewer
+
+.. image:: images/tutorial-four-py-trees-ros-viewer.png
+
+.. _py_trees_ros_viewer: https://github.com/splintered-reality/py_trees_ros_viewer
 
 .. _tutorial-five:
 

@@ -60,6 +60,18 @@ class OverrideInstall(install):
     pass
 
 
+def gather_launch_files():
+    data_files = []
+    for root, unused_subdirs, files in os.walk('launch'):
+        destination = os.path.join('share', package_name, root)
+        launch_files = []
+        for file in files:
+            pathname = os.path.join(root, file)
+            launch_files.append(pathname)
+        data_files.append((destination, launch_files))
+    return data_files
+
+
 setup(
     cmdclass={
         'develop': OverrideDevelop,
@@ -72,7 +84,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/ament_index/resource_index/packages', [
             'resources/py_trees_ros_tutorials']),
-    ],
+    ] + gather_launch_files(),
     package_data={'py_trees_ros_tutorials': ['mock/gui/*']},
     install_requires=[],  # it's all lies (c.f. package.xml, but no use case for this yet)
     extras_require={},
@@ -112,8 +124,6 @@ setup(
             'mock-dock-client = py_trees_ros_tutorials.mock.actions:dock_client',
             'mock-move-base-client = py_trees_ros_tutorials.mock.actions:move_base_client',
             'mock-rotate-client = py_trees_ros_tutorials.mock.actions:rotate_client',
-            # Mock Launcher
-            'mock-robot = py_trees_ros_tutorials.mock.launch:main',
             # Tutorial Nodes
             'tree-data-gathering = py_trees_ros_tutorials.one_data_gathering:tutorial_main',
             'tree-battery-check = py_trees_ros_tutorials.two_battery_check:tutorial_main',
@@ -121,18 +131,6 @@ setup(
             'tree-context-switching = py_trees_ros_tutorials.six_context_switching:tutorial_main',
             'tree-docking-cancelling-failing = py_trees_ros_tutorials.seven_docking_cancelling_failing:tutorial_main',
             'tree-dynamic-application-loading = py_trees_ros_tutorials.eight_dynamic_application_loading:tutorial_main',
-            # Tutorial Launchers (directly runnable)
-            'tutorial-one-data-gathering = py_trees_ros_tutorials.one_data_gathering:launch_main',
-            'tutorial-two-battery-check = py_trees_ros_tutorials.two_battery_check:launch_main',
-            'tutorial-three-introspect-the-blackboard = py_trees_ros_tutorials.two_battery_check:launch_main',
-            'tutorial-four-introspect-the-tree = py_trees_ros_tutorials.two_battery_check:launch_main',
-            'tutorial-five-action-clients = py_trees_ros_tutorials.five_action_clients:launch_main',
-            'tutorial-six-context-switching = py_trees_ros_tutorials.six_context_switching:launch_main',
-            'tutorial-seven-docking-cancelling-failing = py_trees_ros_tutorials.seven_docking_cancelling_failing:launch_main',
-            'tutorial-eight-dynamic-application-loading = py_trees_ros_tutorials.eight_dynamic_application_loading:launch_main',
-            # Other
-            'testies = py_trees_ros_tutorials.testies:main',
-            'launch-testies = py_trees_ros_tutorials.launch_testies:main',
         ],
     },
 )

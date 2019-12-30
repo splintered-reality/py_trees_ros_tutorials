@@ -127,9 +127,9 @@ class Battery(object):
 
         # publish
         self.battery.header.stamp = rclpy.clock.Clock().now().to_msg()
+        charging_percentage = min(100.0, charging_percentage)
         self.battery.percentage = charging_percentage
-        if self.battery.percentage >= 100.0:
-            self.battery.percentage = 100.0
+        if charging_percentage == 100.0:
             self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_FULL
         elif charging:
             self.battery.power_supply_status = sensor_msgs.BatteryState.POWER_SUPPLY_STATUS_CHARGING

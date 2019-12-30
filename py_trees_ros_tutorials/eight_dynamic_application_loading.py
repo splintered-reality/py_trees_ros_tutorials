@@ -53,7 +53,7 @@ Core Tree (Dot Graph)
 
 .. code-block:: bash
 
-   $ py-trees-render --with-blackboard-variables py_trees_ros_tutorials.eight_dynamic_application_loading.tutorial_create_root
+   $ py-trees-render -b py_trees_ros_tutorials.eight_dynamic_application_loading.tutorial_create_root
 
 .. graphviz:: dot/tutorial-eight-core-tree.dot
    :align: center
@@ -76,37 +76,37 @@ Dynamic Application Tree (Class)
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 369-373
-   :caption: DynamicApplicationTree
+   :lines: 375-379
+   :caption: Dynamic Application Tree
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 375-386
+   :lines: 381-392
    :caption: Init - Create the Root Tree
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 388-408
+   :lines: 394-414
    :caption: Setup - Application Subscribers & Services
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 410-433
+   :lines: 416-439
    :caption: Requests - Inserting Application Subtrees
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 456-469
+   :lines: 462-477
    :caption: Post-Execution - Pruning Application Subtrees
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 435-454
+   :lines: 441-460
    :caption: Status Reports
 
 .. note::
@@ -126,7 +126,7 @@ Running
 .. code-block:: bash
 
     # Launch the tutorial
-    $ ros2 run py_trees_ros_tutorials tutorial-eight-dynamic-application-loading
+    $ ros2 launch py_trees_ros_tutorials tutorial_eight_dynamic_application_laoding_launch.py
     # In another shell, catch the tree snapshots
     $ py-trees-tree-watcher -b
     # Trigger scan/cancel requests from the qt dashboard
@@ -138,7 +138,8 @@ Running
 # Imports
 ##############################################################################
 
-import functools
+import launch
+import launch_ros
 import py_trees
 import py_trees_ros.trees
 import py_trees.console as console
@@ -150,29 +151,30 @@ import sys
 
 from . import behaviours
 from . import mock
-from . import utilities
 
 ##############################################################################
 # Launcher
 ##############################################################################
 
 
-def launch_main():
+def generate_launch_description():
     """
-    A rosrunnable launch for the tutorial.
+    Launcher for the tutorial.
+
+    Returns:
+        the launch description
     """
-    launch_descriptions = []
-    launch_descriptions.append(mock.launch.generate_launch_description())
-    launch_descriptions.append(
-        utilities.generate_tree_launch_description(
-            "tree-dynamic-application-loading"
-        )
+    return launch.LaunchDescription(
+        mock.launch.generate_launch_nodes() +
+        [
+            launch_ros.actions.Node(
+                package='py_trees_ros_tutorials',
+                node_executable="tree-dynamic-application-loading",
+                output='screen',
+                emulate_tty=True,
+            )
+        ]
     )
-    launch_service = utilities.generate_ros_launch_service(
-        launch_descriptions=launch_descriptions,
-        debug=False
-    )
-    return launch_service.run()
 
 ##############################################################################
 # Tutorial

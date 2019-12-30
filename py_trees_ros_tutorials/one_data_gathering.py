@@ -32,7 +32,7 @@ Tree
 
 .. code-block:: bash
 
-   $ py-trees-render --with-blackboard-variables py_trees_ros_tutorials.one_data_gathering.tutorial_create_root
+   $ py-trees-render -b py_trees_ros_tutorials.one_data_gathering.tutorial_create_root
 
 .. graphviz:: dot/tutorial-one-data-gathering.dot
    :align: center
@@ -40,7 +40,7 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/one_data_gathering.py
    :language: python
    :linenos:
-   :lines: 116-146
+   :lines: 121-153
    :caption: one_data_gathering.py#tutorial_create_root
 
 Along with the data gathering side, you'll also notice the dummy branch for
@@ -65,7 +65,7 @@ Running
 .. code-block:: bash
 
     # Launch the tutorial
-    $ ros2 run py_trees_ros_tutorials tutorial-one-data-gathering
+    $ ros2 launch py_trees_ros_tutorials tutorial_one_data_gathering_launch.py
     # In a different shell, introspect the entire blackboard
     $ py-trees-blackboard-watcher
     # Or selectively get the battery percentage
@@ -79,6 +79,8 @@ Running
 # Imports
 ##############################################################################
 
+import launch
+import launch_ros
 import py_trees
 import py_trees_ros.trees
 import py_trees.console as console
@@ -86,27 +88,30 @@ import rclpy
 import sys
 
 from . import mock
-from . import utilities
 
 ##############################################################################
 # Launcher
 ##############################################################################
 
 
-def launch_main():
+def generate_launch_description():
     """
-    A rosrunnable launch for the tutorial.
+    Launcher for the tutorial.
+
+    Returns:
+        the launch description
     """
-    launch_descriptions = []
-    launch_descriptions.append(mock.launch.generate_launch_description())
-    launch_descriptions.append(
-        utilities.generate_tree_launch_description("tree-data-gathering")
+    return launch.LaunchDescription(
+        mock.launch.generate_launch_nodes() +
+        [
+            launch_ros.actions.Node(
+                package='py_trees_ros_tutorials',
+                node_executable="tree-data-gathering",
+                output='screen',
+                emulate_tty=True,
+            )
+        ]
     )
-    launch_service = utilities.generate_ros_launch_service(
-        launch_descriptions=launch_descriptions,
-        debug=False
-    )
-    return launch_service.run()
 
 ##############################################################################
 # Tutorial

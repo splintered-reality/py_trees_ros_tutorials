@@ -86,14 +86,6 @@ py_trees_ros_tutorials.mock.safety_sensors
     :show-inheritance:
     :synopsis: mock a safety sensor pipeline, requires context switching
 
-py_trees_ros_tutorials.utilities
---------------------------------
-
-.. automodule:: py_trees_ros_tutorials.utilities
-    :members:
-    :show-inheritance:
-    :synopsis: utilities for the tutorials and launchers
-
 py_trees_ros_tutorials.version
 ------------------------------
 
