@@ -42,7 +42,7 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/seven_docking_cancelling_failing.py
    :language: python
    :linenos:
-   :lines: 201-377
+   :lines: 209-390
    :caption: seven_docking_cancelling_failing.py#tutorial_create_root
 
 Succeeding
@@ -154,7 +154,8 @@ Running
 
     # Launch the tutorial
     $ ros2 launch py_trees_ros_tutorials tutorial_seven_docking_cancelling_failing_launch.py
-    # In another shell, watch the parameter as a context switch occurs
+    # In another shell
+    $ py-trees-tree-watcher -b
     # Trigger scan/cancel requests from the qt dashboard
 
 .. image:: images/tutorial-seven-docking-cancelling-failing.png
