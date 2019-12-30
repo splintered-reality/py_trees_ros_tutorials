@@ -40,7 +40,7 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/six_context_switching.py
    :language: python
    :linenos:
-   :lines: 123-216
+   :lines: 130-224
    :caption: six_context_switching.py#tutorial_create_root
 
 Behaviour
