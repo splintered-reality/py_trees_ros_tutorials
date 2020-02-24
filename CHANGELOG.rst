@@ -4,7 +4,7 @@ Changelog
 
 Forthcoming
 -----------
-* ...
+* [infra] spelling fix for tutorial eight
 
 2.0.1 (2019-12-30)
 ------------------
