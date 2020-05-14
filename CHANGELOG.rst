@@ -6,6 +6,10 @@ Forthcoming
 -----------
 * [infra] spelling fix for tutorial eight
 
+2.0.2 (2020-05-14)
+------------------
+* [launch] tutorials seven, eight - not five
+
 2.0.1 (2019-12-30)
 ------------------
 * [launch] switch to ros2 launch (not ros2 run)
