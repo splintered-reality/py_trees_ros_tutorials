@@ -14,7 +14,7 @@ Tutorial 8 - Dynamic Application Loading
 # Imports
 ##############################################################################
 
-import py_trees_ros_tutorials.five_action_clients as tutorial
+import py_trees_ros_tutorials.eight_dynamic_application_loading as tutorial
 
 ##############################################################################
 # Launch Service

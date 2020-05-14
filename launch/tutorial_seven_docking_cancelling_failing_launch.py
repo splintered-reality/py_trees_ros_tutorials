@@ -14,7 +14,7 @@ Tutorial 7 - Docking, Cancelling & Failing
 # Imports
 ##############################################################################
 
-import py_trees_ros_tutorials.five_action_clients as tutorial
+import py_trees_ros_tutorials.seven_docking_cancelling_failing as tutorial
 
 ##############################################################################
 # Launch Service
