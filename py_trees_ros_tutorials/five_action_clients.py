@@ -191,7 +191,7 @@ def generate_launch_description():
         [
             launch_ros.actions.Node(
                 package='py_trees_ros_tutorials',
-                node_executable="tree-action-clients",
+                executable="tree-action-clients",
                 output='screen',
                 emulate_tty=True,
             )
