@@ -76,37 +76,37 @@ Dynamic Application Tree (Class)
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 375-379
+   :lines: 380-384
    :caption: Dynamic Application Tree
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 381-392
+   :lines: 386-397
    :caption: Init - Create the Root Tree
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 394-414
+   :lines: 399-419
    :caption: Setup - Application Subscribers & Services
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 416-439
+   :lines: 421-444
    :caption: Requests - Inserting Application Subtrees
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 462-477
+   :lines: 467-482
    :caption: Post-Execution - Pruning Application Subtrees
 
 .. literalinclude:: ../py_trees_ros_tutorials/eight_dynamic_application_loading.py
    :language: python
    :linenos:
-   :lines: 441-460
+   :lines: 445-465
    :caption: Status Reports
 
 .. note::
@@ -138,6 +138,9 @@ Running
 # Imports
 ##############################################################################
 
+import operator
+import sys
+
 import launch
 import launch_ros
 import py_trees
@@ -147,7 +150,6 @@ import py_trees_ros_interfaces.action as py_trees_actions  # noqa
 import py_trees_ros_interfaces.srv as py_trees_srvs  # noqa
 import rclpy
 import std_msgs.msg as std_msgs
-import sys
 
 from . import behaviours
 from . import mock
@@ -278,8 +280,11 @@ def tutorial_create_scan_subtree() -> py_trees.behaviour.Behaviour:
     cancelling = py_trees.composites.Sequence("Cancelling?")
     is_cancel_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Cancel?",
-        variable_name='event_cancel_button',
-        expected_value=True
+        check=py_trees.common.ComparisonExpression(
+            variable="event_cancel_button",
+            value=True,
+            operator=operator.eq
+        )
     )
     move_home_after_cancel = py_trees_ros.actions.ActionClient(
         name="Move Home",

@@ -42,7 +42,7 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/seven_docking_cancelling_failing.py
    :language: python
    :linenos:
-   :lines: 209-390
+   :lines: 211-398
    :caption: seven_docking_cancelling_failing.py#tutorial_create_root
 
 Succeeding
@@ -165,6 +165,9 @@ Running
 # Imports
 ##############################################################################
 
+import operator
+import sys
+
 import launch
 import launch_ros
 import py_trees
@@ -172,7 +175,6 @@ import py_trees_ros.trees
 import py_trees.console as console
 import py_trees_ros_interfaces.action as py_trees_actions  # noqa
 import rclpy
-import sys
 
 from . import behaviours
 from . import mock
@@ -261,8 +263,11 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     scan = py_trees.composites.Sequence(name="Scan")
     is_scan_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Scan?",
-        variable_name='event_scan_button',
-        expected_value=True
+        check=py_trees.common.ComparisonExpression(
+            variable="event_scan_button",
+            value=True,
+            operator=operator.eq
+        )
     )
     scan_or_die = py_trees.composites.Selector(name="Scan or Die")
     die = py_trees.composites.Sequence(name="Die")
@@ -289,8 +294,11 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     cancelling = py_trees.composites.Sequence("Cancelling?")
     is_cancel_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Cancel?",
-        variable_name='event_cancel_button',
-        expected_value=True
+        check=py_trees.common.ComparisonExpression(
+            variable="event_cancel_button",
+            value=True,
+            operator=operator.eq
+        )
     )
     move_home_after_cancel = py_trees_ros.actions.ActionClient(
         name="Move Home",
