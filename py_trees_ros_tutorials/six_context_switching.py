@@ -115,7 +115,7 @@ def generate_launch_description():
         [
             launch_ros.actions.Node(
                 package='py_trees_ros_tutorials',
-                node_executable="tree-context-switching",
+                executable="tree-context-switching",
                 output='screen',
                 emulate_tty=True,
             )

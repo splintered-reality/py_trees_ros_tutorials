@@ -36,12 +36,12 @@ def generate_launch_nodes() -> typing.List[launch_ros.actions.Node]:
     for node_name in ['battery', 'dashboard', 'docking_controller',
                       'led_strip', 'move_base', 'rotation_controller',
                       'safety_sensors']:
-        node_executable = "mock-{}".format(node_name.replace('_', '-'))
+        executable = "mock-{}".format(node_name.replace('_', '-'))
         launch_nodes.append(
             launch_ros.actions.Node(
                 package='py_trees_ros_tutorials',
-                node_name=node_name,
-                node_executable=node_executable,
+                name=node_name,
+                executable=executable,
                 output='screen',
                 emulate_tty=True
             )

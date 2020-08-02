@@ -106,7 +106,7 @@ def generate_launch_description():
         [
             launch_ros.actions.Node(
                 package='py_trees_ros_tutorials',
-                node_executable="tree-data-gathering",
+                executable="tree-data-gathering",
                 output='screen',
                 emulate_tty=True,
             )
