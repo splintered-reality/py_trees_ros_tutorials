@@ -46,7 +46,7 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/five_action_clients.py
    :language: python
    :linenos:
-   :lines: 207-299
+   :lines: 208-307
    :caption: five_action_clients.py#tutorial_create_root
 
 Data Gathering
@@ -101,7 +101,7 @@ Instantiating the action client, configured for rotations:
 .. literalinclude:: ../py_trees_ros_tutorials/five_action_clients.py
    :language: python
    :linenos:
-   :lines: 271-277
+   :lines: 276-282
    :caption: five_action_clients.py#instantiate
 
 The notification behaviour (FlashLedStrip) runs in parallel with the
@@ -162,6 +162,9 @@ Send scan requests from the qt dashboard.
 # Imports
 ##############################################################################
 
+import operator
+import sys
+
 import launch
 import launch_ros
 import py_trees
@@ -169,7 +172,6 @@ import py_trees_ros.trees
 import py_trees.console as console
 import py_trees_ros_interfaces.action as py_trees_actions  # noqa
 import rclpy
-import sys
 
 from . import behaviours
 from . import mock
@@ -252,16 +254,22 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     scan = py_trees.composites.Sequence(name="Scan")
     is_scan_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Scan?",
-        variable_name='event_scan_button',
-        expected_value=True
+        check=py_trees.common.ComparisonExpression(
+            variable="event_scan_button",
+            value=True,
+            operator=operator.eq
+        )
     )
     scan_preempt = py_trees.composites.Selector(name="Preempt?")
     is_scan_requested_two = py_trees.decorators.SuccessIsRunning(
         name="SuccessIsRunning",
         child=py_trees.behaviours.CheckBlackboardVariableValue(
             name="Scan?",
-            variable_name='event_scan_button',
-            expected_value=True
+            check=py_trees.common.ComparisonExpression(
+                variable="event_scan_button",
+                value=True,
+                operator=operator.eq
+            )
         )
     )
     scanning = py_trees.composites.Parallel(

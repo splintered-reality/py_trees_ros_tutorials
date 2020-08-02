@@ -40,7 +40,7 @@ Tree
 .. literalinclude:: ../py_trees_ros_tutorials/six_context_switching.py
    :language: python
    :linenos:
-   :lines: 130-224
+   :lines: 132-232
    :caption: six_context_switching.py#tutorial_create_root
 
 Behaviour
@@ -86,6 +86,9 @@ Running
 # Imports
 ##############################################################################
 
+import operator
+import sys
+
 import launch
 import launch_ros
 import py_trees
@@ -93,7 +96,6 @@ import py_trees_ros.trees
 import py_trees.console as console
 import py_trees_ros_interfaces.action as py_trees_actions  # noqa
 import rclpy
-import sys
 
 from . import behaviours
 from . import mock
@@ -176,16 +178,22 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     scan = py_trees.composites.Sequence(name="Scan")
     is_scan_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Scan?",
-        variable_name='event_scan_button',
-        expected_value=True
+        check=py_trees.common.ComparisonExpression(
+            variable="event_scan_button",
+            value=True,
+            operator=operator.eq
+        )
     )
     scan_preempt = py_trees.composites.Selector(name="Preempt?")
     is_scan_requested_two = py_trees.decorators.SuccessIsRunning(
         name="SuccessIsRunning",
         child=py_trees.behaviours.CheckBlackboardVariableValue(
             name="Scan?",
-            variable_name='event_scan_button',
-            expected_value=True
+            check=py_trees.common.ComparisonExpression(
+                variable="event_scan_button",
+                value=True,
+                operator=operator.eq
+            )
         )
     )
     scanning = py_trees.composites.Parallel(
