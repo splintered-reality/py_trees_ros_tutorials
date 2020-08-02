@@ -4,6 +4,11 @@ Changelog
 
 Forthcoming
 -----------
+* ...
+
+2.1.0 (2020-08-02)
+------------------
+* [infra] api updates for py_trees 2.1.x and ros2/foxy compatibility
 * [infra] spelling fix for tutorial eight
 
 2.0.2 (2020-05-14)
