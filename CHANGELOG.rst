@@ -4,7 +4,7 @@ Changelog
 
 Forthcoming
 -----------
-* ...
+* [mock] bugfix signal type mismatch for charging status
 
 2.1.0 (2020-08-02)
 ------------------
