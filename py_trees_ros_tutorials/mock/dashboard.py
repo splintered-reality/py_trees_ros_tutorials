@@ -42,7 +42,7 @@ class Backend(qt_core.QObject):
     led_colour_changed = qt_core.pyqtSignal(str, name="ledColourChanged")
     safety_sensors_enabled_changed = qt_core.pyqtSignal(bool, name="safetySensorsEnabledChanged")
     battery_percentage_changed = qt_core.pyqtSignal(float, name="batteryPercentageChanged")
-    battery_charging_status_changed = qt_core.pyqtSignal(float, name="batteryChargingStatusChanged")
+    battery_charging_status_changed = qt_core.pyqtSignal(bool, name="batteryChargingStatusChanged")
 
     def __init__(self, dashboard_group_box):
         super().__init__()
