@@ -8,7 +8,7 @@ import py_trees_ros_tutorials
 
 if __name__ == '__main__':
 
-    scan_preempt = py_trees.composites.Selector(name="Preempt?")
+    scan_preempt = py_trees.composites.Selector(name="Preempt?", memory=False)
     scanning = py_trees.composites.Parallel(
         name="Scanning",
         policy=py_trees.common.ParallelPolicy.SuccessOnOne()

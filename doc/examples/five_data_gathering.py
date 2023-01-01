@@ -4,7 +4,7 @@ import py_trees
 import py_trees_ros
 
 if __name__ == '__main__':
-    root = py_trees.composites.Sequence("Topics2BB")
+    root = py_trees.composites.Sequence(name="Topics2BB", memory=True)
 
     scan2bb = py_trees_ros.subscribers.EventToBlackboard(
         name="Scan2BB",

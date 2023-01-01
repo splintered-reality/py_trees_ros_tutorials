@@ -8,7 +8,7 @@ import py_trees_ros_tutorials
 
 if __name__ == '__main__':
 
-    ere_we_go = py_trees.composites.Sequence(name="Ere we Go")
+    ere_we_go = py_trees.composites.Sequence(name="Ere we Go", memory=True)
     undock = py_trees_ros.actions.ActionClient(
         name="UnDock",
         action_type=py_trees_actions.Dock,
@@ -16,10 +16,10 @@ if __name__ == '__main__':
         action_goal=py_trees_actions.Dock.Goal(dock=False),
         generate_feedback_message=lambda msg: "undocking"
     )
-    scan_or_be_cancelled = py_trees.composites.Selector("Scan or Be Cancelled")
-    cancelling = py_trees.composites.Sequence("Cancelling?")
+    scan_or_be_cancelled = py_trees.composites.Selector(name="Scan or Be Cancelled", memory=False)
+    cancelling = py_trees.composites.Sequence(name="Cancelling?", memory=True)
     cancelling.blackbox_level = py_trees.common.BlackBoxLevel.DETAIL
-    move_out_and_scan = py_trees.composites.Sequence("Move Out and Scan")
+    move_out_and_scan = py_trees.composites.Sequence(name="Move Out and Scan", memory=True)
     move_base = py_trees_ros.actions.ActionClient(
         name="Move Out",
         action_type=py_trees_actions.MoveBase,

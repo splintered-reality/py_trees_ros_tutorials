@@ -10,14 +10,14 @@ import py_trees_ros_tutorials
 if __name__ == '__main__':
 
     # Worker Tasks
-    scan = py_trees.composites.Sequence(name="Scan")
+    scan = py_trees.composites.Sequence(name="Scan", memory=True)
     is_scan_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Scan?",
         variable_name='event_scan_button',
         expected_value=True
     )
-    scan_or_die = py_trees.composites.Selector(name="Scan or Die")
-    die = py_trees.composites.Sequence(name="Die")
+    scan_or_die = py_trees.composites.Selector(name="Scan or Die", memory=False)
+    die = py_trees.composites.Sequence(name="Die", memory=True)
     failed_notification = py_trees.composites.Parallel(
         name="Notification",
         policy=py_trees.common.ParallelPolicy.SuccessOnOne()
@@ -28,7 +28,7 @@ if __name__ == '__main__':
         variable_name='scan_result',
         variable_value='failed'
     )
-    ere_we_go = py_trees.composites.Sequence(name="Ere we Go")
+    ere_we_go = py_trees.composites.Sequence(name="Ere we Go", memory=True)
     undock = py_trees_ros.actions.ActionClient(
         name="UnDock",
         action_type=py_trees_actions.Dock,
@@ -36,8 +36,8 @@ if __name__ == '__main__':
         action_goal=py_trees_actions.Dock.Goal(dock=False),
         generate_feedback_message=lambda msg: "undocking"
     )
-    scan_or_be_cancelled = py_trees.composites.Selector("Scan or Be Cancelled")
-    cancelling = py_trees.composites.Sequence("Cancelling?")
+    scan_or_be_cancelled = py_trees.composites.Selector(name="Scan or Be Cancelled", memory=False)
+    cancelling = py_trees.composites.Sequence(name="Cancelling?", memory=True)
     is_cancel_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Cancel?",
         variable_name='event_cancel_button',
@@ -55,7 +55,7 @@ if __name__ == '__main__':
         variable_name='scan_result',
         variable_value='cancelled'
     )
-    move_out_and_scan = py_trees.composites.Sequence("Move Out and Scan")
+    move_out_and_scan = py_trees.composites.Sequence(name="Move Out and Scan", , memory=True)
     move_base = py_trees_ros.actions.ActionClient(
         name="Move Out",
         action_type=py_trees_actions.MoveBase,

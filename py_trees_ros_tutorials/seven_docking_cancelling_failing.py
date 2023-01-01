@@ -224,7 +224,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         )
     )
 
-    topics2bb = py_trees.composites.Sequence("Topics2BB")
+    topics2bb = py_trees.composites.Sequence(name="Topics2BB", memory=True)
     scan2bb = py_trees_ros.subscribers.EventToBlackboard(
         name="Scan2BB",
         topic_name="/dashboard/scan",
@@ -243,7 +243,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         threshold=30.0
     )
-    tasks = py_trees.composites.Selector("Tasks")
+    tasks = py_trees.composites.Selector(name="Tasks", memory=False)
     flash_red = behaviours.FlashLedStrip(
         name="Flash Red",
         colour="red"
@@ -260,7 +260,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         child=flash_red
     )
     # Worker Tasks
-    scan = py_trees.composites.Sequence(name="Scan")
+    scan = py_trees.composites.Sequence(name="Scan", memory=True)
     is_scan_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Scan?",
         check=py_trees.common.ComparisonExpression(
@@ -269,8 +269,8 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
             operator=operator.eq
         )
     )
-    scan_or_die = py_trees.composites.Selector(name="Scan or Die")
-    die = py_trees.composites.Sequence(name="Die")
+    scan_or_die = py_trees.composites.Selector(name="Scan or Die", memory=False)
+    die = py_trees.composites.Sequence(name="Die", memory=True)
     failed_notification = py_trees.composites.Parallel(
         name="Notification",
         policy=py_trees.common.ParallelPolicy.SuccessOnOne()
@@ -282,7 +282,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         variable_name='scan_result',
         variable_value='failed'
     )
-    ere_we_go = py_trees.composites.Sequence(name="Ere we Go")
+    ere_we_go = py_trees.composites.Sequence(name="Ere we Go", memory=True)
     undock = py_trees_ros.actions.ActionClient(
         name="UnDock",
         action_type=py_trees_actions.Dock,
@@ -290,8 +290,8 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         action_goal=py_trees_actions.Dock.Goal(dock=False),
         generate_feedback_message=lambda msg: "undocking"
     )
-    scan_or_be_cancelled = py_trees.composites.Selector("Scan or Be Cancelled")
-    cancelling = py_trees.composites.Sequence("Cancelling?")
+    scan_or_be_cancelled = py_trees.composites.Selector(name="Scan or Be Cancelled", memory=False)
+    cancelling = py_trees.composites.Sequence(name="Cancelling?", memory=True)
     is_cancel_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Cancel?",
         check=py_trees.common.ComparisonExpression(
@@ -312,7 +312,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         variable_name='scan_result',
         variable_value='cancelled'
     )
-    move_out_and_scan = py_trees.composites.Sequence("Move Out and Scan")
+    move_out_and_scan = py_trees.composites.Sequence(name="Move Out and Scan", memory=True)
     move_base = py_trees_ros.actions.ActionClient(
         name="Move Out",
         action_type=py_trees_actions.MoveBase,
