@@ -133,14 +133,14 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         )
     )
 
-    topics2bb = py_trees.composites.Sequence("Topics2BB")
+    topics2bb = py_trees.composites.Sequence(name="Topics2BB", memory=True)
     battery2bb = py_trees_ros.battery.ToBlackboard(
         name="Battery2BB",
         topic_name="/battery/state",
         qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         threshold=30.0
     )
-    priorities = py_trees.composites.Selector("Tasks")
+    priorities = py_trees.composites.Selector(name="Tasks", memory=False)
     idle = py_trees.behaviours.Running(name="Idle")
     flipper = py_trees.behaviours.Periodic(name="Flip Eggs", n=2)
 
@@ -164,7 +164,7 @@ def tutorial_main():
         unicode_tree_debug=True
     )
     try:
-        tree.setup(timeout=15.0)
+        tree.setup(node_name="foo", timeout=15.0)
     except py_trees_ros.exceptions.TimedOutError as e:
         console.logerror(console.red + "failed to setup the tree, aborting [{}]".format(str(e)) + console.reset)
         tree.shutdown()

@@ -8,7 +8,7 @@ import py_trees_ros_tutorials
 
 if __name__ == '__main__':
 
-    scan_preempt = py_trees.composites.Selector(name="Preempt?")
+    scan_preempt = py_trees.composites.Selector(name="Preempt?", memory=False)
     is_scan_requested_two = py_trees.decorators.SuccessIsRunning(
         name="SuccessIsRunning",
         child=py_trees.blackboard.CheckBlackboardVariable(
