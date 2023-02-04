@@ -158,7 +158,8 @@ def main():
     battery = Battery()
     try:
         rclpy.spin(battery.node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, rclpy.executors.ExternalShutdownException):
         pass
-    battery.shutdown()
-    rclpy.shutdown()
+    finally:
+        battery.shutdown()
+        rclpy.try_shutdown()
