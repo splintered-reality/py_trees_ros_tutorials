@@ -75,7 +75,8 @@ def main():
     safety_sensors = SafetySensors()
     try:
         rclpy.spin(safety_sensors.node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, rclpy.executors.ExternalShutdownException):
         pass
-    safety_sensors.shutdown()
-    rclpy.shutdown()
+    finally:
+        safety_sensors.shutdown()
+        rclpy.try_shutdown()

@@ -180,14 +180,10 @@ class LEDStrip(object):
                 self.last_text = ""
                 self.last_uuid = uuid.uuid4()
 
-    def spin(self):
+    def shutdown(self):
         """
-        Spin, and finally shutdown ROS components.
+        Cleanup ROS components.
         """
-        try:
-            rclpy.spin(self.node)
-        except KeyboardInterrupt:
-            pass
         self.node.destroy_node()
 
 
@@ -200,5 +196,9 @@ def main():
     parser.parse_args(command_line_args)
     rclpy.init(args=sys.argv)
     led_strip = LEDStrip()
-    led_strip.spin()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(led_strip.node)
+    except (KeyboardInterrupt, rclpy.executors.ExternalShutdownException):
+        pass
+    finally:
+        rclpy.try_shutdown()

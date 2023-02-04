@@ -87,13 +87,14 @@ def main():
 
     try:
         executor.spin()
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, rclpy.executors.ExternalShutdownException):
+        pass
+    finally:
         move_base.abort()
+        move_base.shutdown()
         # caveat: often broken, with multiple spin_once or shutdown, error is the
         # mysterious:
         #   The following exception was never retrieved: PyCapsule_GetPointer
         #   called with invalid PyCapsule object
         executor.shutdown()  # finishes all remaining work and exits
-
-    move_base.shutdown()
-    rclpy.shutdown()
+        rclpy.try_shutdown()
