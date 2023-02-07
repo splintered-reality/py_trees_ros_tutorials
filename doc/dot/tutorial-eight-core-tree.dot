@@ -1,53 +1,38 @@
 digraph pastafarianism {
+ordering=out;
 graph [fontname="times-roman"];
 node [fontname="times-roman"];
 edge [fontname="times-roman"];
-"Tutorial Eight" [label="Tutorial Eight\n--SuccessOnAll(-)--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
-Topics2BB [label=Topics2BB, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+"Tutorial Eight" [fillcolor=gold, fontcolor=black, fontsize=9, label="Tutorial Eight\nSuccessOnAll", shape=parallelogram, style=filled];
+Topics2BB [fillcolor=orange, fontcolor=black, fontsize=9, label="Ⓜ Topics2BB", shape=box, style=filled];
 "Tutorial Eight" -> Topics2BB;
-Scan2BB [label=Scan2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scan2BB [fillcolor=gray, fontcolor=black, fontsize=9, label=Scan2BB, shape=ellipse, style=filled];
 Topics2BB -> Scan2BB;
-Cancel2BB [label=Cancel2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Cancel2BB [fillcolor=gray, fontcolor=black, fontsize=9, label=Cancel2BB, shape=ellipse, style=filled];
 Topics2BB -> Cancel2BB;
-Battery2BB [label=Battery2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Battery2BB [fillcolor=gray, fontcolor=black, fontsize=9, label=Battery2BB, shape=ellipse, style=filled];
 Topics2BB -> Battery2BB;
-subgraph  {
-label=children_of_Topics2BB;
-rank=same;
-Scan2BB [label=Scan2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-Cancel2BB [label=Cancel2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-Battery2BB [label=Battery2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-}
-
-Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
+Tasks [fillcolor=cyan, fontcolor=black, fontsize=9, label=Tasks, shape=octagon, style=filled];
 "Tutorial Eight" -> Tasks;
-"Battery Low?" [label="Battery Low?", shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
+"Battery Low?" [fillcolor=ghostwhite, fontcolor=black, fontsize=9, label="Battery Low?", shape=ellipse, style=filled];
 Tasks -> "Battery Low?";
-"Flash Red" [label="Flash Red", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Flash Red" [fillcolor=gray, fontcolor=black, fontsize=9, label="Flash Red", shape=ellipse, style=filled];
 "Battery Low?" -> "Flash Red";
-Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Idle [fillcolor=gray, fontcolor=black, fontsize=9, label=Idle, shape=ellipse, style=filled];
 Tasks -> Idle;
-subgraph  {
-label=children_of_Tasks;
-rank=same;
-"Battery Low?" [label="Battery Low?", shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
-Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Cancel2BB -> "/event_cancel_button"  [color=blue, constraint=False, weight=0];
+"/battery_low_warning" -> "Battery Low?"  [color=green, constraint=False, weight=0];
+Battery2BB -> "/battery_low_warning"  [color=blue, constraint=False, weight=0];
+Scan2BB -> "/event_scan_button"  [color=blue, constraint=False, weight=0];
+Battery2BB -> "/battery"  [color=blue, constraint=False, weight=0];
+subgraph Blackboard {
+id=Blackboard;
+label=Blackboard;
+rank=sink;
+"/event_cancel_button" [color=blue, fillcolor=white, fixedsize=False, fontcolor=blue, fontsize=8, height=0, label="/event_cancel_button: -", shape=box, style=filled, width=0];
+"/battery_low_warning" [color=blue, fillcolor=white, fixedsize=False, fontcolor=blue, fontsize=8, height=0, label="/battery_low_warning: False", shape=box, style=filled, width=0];
+"/event_scan_button" [color=blue, fillcolor=white, fixedsize=False, fontcolor=blue, fontsize=8, height=0, label="/event_scan_button: -", shape=box, style=filled, width=0];
+"/battery" [color=blue, fillcolor=white, fixedsize=False, fontcolor=blue, fontsize=8, height=0, label="/battery: sensor_msgs.msg.B...", shape=box, style=filled, width=0];
 }
 
-subgraph  {
-label="children_of_Tutorial Eight";
-rank=same;
-Topics2BB [label=Topics2BB, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
-Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
-}
-
-event_scan_button [label="event_scan_button: -", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
-Scan2BB -> event_scan_button  [color=blue, constraint=True];
-event_cancel_button [label="event_cancel_button: -", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
-Cancel2BB -> event_cancel_button  [color=blue, constraint=True];
-battery [label="battery: sensor_msgs.msg.B...", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
-Battery2BB -> battery  [color=blue, constraint=True];
-battery_low_warning [label="battery_low_warning: False", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
-battery_low_warning -> "Battery Low?"  [color=blue, constraint=False];
-Battery2BB -> battery_low_warning  [color=blue, constraint=True];
 }

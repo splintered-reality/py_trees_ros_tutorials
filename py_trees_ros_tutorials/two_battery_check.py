@@ -141,7 +141,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         threshold=30.0
     )
-    tasks = py_trees.composites.Selector("Tasks")
+    tasks = py_trees.composites.Selector("Tasks", memory=False)
     flash_led_strip = behaviours.FlashLedStrip(
         name="FlashLEDs",
         colour="red"

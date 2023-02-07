@@ -1,102 +1,61 @@
 digraph pastafarianism {
+ordering=out;
 graph [fontname="times-roman"];
 node [fontname="times-roman"];
 edge [fontname="times-roman"];
-"Tutorial Five" [label="Tutorial Five\n--SuccessOnAll(-)--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
-Topics2BB [label=Topics2BB, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+"Tutorial Five" [fillcolor=gold, fontcolor=black, fontsize=9, label="Tutorial Five\nSuccessOnAll", shape=parallelogram, style=filled];
+Topics2BB [fillcolor=orange, fontcolor=black, fontsize=9, label="Ⓜ Topics2BB", shape=box, style=filled];
 "Tutorial Five" -> Topics2BB;
-Scan2BB [label=Scan2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Scan2BB [fillcolor=gray, fontcolor=black, fontsize=9, label=Scan2BB, shape=ellipse, style=filled];
 Topics2BB -> Scan2BB;
-Battery2BB [label=Battery2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Battery2BB [fillcolor=gray, fontcolor=black, fontsize=9, label=Battery2BB, shape=ellipse, style=filled];
 Topics2BB -> Battery2BB;
-subgraph  {
-label=children_of_Topics2BB;
-rank=same;
-Scan2BB [label=Scan2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-Battery2BB [label=Battery2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-}
-
-Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
+Tasks [fillcolor=cyan, fontcolor=black, fontsize=9, label=Tasks, shape=octagon, style=filled];
 "Tutorial Five" -> Tasks;
-"Battery Low?" [label="Battery Low?", shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
+"Battery Low?" [fillcolor=ghostwhite, fontcolor=black, fontsize=9, label="Battery Low?", shape=ellipse, style=filled];
 Tasks -> "Battery Low?";
-"Flash Red" [label="Flash Red", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Flash Red" [fillcolor=gray, fontcolor=black, fontsize=9, label="Flash Red", shape=ellipse, style=filled];
 "Battery Low?" -> "Flash Red";
-Scan [label=Scan, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+Scan [fillcolor=orange, fontcolor=black, fontsize=9, label="Ⓜ Scan", shape=box, style=filled];
 Tasks -> Scan;
-"Scan?" [label="Scan?", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Scan?" [fillcolor=gray, fontcolor=black, fontsize=9, label="Scan?", shape=ellipse, style=filled];
 Scan -> "Scan?";
-"Preempt?" [label="Preempt?", shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
+"Preempt?" [fillcolor=cyan, fontcolor=black, fontsize=9, label="Preempt?", shape=octagon, style=filled];
 Scan -> "Preempt?";
-SuccessIsRunning [label=SuccessIsRunning, shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
+SuccessIsRunning [fillcolor=ghostwhite, fontcolor=black, fontsize=9, label=SuccessIsRunning, shape=ellipse, style=filled];
 "Preempt?" -> SuccessIsRunning;
-"Scan?*" [label="Scan?*", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Scan?*" [fillcolor=gray, fontcolor=black, fontsize=9, label="Scan?*", shape=ellipse, style=filled];
 SuccessIsRunning -> "Scan?*";
-Scanning [label="Scanning\n--SuccessOnOne--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
+Scanning [fillcolor=gold, fontcolor=black, fontsize=9, label="Scanning\nSuccessOnOne", shape=parallelogram, style=filled];
 "Preempt?" -> Scanning;
-Rotate [label=Rotate, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Rotate [fillcolor=gray, fontcolor=black, fontsize=9, label=Rotate, shape=ellipse, style=filled];
 Scanning -> Rotate;
-"Flash Blue" [label="Flash Blue", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Flash Blue" [fillcolor=gray, fontcolor=black, fontsize=9, label="Flash Blue", shape=ellipse, style=filled];
 Scanning -> "Flash Blue";
-subgraph  {
-label=children_of_Scanning;
-rank=same;
-Rotate [label=Rotate, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-"Flash Blue" [label="Flash Blue", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-}
-
-subgraph  {
-label="children_of_Preempt?";
-rank=same;
-SuccessIsRunning [label=SuccessIsRunning, shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
-Scanning [label="Scanning\n--SuccessOnOne--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
-}
-
-Celebrate [label="Celebrate\n--SuccessOnOne--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
+Celebrate [fillcolor=gold, fontcolor=black, fontsize=9, label="Celebrate\nSuccessOnOne", shape=parallelogram, style=filled];
 Scan -> Celebrate;
-"Flash Green" [label="Flash Green", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"Flash Green" [fillcolor=gray, fontcolor=black, fontsize=9, label="Flash Green", shape=ellipse, style=filled];
 Celebrate -> "Flash Green";
-Pause [label=Pause, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Pause [fillcolor=gray, fontcolor=black, fontsize=9, label=Pause, shape=ellipse, style=filled];
 Celebrate -> Pause;
-subgraph  {
-label=children_of_Celebrate;
-rank=same;
-"Flash Green" [label="Flash Green", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-Pause [label=Pause, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-}
-
-subgraph  {
-label=children_of_Scan;
-rank=same;
-"Scan?" [label="Scan?", shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-"Preempt?" [label="Preempt?", shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
-Celebrate [label="Celebrate\n--SuccessOnOne--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
-}
-
-Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Idle [fillcolor=gray, fontcolor=black, fontsize=9, label=Idle, shape=ellipse, style=filled];
 Tasks -> Idle;
-subgraph  {
-label=children_of_Tasks;
-rank=same;
-"Battery Low?" [label="Battery Low?", shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
-Scan [label=Scan, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
-Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"/goal_0d200292-24e9-4aef-9f08-a16147275b7e" -> Rotate  [color=green, constraint=False, weight=0];
+Rotate -> "/goal_0d200292-24e9-4aef-9f08-a16147275b7e"  [color=blue, constraint=False, weight=0];
+"/battery_low_warning" -> "Battery Low?"  [color=green, constraint=False, weight=0];
+Battery2BB -> "/battery_low_warning"  [color=blue, constraint=False, weight=0];
+Battery2BB -> "/battery"  [color=blue, constraint=False, weight=0];
+"/event_scan_button" -> "Scan?"  [color=green, constraint=False, weight=0];
+"/event_scan_button" -> "Scan?*"  [color=green, constraint=False, weight=0];
+Scan2BB -> "/event_scan_button"  [color=blue, constraint=False, weight=0];
+subgraph Blackboard {
+id=Blackboard;
+label=Blackboard;
+rank=sink;
+"/goal_0d200292-24e9-4aef-9f08-a16147275b7e" [color=blue, fillcolor=white, fixedsize=False, fontcolor=blue, fontsize=8, height=0, label="/goal_0d200292-24e9-4aef-9f08-a16147275b7e: py_trees_ros_inte...", shape=box, style=filled, width=0];
+"/battery_low_warning" [color=blue, fillcolor=white, fixedsize=False, fontcolor=blue, fontsize=8, height=0, label="/battery_low_warning: False", shape=box, style=filled, width=0];
+"/battery" [color=blue, fillcolor=white, fixedsize=False, fontcolor=blue, fontsize=8, height=0, label="/battery: sensor_msgs.msg.B...", shape=box, style=filled, width=0];
+"/event_scan_button" [color=blue, fillcolor=white, fixedsize=False, fontcolor=blue, fontsize=8, height=0, label="/event_scan_button: -", shape=box, style=filled, width=0];
 }
 
-subgraph  {
-label="children_of_Tutorial Five";
-rank=same;
-Topics2BB [label=Topics2BB, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
-Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
-}
-
-event_scan_button [label="event_scan_button: -", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
-event_scan_button -> "Scan?*"  [color=blue, constraint=False];
-event_scan_button -> "Scan?"  [color=blue, constraint=False];
-Scan2BB -> event_scan_button  [color=blue, constraint=True];
-battery [label="battery: sensor_msgs.msg.B...", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
-Battery2BB -> battery  [color=blue, constraint=True];
-battery_low_warning [label="battery_low_warning: False", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
-battery_low_warning -> "Battery Low?"  [color=blue, constraint=False];
-Battery2BB -> battery_low_warning  [color=blue, constraint=True];
 }
