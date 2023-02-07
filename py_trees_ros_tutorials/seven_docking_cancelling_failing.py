@@ -280,7 +280,8 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     result_failed_to_bb = py_trees.behaviours.SetBlackboardVariable(
         name="Result2BB\n'failed'",
         variable_name='scan_result',
-        variable_value='failed'
+        variable_value='failed',
+        overwrite=True
     )
     ere_we_go = py_trees.composites.Sequence(name="Ere we Go", memory=True)
     undock = py_trees_ros.actions.ActionClient(
@@ -310,7 +311,8 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     result_cancelled_to_bb = py_trees.behaviours.SetBlackboardVariable(
         name="Result2BB\n'cancelled'",
         variable_name='scan_result',
-        variable_value='cancelled'
+        variable_value='cancelled',
+        overwrite=True
     )
     move_out_and_scan = py_trees.composites.Sequence(name="Move Out and Scan", memory=True)
     move_base = py_trees_ros.actions.ActionClient(
@@ -343,7 +345,8 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
     result_succeeded_to_bb = py_trees.behaviours.SetBlackboardVariable(
         name="Result2BB\n'succeeded'",
         variable_name='scan_result',
-        variable_value='succeeded'
+        variable_value='succeeded',
+        overwrite=True
     )
     celebrate = py_trees.composites.Parallel(
         name="Celebrate",

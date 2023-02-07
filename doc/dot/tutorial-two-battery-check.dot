@@ -1,37 +1,30 @@
 digraph pastafarianism {
+ordering=out;
 graph [fontname="times-roman"];
 node [fontname="times-roman"];
 edge [fontname="times-roman"];
-"Tutorial Two" [label="Tutorial Two\n--SuccessOnAll(-)--", shape=parallelogram, style=filled, fillcolor=gold, fontsize=9, fontcolor=black];
-Topics2BB [label=Topics2BB, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+"Tutorial Two" [fillcolor=gold, fontcolor=black, fontsize=9, label="Tutorial Two\nSuccessOnAll", shape=parallelogram, style=filled];
+Topics2BB [fillcolor=orange, fontcolor=black, fontsize=9, label="Ⓜ Topics2BB", shape=box, style=filled];
 "Tutorial Two" -> Topics2BB;
-Battery2BB [label=Battery2BB, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Battery2BB [fillcolor=gray, fontcolor=black, fontsize=9, label=Battery2BB, shape=ellipse, style=filled];
 Topics2BB -> Battery2BB;
-Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
+Tasks [fillcolor=cyan, fontcolor=black, fontsize=9, label=Tasks, shape=octagon, style=filled];
 "Tutorial Two" -> Tasks;
-"Battery Low?" [label="Battery Low?", shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
+"Battery Low?" [fillcolor=ghostwhite, fontcolor=black, fontsize=9, label="Battery Low?", shape=ellipse, style=filled];
 Tasks -> "Battery Low?";
-FlashLEDs [label=FlashLEDs, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+FlashLEDs [fillcolor=gray, fontcolor=black, fontsize=9, label=FlashLEDs, shape=ellipse, style=filled];
 "Battery Low?" -> FlashLEDs;
-Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Idle [fillcolor=gray, fontcolor=black, fontsize=9, label=Idle, shape=ellipse, style=filled];
 Tasks -> Idle;
-subgraph  {
-label=children_of_Tasks;
-rank=same;
-"Battery Low?" [label="Battery Low?", shape=ellipse, style=filled, fillcolor=ghostwhite, fontsize=9, fontcolor=black];
-Idle [label=Idle, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+"/battery_low_warning" -> "Battery Low?"  [color=green, constraint=False, weight=0];
+Battery2BB -> "/battery_low_warning"  [color=blue, constraint=False, weight=0];
+Battery2BB -> "/battery"  [color=blue, constraint=False, weight=0];
+subgraph Blackboard {
+id=Blackboard;
+label=Blackboard;
+rank=sink;
+"/battery_low_warning" [color=blue, fillcolor=white, fixedsize=False, fontcolor=blue, fontsize=8, height=0, label="/battery_low_warning: False", shape=box, style=filled, width=0];
+"/battery" [color=blue, fillcolor=white, fixedsize=False, fontcolor=blue, fontsize=8, height=0, label="/battery: sensor_msgs.msg.B...", shape=box, style=filled, width=0];
 }
 
-subgraph  {
-label="children_of_Tutorial Two";
-rank=same;
-Topics2BB [label=Topics2BB, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
-Tasks [label=Tasks, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
-}
-
-battery [label="battery: sensor_msgs.msg.B...", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
-Battery2BB -> battery  [color=blue, constraint=True];
-battery_low_warning [label="battery_low_warning: False", shape=box, style=filled, color=blue, fillcolor=white, fontsize=8, fontcolor=blue, width=0, height=0, fixedsize=False];
-battery_low_warning -> "Battery Low?"  [color=blue, constraint=False];
-Battery2BB -> battery_low_warning  [color=blue, constraint=True];
 }

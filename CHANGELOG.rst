@@ -5,6 +5,8 @@ Changelog
 Forthcoming
 -----------
 * [mock] bugfix signal type mismatch for charging status
+* [tutorials] explicit constructure arguments
+* [tutorials] bugfix shutdown on humble
 
 2.1.0 (2020-08-02)
 ------------------

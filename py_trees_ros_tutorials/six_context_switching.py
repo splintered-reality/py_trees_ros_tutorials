@@ -158,7 +158,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         qos_profile=py_trees_ros.utilities.qos_profile_unlatched(),
         threshold=30.0
     )
-    tasks = py_trees.composites.Selector("Tasks")
+    tasks = py_trees.composites.Selector("Tasks", memory=False)
     flash_red = behaviours.FlashLedStrip(
         name="Flash Red",
         colour="red"
@@ -175,7 +175,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
         child=flash_red
     )
     # Worker Tasks
-    scan = py_trees.composites.Sequence(name="Scan")
+    scan = py_trees.composites.Sequence(name="Scan", memory=True)
     is_scan_requested = py_trees.behaviours.CheckBlackboardVariableValue(
         name="Scan?",
         check=py_trees.common.ComparisonExpression(
@@ -184,7 +184,7 @@ def tutorial_create_root() -> py_trees.behaviour.Behaviour:
             operator=operator.eq
         )
     )
-    scan_preempt = py_trees.composites.Selector(name="Preempt?")
+    scan_preempt = py_trees.composites.Selector(name="Preempt?", memory=False)
     is_scan_requested_two = py_trees.decorators.SuccessIsRunning(
         name="SuccessIsRunning",
         child=py_trees.behaviours.CheckBlackboardVariableValue(
