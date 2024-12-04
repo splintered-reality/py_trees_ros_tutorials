@@ -53,7 +53,7 @@ Behaviours
 
 The tree makes use of the :class:`py_trees_ros.battery.ToBlackboard` behaviour.
 
-This behaviour will cause the entire tree will tick over with
+This behaviour will cause the entire tree to tick over with
 :attr:`~py_trees.common.Status.SUCCESS` so long as there is data incoming.
 If there is no data incoming, it will simply
 :term:`block` and prevent the rest of the tree from acting.
