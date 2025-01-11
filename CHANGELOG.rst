@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Forthcoming
------------
+2.3.0 (2025-01-11)
+------------------
 * [tutorials] fix: grammar mistake (`#51 <https://github.com/splintered-reality/py_trees_ros_tutorials/issues/51>`_)
 * [doc] some fresh dot files
 * [mock] update for new shutdown handling for humble
