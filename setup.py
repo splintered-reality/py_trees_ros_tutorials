@@ -79,7 +79,7 @@ setup(
     },
     name=package_name,
     # also update package.xml (version and website url), version.py and conf.py
-    version='2.1.0',
+    version='2.3.0',
     packages=find_packages(exclude=['tests*', 'docs*', 'launch*']),
     data_files=[
         ('share/' + package_name, ['package.xml']),
@@ -90,7 +90,7 @@ setup(
     install_requires=[],  # it's all lies (c.f. package.xml, but no use case for this yet)
     extras_require={},
     author='Daniel Stonier',
-    maintainer='Daniel Stonier <d.stonier@gmail.com>',
+    maintainer='Daniel Stonier <d.stonier@gmail.com>, Sebastian Castro <sebas.a.castro@gmail.com>',
     url='https://github.com/splintered-reality/py_trees_ros_tutorials',
     keywords=['ROS', 'ROS2', 'behaviour-trees'],
     zip_safe=True,
