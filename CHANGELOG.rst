@@ -4,9 +4,13 @@ Changelog
 
 Forthcoming
 -----------
+* [tutorials] fix: grammar mistake (`#51 <https://github.com/splintered-reality/py_trees_ros_tutorials/issues/51>`_)
+* [doc] some fresh dot files
+* [mock] update for new shutdown handling for humble
+* [docs] update intersphinx releases to latest py_trees releases
+* [tutorials] refactor for explicit composite arguments
 * [mock] bugfix signal type mismatch for charging status
-* [tutorials] explicit constructure arguments
-* [tutorials] bugfix shutdown on humble
+* Contributors: Daniel Stonier, Humaney
 
 2.1.0 (2020-08-02)
 ------------------
