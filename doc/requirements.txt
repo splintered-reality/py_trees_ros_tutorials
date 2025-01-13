@@ -11,4 +11,4 @@ Sphinx
 sphinx-argparse
 sphinx_rtd_theme
 sphinx-autodoc-typehints
-py_trees>=2.3
+py_trees>=2
