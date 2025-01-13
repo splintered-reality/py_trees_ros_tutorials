@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-PyTree ROS Tutorials
-====================
+PyTrees ROS Tutorials
+=====================
 
 This package is home to tutorials that incrementally walk through the
 development of a behaviour tree application tested against a mocked robot
