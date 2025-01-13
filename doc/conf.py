@@ -71,9 +71,6 @@ intersphinx_mapping = {
 
 html_theme = 'sphinx_rtd_theme'
 
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 html_show_copyright = False
 
