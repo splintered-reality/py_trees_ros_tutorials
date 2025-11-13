@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Forthcoming
------------
+2.4.0 (2025-11-13)
+------------------
 * [readme] Remove annoying period (`#55 <https://github.com/splintered-reality/py_trees_ros_tutorials/issues/55>`_)
 * [readme] Fix repo URLs too
 * Contributors: Sebastian Castro
