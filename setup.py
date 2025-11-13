@@ -79,7 +79,7 @@ setup(
     },
     name=package_name,
     # also update package.xml (version and website url), version.py and conf.py
-    version='2.3.0',
+    version='2.4.0',
     packages=find_packages(exclude=['tests*', 'docs*', 'launch*']),
     data_files=[
         ('share/' + package_name, ['package.xml']),
