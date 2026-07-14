@@ -96,7 +96,6 @@ setup(
     zip_safe=True,
     classifiers=[
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
         'Topic :: Software Development :: Libraries'
@@ -108,7 +107,7 @@ setup(
         "Tutorials demonstrating usage of py_trees in ROS and more generally,"
         "behaviour trees for robotics."
     ),
-    license='BSD',
+    license='BSD-3-Clause',
     # test_suite="tests"
     # tests_require=['nose', 'pytest', 'flake8', 'yanc', 'nose-htmloutput']
     entry_points={
