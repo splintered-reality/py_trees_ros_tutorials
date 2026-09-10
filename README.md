@@ -7,7 +7,7 @@ Tutorials for usage of PyTrees on ROS 2 and, more generally, behaviour trees for
 Documentation and tutorials are on ReadTheDocs.
 
 * [devel](https://py-trees-ros-tutorials.readthedocs.io/en/devel/)
-* [release-2.5.x](https://py-trees-ros-tutorials.readthedocs.io/en/release-2.5.x/)
+* [release-2.6.x](https://py-trees-ros-tutorials.readthedocs.io/en/release-2.6.x/)
 
 ## PyTrees ROS Ecosystem
 
