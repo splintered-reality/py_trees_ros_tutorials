@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Forthcoming
------------
+2.6.0 (2026-09-10)
+------------------
 * [infra] Fix build warnings (`#60 <https://github.com/splintered-reality/py_trees_ros_tutorials/issues/60>`_)
 * Contributors: Sebastian Castro
 

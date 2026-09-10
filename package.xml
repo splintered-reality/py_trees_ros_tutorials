@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>py_trees_ros_tutorials</name>
-  <version>2.5.0</version>
+  <version>2.6.0</version>
   <description>
     Tutorials for py_trees on ROS2.
   </description>
